@@ -1,11 +1,13 @@
 import { expect, test } from "bun:test";
 import {
+  LIGHT,
   camera,
   compose,
   draw,
   faces,
   footprint,
   hull,
+  lit,
   place,
   plate,
   poses,
@@ -143,4 +145,40 @@ test("a footprint is the parts seen from above, grown and laid under the lowest 
   expect(footprint([part], CORNER, { gap: 1, spread: 0.25, ahead: 0.5 }).d).toBe(square(0.75, 0.5));
   expect(footprint([part], CORNER).facing).toBe(true);
   expect(footprint([part], camera({ height: 60, perspective: 300, pitch: 20 })).facing).toBe(false);
+});
+
+test("a face turned towards the light gets all of it, one turned away only the ambient share", () => {
+  const light = { direction: [0, -2, 0], ambient: 0.3 } as const;
+  expect(lit([0, -1, 0], light)).toBe(1);
+  expect(lit([0, 1, 0], light)).toBe(0.3);
+  expect(lit([1, 0, 0], light)).toBe(0.3);
+  expect(lit([0, -Math.SQRT1_2, Math.SQRT1_2], light)).toBeCloseTo(0.3 + 0.7 * Math.SQRT1_2, 4);
+});
+
+test("draw shades each face by a light held still with the eye", () => {
+  const part = cube();
+  const [front] = draw([part], FRONT, { light: { direction: [0, 0, 1], ambient: 0.2 } }).faces;
+  expect(front!.shade).toBe(1);
+  expect(round(front!.normal)).toEqual([0, 1, 0]);
+  const behind = draw([part], FRONT, { light: { direction: [0, 0, -1], ambient: 0.2 } }).faces;
+  expect(behind[0]!.shade).toBe(0.2);
+  // A quarter turn brings another side round to face the eye, lit as the first was.
+  const turned = draw([cube({ position: [0, 0, 0.5], rotation: rotateZ(90) })], FRONT).faces;
+  expect(turned[0]!.shade).toBe(draw([part], FRONT).faces[0]!.shade);
+  expect(round(turned[0]!.normal)).toEqual([0, 1, 0]);
+});
+
+test("draw keeps what it returned before shading, and lights by LIGHT unless told", () => {
+  const scene = [cube()];
+  const plain = draw(scene, CORNER);
+  const lighted = draw(scene, CORNER, { light: LIGHT });
+  expect(plain).toEqual(lighted);
+  for (const face of plain.faces) {
+    expect(Object.keys(face)).toEqual(["d", "role", "part", "facing", "normal", "shade"]);
+    expect(face.shade).toBeGreaterThanOrEqual(LIGHT.ambient);
+    expect(face.shade).toBeLessThanOrEqual(1);
+  }
+  // The top faces up, towards the light from above, so it is the brightest.
+  const top = plain.faces.find((face) => round(face.normal).join() === "0,0,1")!;
+  expect(Math.max(...plain.faces.map((face) => face.shade))).toBe(top.shade);
 });

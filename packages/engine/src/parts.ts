@@ -1,6 +1,6 @@
 import type { Camera } from "./camera";
 import { grow, hull, rounded, type Box } from "./outline";
-import { shape } from "./path";
+import { fixed, shape } from "./path";
 import { REST, compose, cross, dot, place, rotate, subtract, type Flat, type Pose, type Solid } from "./vector";
 
 type Common = {
@@ -148,8 +148,30 @@ export function placed(scene: Scene, parent: Pose = REST): { part: Part; pose: P
 /** Each part's pose in the scene by name, for laying a screen onto it with `screenQuad`. */
 export const poses = (scene: Scene) => new Map(placed(scene).map(({ part, pose }) => [part.name, pose]));
 
-/** One face as drawn: SVG path data in the scene's units. */
-export type Drawn = { d: string; role: string; part: string; facing: boolean };
+/**
+ * One face as drawn: SVG path data in the scene's units, its normal in the
+ * model's axes and how much `light` falls on it, from its ambient share to 1.
+ */
+export type Drawn = { d: string; role: string; part: string; facing: boolean; normal: Solid; shade: number };
+
+/**
+ * A light held still with the eye: `direction` points towards it in the
+ * scene's axes (x right, y down, z towards the eye), and `ambient` is the
+ * share of light every face gets, even one turned away from it.
+ *
+ * It turns with the eye and not with the model, so as a device spins its
+ * sides brighten and darken the way they would under a lamp over the viewer.
+ */
+export type Light = { readonly direction: Solid; readonly ambient: number };
+
+/** From above, a little to the left and mostly from the eye, so faces seen straight on stay near their own colour. */
+export const LIGHT: Light = { direction: [-0.3, -0.5, 0.8], ambient: 0.4 };
+
+/** How much of `light` falls on a face turned along `normal` in the scene's axes: Lambert's law over an ambient floor. */
+export function lit(normal: Solid, { direction, ambient }: Light): number {
+  const toward = dot(normal, direction) / Math.hypot(...direction);
+  return fixed(ambient + (1 - ambient) * Math.max(0, toward));
+}
 
 /** A part's outline on screen, for its outline stroke or a shadow. */
 export type Silhouette = { part: string; d: string; points: Flat[] };
@@ -175,9 +197,9 @@ const mean = (points: readonly Solid[]): Solid => {
  * than its parent's whenever the plate faces it. Parts that interlock, or a
  * part that reaches past another's centre (a lid swinging over its base),
  * need `order`. Pass `cull: false` to keep the faces turned away, marked by
- * `facing`.
+ * `facing`. Each face's `shade` is how much `light` falls on it.
  */
-export function draw(scene: Scene, camera: Camera, { cull = true }: { cull?: boolean } = {}) {
+export function draw(scene: Scene, camera: Camera, { cull = true, light = LIGHT }: { cull?: boolean; light?: Light } = {}) {
   const eye: Solid = [camera.originX, camera.originY, camera.perspective];
   const far = (point: Solid) => {
     const [x, y, z] = subtract(camera.toView(point), eye);
@@ -186,8 +208,10 @@ export function draw(scene: Scene, camera: Camera, { cull = true }: { cull?: boo
   const parts = placed(scene).map(({ part, pose }) => {
     const shown = faces(part).map((face) => {
       const points = face.points.map((point) => place(pose, point));
-      const facing = camera.facesEye(points[0]!, rotate(pose.rotation, face.normal));
-      return { points, facing, role: face.role, depth: far(mean(points)) };
+      const normal = rotate(pose.rotation, face.normal);
+      const facing = camera.facesEye(points[0]!, normal);
+      const shade = lit(rotate(camera.rotation, normal), light);
+      return { points, facing, normal, shade, role: face.role, depth: far(mean(points)) };
     });
     const all = shown.flatMap((face) => face.points);
     return { part, shown, all, depth: far(mean(all)) };
@@ -197,7 +221,9 @@ export function draw(scene: Scene, camera: Camera, { cull = true }: { cull?: boo
     shown
       .filter((face) => face.facing || !cull)
       .sort((a, b) => b.depth - a.depth)
-      .map((face): Drawn => ({ d: shape(face.points.map(camera.project)), role: face.role, part: part.name, facing: face.facing })),
+      .map(
+        ({ points, role, facing, normal, shade }): Drawn => ({ d: shape(points.map(camera.project)), role, part: part.name, facing, normal, shade }),
+      ),
   );
   const hulls = parts.map(({ part, all }): Silhouette => {
     const points = hull(all.map(camera.project));
