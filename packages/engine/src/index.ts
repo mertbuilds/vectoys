@@ -21,6 +21,7 @@ export {
   type Slab,
 } from "./parts";
 export { screenQuad, type ScreenQuad, type ScreenRect } from "./screen";
+export { settled, spring, type Spring, type SpringOptions } from "./spring";
 export {
   IDENTITY,
   REST,
@@ -32,10 +33,12 @@ export {
   multiply,
   place,
   rotate,
+  rotateAxis,
   rotateX,
   rotateY,
   rotateZ,
   scale,
+  slerp,
   subtract,
   type Flat,
   type Pose,

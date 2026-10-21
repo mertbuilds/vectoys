@@ -81,3 +81,65 @@ export const compose = (outer: Pose, inner: Pose): Pose => ({
   position: place(outer, inner.position),
   rotation: multiply(outer.rotation, inner.rotation),
 });
+
+/** A turn of `degrees` about any `axis`, the same way round as `rotateX` is about x. */
+export function rotateAxis(axis: Solid, degrees: number): Rotation {
+  const length = Math.hypot(...axis);
+  const [x, y, z] = [axis[0] / length, axis[1] / length, axis[2] / length];
+  const [c, s] = turn(degrees);
+  const t = 1 - c;
+  return [t * x * x + c, t * x * y - s * z, t * x * z + s * y, t * x * y + s * z, t * y * y + c, t * y * z - s * x, t * x * z - s * y, t * y * z + s * x, t * z * z + c];
+}
+
+/** A rotation as a unit quaternion (w, x, y, z), which blends smoothly where nine numbers do not. */
+type Quaternion = readonly [number, number, number, number];
+
+function quaternion([a, b, c, d, e, f, g, h, i]: Rotation): Quaternion {
+  const trace = a + e + i;
+  if (trace > 0) {
+    const s = Math.sqrt(trace + 1) * 2;
+    return [s / 4, (h - f) / s, (c - g) / s, (d - b) / s];
+  }
+  if (a > e && a > i) {
+    const s = Math.sqrt(1 + a - e - i) * 2;
+    return [(h - f) / s, s / 4, (b + d) / s, (c + g) / s];
+  }
+  if (e > i) {
+    const s = Math.sqrt(1 + e - a - i) * 2;
+    return [(c - g) / s, (b + d) / s, s / 4, (f + h) / s];
+  }
+  const s = Math.sqrt(1 + i - a - e) * 2;
+  return [(d - b) / s, (c + g) / s, (f + h) / s, s / 4];
+}
+
+function matrix([w, x, y, z]: Quaternion): Rotation {
+  return [
+    1 - 2 * (y * y + z * z),
+    2 * (x * y - w * z),
+    2 * (x * z + w * y),
+    2 * (x * y + w * z),
+    1 - 2 * (x * x + z * z),
+    2 * (y * z - w * x),
+    2 * (x * z - w * y),
+    2 * (y * z + w * x),
+    1 - 2 * (x * x + y * y),
+  ];
+}
+
+/**
+ * The rotation a share of the way from one to another, turning the short way
+ * round at an even speed, as a tumbling die or a turning lid wants.
+ */
+export function slerp(from: Rotation, to: Rotation, share: number): Rotation {
+  const p = quaternion(from);
+  let q = quaternion(to);
+  let cos = p[0] * q[0] + p[1] * q[1] + p[2] * q[2] + p[3] * q[3];
+  // A quaternion and its negative are one rotation; the one nearer goes the short way.
+  if (cos < 0) [q, cos] = [q.map((value) => -value) as unknown as Quaternion, -cos];
+  const angle = Math.acos(Math.min(cos, 1));
+  // Nearly the same rotation: a straight blend is as good and does not divide by nought.
+  const [kp, kq] = angle < 1e-6 ? [1 - share, share] : [Math.sin((1 - share) * angle) / Math.sin(angle), Math.sin(share * angle) / Math.sin(angle)];
+  const blend = p.map((value, index) => kp * value + kq * q[index]!) as unknown as Quaternion;
+  const length = Math.hypot(...blend);
+  return matrix(blend.map((value) => value / length) as unknown as Quaternion);
+}
