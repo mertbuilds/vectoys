@@ -59,3 +59,32 @@ test("a screen facing the eye takes a matrix and pointer events; one turned away
   expect(hidden).not.toContain("matrix3d(");
   expect(hidden).toContain("visibility:hidden");
 });
+
+test("shaded, a part's faces join by role and shade step, darker in less light", () => {
+  const scene = [slab({ name: "box", box: [-5, -8, 5, 8], radii: [2, 2], thickness: 2, edge: 0.8, step: 0.5 })];
+  const { faces, hulls } = draw(scene, EYE);
+  const html = renderToString(
+    <svg>
+      <Faces faces={faces} hulls={hulls} styles={{ side: { style: { fill: "#ccc" } }, top: { style: { fill: "#eee" } } }} shading />
+    </svg>,
+  );
+  const fills = [...html.matchAll(/<path d="[^"]*" style="fill:([^"]*)"/g)].map((match) => match[1]!);
+  // The hull, then one path per role and step, never one per face.
+  expect(fills.length).toBeLessThan(faces.length / 4);
+  expect(new Set(fills.slice(1)).size).toBe(fills.length - 1);
+  const steps = fills.map((fill) => Number(/--vectoys-step(-?\d)/.exec(fill)?.[1] ?? 0));
+  expect(Math.max(...steps)).toBeGreaterThan(0);
+  expect(html).toContain("--vectoys-step4:var(--vectoys-shade-color, black) calc(var(--vectoys-shade-strength, 0.5) * 50%)");
+  // Every face's data is drawn once, in its part's group, past the hull.
+  const data = [...html.matchAll(/ d="([^"]*)"/g)].map((match) => match[1]!).slice(1).join("");
+  expect(data.length).toBe(faces.map((face) => face.d).join("").length);
+  expect(html).not.toContain("NaN");
+});
+
+test("shading leaves a look without a string fill as it is", () => {
+  const scene = [slab({ name: "box", box: [-5, -5, 5, 5], thickness: 2, edge: 0.5 })];
+  const { faces, hulls } = draw(scene, EYE);
+  const shaded = renderToString(<Faces faces={faces} hulls={hulls} styles={{ side: { className: "side" }, top: { className: "top" } }} shading />);
+  expect(shaded).not.toContain("color-mix");
+  expect(shaded.match(/class="side"/g)!.length).toBeGreaterThan(1);
+});
