@@ -4,7 +4,7 @@
   "type": "module",
   "workspaces": ["packages/*", "registry/*", "apps/*"],
   "scripts": {
-    "dev": "bun run --filter vectoys-demo dev",
+    "dev": "bun run --filter vectoys-site dev",
     "registry:build": "bun packages/registry-build/src/main.ts",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun test"
