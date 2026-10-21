@@ -1,0 +1,23 @@
+{
+  "name": "vectoys",
+  "version": "0.0.0",
+  "description": "Copy vectoys devices and toys into your project.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "vectoys": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --target node --outfile dist/index.js",
+    "prepublishOnly": "bun run build",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@vectoys/registry-build": "workspace:*"
+  }
+}
