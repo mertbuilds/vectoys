@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "portless vectoys-demo vite",
-    "build": "vite build",
+    "build": "bun ../../packages/registry-build/src/main.ts && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

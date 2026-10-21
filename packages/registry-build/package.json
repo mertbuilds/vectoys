@@ -1,0 +1,14 @@
+{
+  "name": "@vectoys/registry-build",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Turns registry/*/item.json into the static JSON the site serves at /r.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  }
+}

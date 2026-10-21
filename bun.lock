@@ -46,6 +46,10 @@
         "react": ">=18",
       },
     },
+    "packages/registry-build": {
+      "name": "@vectoys/registry-build",
+      "version": "0.0.0",
+    },
     "registry/laptop-14": {
       "name": "@vectoys/laptop-14",
       "version": "0.0.0",
@@ -318,6 +322,8 @@
     "@vectoys/phone": ["@vectoys/phone@workspace:registry/phone"],
 
     "@vectoys/react": ["@vectoys/react@workspace:packages/react"],
+
+    "@vectoys/registry-build": ["@vectoys/registry-build@workspace:packages/registry-build"],
 
     "@vectoys/tablet": ["@vectoys/tablet@workspace:registry/tablet"],
 
