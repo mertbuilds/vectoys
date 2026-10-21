@@ -1,4 +1,4 @@
-import type { Drawn, Silhouette } from "@hinge/engine";
+import type { Drawn, Silhouette } from "@vectoys/engine";
 import type { SVGProps } from "react";
 
 /** How a path of one role is painted: any SVG path attributes but its data. */

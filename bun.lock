@@ -3,19 +3,19 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "hinge",
+      "name": "vectoys",
       "devDependencies": {
         "@types/bun": "1.3.14",
         "typescript": "7.0.2",
       },
     },
     "apps/demo": {
-      "name": "hinge-demo",
+      "name": "vectoys-demo",
       "version": "0.0.0",
       "dependencies": {
-        "@hinge/laptop-14": "workspace:*",
-        "@hinge/phone": "workspace:*",
-        "@hinge/tablet": "workspace:*",
+        "@vectoys/laptop-14": "workspace:*",
+        "@vectoys/phone": "workspace:*",
+        "@vectoys/tablet": "workspace:*",
         "react": "19.0.0",
         "react-dom": "19.0.0",
       },
@@ -27,14 +27,14 @@
       },
     },
     "packages/engine": {
-      "name": "@hinge/engine",
+      "name": "@vectoys/engine",
       "version": "0.0.0",
     },
     "packages/react": {
-      "name": "@hinge/react",
+      "name": "@vectoys/react",
       "version": "0.0.0",
       "dependencies": {
-        "@hinge/engine": "workspace:*",
+        "@vectoys/engine": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -47,11 +47,11 @@
       },
     },
     "registry/laptop-14": {
-      "name": "@hinge/laptop-14",
+      "name": "@vectoys/laptop-14",
       "version": "0.0.0",
       "dependencies": {
-        "@hinge/engine": "workspace:*",
-        "@hinge/react": "workspace:*",
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -64,11 +64,11 @@
       },
     },
     "registry/phone": {
-      "name": "@hinge/phone",
+      "name": "@vectoys/phone",
       "version": "0.0.0",
       "dependencies": {
-        "@hinge/engine": "workspace:*",
-        "@hinge/react": "workspace:*",
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -81,11 +81,11 @@
       },
     },
     "registry/tablet": {
-      "name": "@hinge/tablet",
+      "name": "@vectoys/tablet",
       "version": "0.0.0",
       "dependencies": {
-        "@hinge/engine": "workspace:*",
-        "@hinge/react": "workspace:*",
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -188,16 +188,6 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.28.2", "", { "os": "win32", "cpu": "ia32" }, "sha512-YmJbfTlvU7Sdn9BB+4PRES4oB6pxgS37MAONj+hBr/cpXS1aBPKXxNnDbu+QCWPj0o9dgyxeq79g6c5P8KeuYA=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.28.2", "", { "os": "win32", "cpu": "x64" }, "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g=="],
-
-    "@hinge/engine": ["@hinge/engine@workspace:packages/engine"],
-
-    "@hinge/laptop-14": ["@hinge/laptop-14@workspace:registry/laptop-14"],
-
-    "@hinge/phone": ["@hinge/phone@workspace:registry/phone"],
-
-    "@hinge/react": ["@hinge/react@workspace:packages/react"],
-
-    "@hinge/tablet": ["@hinge/tablet@workspace:registry/tablet"],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 
@@ -321,6 +311,16 @@
 
     "@typescript/typescript-win32-x64": ["@typescript/typescript-win32-x64@7.0.2", "", { "os": "win32", "cpu": "x64" }, "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g=="],
 
+    "@vectoys/engine": ["@vectoys/engine@workspace:packages/engine"],
+
+    "@vectoys/laptop-14": ["@vectoys/laptop-14@workspace:registry/laptop-14"],
+
+    "@vectoys/phone": ["@vectoys/phone@workspace:registry/phone"],
+
+    "@vectoys/react": ["@vectoys/react@workspace:packages/react"],
+
+    "@vectoys/tablet": ["@vectoys/tablet@workspace:registry/tablet"],
+
     "@vitejs/plugin-react": ["@vitejs/plugin-react@5.2.0", "", { "dependencies": { "@babel/core": "^7.29.0", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-rc.3", "@types/babel__core": "^7.20.5", "react-refresh": "^0.18.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" } }, "sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw=="],
 
     "baseline-browser-mapping": ["baseline-browser-mapping@2.11.30", "", { "bin": { "baseline-browser-mapping": "dist/cli.cjs" } }, "sha512-YJs6Pz17RMNv8HoyKREtCY38E3BV1nPkWVmIb+XN1uHC1Vqt3KZCH/uJH9ZKRoiKb/icZ6tvehyee6RZNbFfRA=="],
@@ -348,8 +348,6 @@
     "fsevents": ["fsevents@2.3.3", "", { "os": "darwin" }, "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="],
 
     "gensync": ["gensync@1.0.0-beta.2", "", {}, "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg=="],
-
-    "hinge-demo": ["hinge-demo@workspace:apps/demo"],
 
     "js-tokens": ["js-tokens@4.0.0", "", {}, "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="],
 
@@ -392,6 +390,8 @@
     "undici-types": ["undici-types@8.9.0", "", {}, "sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg=="],
 
     "update-browserslist-db": ["update-browserslist-db@1.3.4", "", { "dependencies": { "escalade": "^3.2.0", "picocolors": "^1.1.1" }, "peerDependencies": { "browserslist": ">= 4.21.0" }, "bin": { "update-browserslist-db": "cli.js" } }, "sha512-t8wonIOdQyOjtPd2VktlBu6QjTVTks6v8bSi7kd0r2Vll8TK1JYDZtRRdbmCHOAMphkZgrzK+L+vXK4pyZ8t4A=="],
+
+    "vectoys-demo": ["vectoys-demo@workspace:apps/demo"],
 
     "vite": ["vite@7.3.7", "", { "dependencies": { "esbuild": "^0.27.0 || ^0.28.0", "fdir": "^6.5.0", "picomatch": "^4.0.3", "postcss": "^8.5.6", "rollup": "^4.43.0", "tinyglobby": "^0.2.15" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "jiti": ">=1.21.0", "less": "^4.0.0", "lightningcss": "^1.21.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "jiti", "less", "lightningcss", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-AHEzTORMbi7/7aXp7w7KZ5+DCUdSeLsJz0grY8xHpc9DHdYb0vQu6DqJfm2tOw3gDExNgPgnJTXxM6syYFHaCA=="],
 

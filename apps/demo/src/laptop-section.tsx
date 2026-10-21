@@ -1,4 +1,4 @@
-import { DESK, Laptop, PHONE } from "@hinge/laptop-14";
+import { DESK, Laptop, PHONE } from "@vectoys/laptop-14";
 import { useEffect, useRef, useState } from "react";
 import { clamp, useMedia, useReducedMotion } from "./motion";
 

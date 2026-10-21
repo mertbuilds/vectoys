@@ -1,4 +1,4 @@
-import { Phone, TURN } from "@hinge/phone";
+import { Phone, TURN } from "@vectoys/phone";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { clamp, tween, useReducedMotion, useSeen } from "./motion";
 

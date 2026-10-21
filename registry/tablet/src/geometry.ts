@@ -18,7 +18,7 @@ import {
   type Pose,
   type ScreenRect,
   type Solid,
-} from "@hinge/engine";
+} from "@vectoys/engine";
 
 // A tablet with an 11 inch display: 178.5 by 247.6 mm upright and 5.9 mm
 // thick, its corners rounded by 18 mm and its flat sides by 0.6 mm where they

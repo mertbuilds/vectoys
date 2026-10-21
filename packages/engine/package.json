@@ -1,5 +1,5 @@
 {
-  "name": "@hinge/engine",
+  "name": "@vectoys/engine",
   "version": "0.0.0",
   "description": "Perspective camera, 3D poses and SVG outline helpers for device mockups.",
   "license": "MIT",

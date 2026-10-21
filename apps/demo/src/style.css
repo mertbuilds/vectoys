@@ -4,8 +4,8 @@
   --muted: #6b6b68;
   --control: #efefec;
   --control-hover: #e6e6e2;
-  --hinge-bg: var(--page);
-  --hinge-surface: #f2f2f0;
+  --vectoys-bg: var(--page);
+  --vectoys-surface: #f2f2f0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   color: var(--ink);
   background: var(--page);

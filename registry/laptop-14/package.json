@@ -1,8 +1,8 @@
 {
-  "name": "@hinge/laptop-14",
+  "name": "@vectoys/laptop-14",
   "version": "0.0.0",
   "private": true,
-  "description": "A 14 inch laptop drawn with the hinge engine, with live content on its display.",
+  "description": "A 14 inch laptop drawn with the vectoys engine, with live content on its display.",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -13,8 +13,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@hinge/engine": "workspace:*",
-    "@hinge/react": "workspace:*"
+    "@vectoys/engine": "workspace:*",
+    "@vectoys/react": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18"

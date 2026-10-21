@@ -1,10 +1,10 @@
 {
-  "name": "hinge",
+  "name": "vectoys",
   "private": true,
   "type": "module",
   "workspaces": ["packages/*", "registry/*", "apps/*"],
   "scripts": {
-    "dev": "bun run --filter hinge-demo dev",
+    "dev": "bun run --filter vectoys-demo dev",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun test"
   },

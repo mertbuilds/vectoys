@@ -1,14 +1,14 @@
-import { fixed } from "@hinge/engine";
-import { Faces, Screen, Stage, type Look } from "@hinge/react";
+import { fixed } from "@vectoys/engine";
+import { Faces, Screen, Stage, type Look } from "@vectoys/react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { DISPLAY_ROUND, TURN, seen, type Orientation, type Turn, type View } from "./geometry";
 
 // The page's colours, as CSS variables, each with a light tone so the tablet
 // shows as meant before they are set. The finish is the back's and the bump's.
-const HAIRLINE = "var(--hinge-hairline, #8a8a8a)";
-const SURFACE = "var(--hinge-surface, #f5f5f5)";
-const SHADOW = "var(--hinge-shadow, rgba(0, 0, 0, 0.08))";
-const FINISH = `var(--hinge-finish, ${SURFACE})`;
+const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
+const SURFACE = "var(--vectoys-surface, #f5f5f5)";
+const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
+const FINISH = `var(--vectoys-finish, ${SURFACE})`;
 
 // Metal sides a step darker than the surface, a black glass front, the back
 // in the finish, and the bump a shade under it.
@@ -76,7 +76,7 @@ const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]
 type TabletProps = Turn & {
   /** Upright, or on its side; the content lays out level either way. */
   orientation?: Orientation;
-  /** The back's colour; by default the page's `--hinge-finish`, else its surface. */
+  /** The back's colour; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
   /** Live content on the display, laid out `VIEWPORT` pixels across its short side. */
   children?: ReactNode;
@@ -112,7 +112,7 @@ export const Tablet = memo(function Tablet({
   );
 
   return (
-    <Stage camera={view.camera} overlay={display} style={finish ? ({ "--hinge-finish": finish } as CSSProperties) : {}}>
+    <Stage camera={view.camera} overlay={display} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} />
       <path d={body.d} {...OUTLINE} />

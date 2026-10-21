@@ -1,14 +1,14 @@
-import { fixed } from "@hinge/engine";
-import { Faces, Screen, Stage, type Look } from "@hinge/react";
+import { fixed } from "@vectoys/engine";
+import { Faces, Screen, Stage, type Look } from "@vectoys/react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { DISPLAY, DISPLAY_ROUND, TURN, seen, type Turn, type View } from "./geometry";
 
 // The page's colours, as CSS variables, each with a light tone so the phone
 // shows as meant before they are set. The finish is the back's and the bump's.
-const HAIRLINE = "var(--hinge-hairline, #8a8a8a)";
-const SURFACE = "var(--hinge-surface, #f5f5f5)";
-const SHADOW = "var(--hinge-shadow, rgba(0, 0, 0, 0.08))";
-const FINISH = `var(--hinge-finish, ${SURFACE})`;
+const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
+const SURFACE = "var(--vectoys-surface, #f5f5f5)";
+const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
+const FINISH = `var(--vectoys-finish, ${SURFACE})`;
 
 // Brushed metal sides a step darker than the surface and the buttons a step
 // darker again, a black glass front, the back in the finish, and the bump's
@@ -91,7 +91,7 @@ const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]
 );
 
 type PhoneProps = Turn & {
-  /** The back's colour; by default the page's `--hinge-finish`, else its surface. */
+  /** The back's colour; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
   /** Live content on the display, laid out as on a screen `VIEWPORT` pixels wide. */
   children?: ReactNode;
@@ -114,7 +114,7 @@ export const Phone = memo(function Phone({ yaw = TURN.yaw, pitch = TURN.pitch, r
   );
 
   return (
-    <Stage camera={view.camera} overlay={display} style={finish ? ({ "--hinge-finish": finish } as CSSProperties) : {}}>
+    <Stage camera={view.camera} overlay={display} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} />
       <path d={body.d} {...OUTLINE} />

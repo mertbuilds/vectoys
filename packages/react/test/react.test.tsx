@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { camera, draw, plate, rotateX, slab, type Pose } from "@hinge/engine";
+import { camera, draw, plate, rotateX, slab, type Pose } from "@vectoys/engine";
 import { renderToString } from "react-dom/server";
 import { Faces, Screen, Stage } from "../src";
 

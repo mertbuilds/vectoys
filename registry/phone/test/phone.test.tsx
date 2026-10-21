@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { screenQuad } from "@hinge/engine";
+import { screenQuad } from "@vectoys/engine";
 import { renderToString } from "react-dom/server";
 import { DISPLAY, Phone, seen, type Turn } from "../src";
 
@@ -15,7 +15,7 @@ test.each<Turn>([{}, { yaw: 0, pitch: 0 }, { yaw: 180 }, { yaw: 90 }, { yaw: -35
     );
     expect(html).toContain('<svg viewBox="0 0 100 100"');
     expect(html).toContain("<p>live</p>");
-    expect(html).toContain("--hinge-finish:#5b6b8c");
+    expect(html).toContain("--vectoys-finish:#5b6b8c");
     expect(html).not.toContain("NaN");
   },
 );

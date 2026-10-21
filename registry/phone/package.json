@@ -1,8 +1,8 @@
 {
-  "name": "@hinge/phone",
+  "name": "@vectoys/phone",
   "version": "0.0.0",
   "private": true,
-  "description": "A phone drawn with the hinge engine that turns any way, with live content on its display.",
+  "description": "A phone drawn with the vectoys engine that turns any way, with live content on its display.",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -13,8 +13,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@hinge/engine": "workspace:*",
-    "@hinge/react": "workspace:*"
+    "@vectoys/engine": "workspace:*",
+    "@vectoys/react": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18"

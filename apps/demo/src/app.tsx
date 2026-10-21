@@ -10,7 +10,7 @@ const FINISHES = [
   { name: "Sand", color: "#e0cfb8" },
 ] as const;
 
-/** Sets `--hinge-finish` for every device inside it. */
+/** Sets `--vectoys-finish` for every device inside it. */
 function FinishPicker({ value, onChange }: { value: string; onChange: (color: string) => void }) {
   return (
     <div className="finishes" role="radiogroup" aria-label="Finish">
@@ -36,11 +36,11 @@ export function App() {
   return (
     <main>
       <header className="intro">
-        <h1>hinge</h1>
+        <h1>vectoys</h1>
         <p>Device mockups drawn as plain SVG, with live HTML on their screens. Scroll down.</p>
       </header>
       <LaptopSection />
-      <div style={{ "--hinge-finish": finish } as CSSProperties}>
+      <div style={{ "--vectoys-finish": finish } as CSSProperties}>
         <section className="finish-row">
           <h2>Finish</h2>
           <p>The colour of the phone and the tablet. Turn them around to see the back.</p>

@@ -1,4 +1,4 @@
-import { fixed, screenQuad, type Camera, type Pose, type ScreenRect } from "@hinge/engine";
+import { fixed, screenQuad, type Camera, type Pose, type ScreenRect } from "@vectoys/engine";
 import type { CSSProperties, ReactNode } from "react";
 
 /**

@@ -1,4 +1,6 @@
-# hinge
+# vectoys
+
+Vector toys: 3D devices and playful scenes for the web, drawn as SVG.
 
 An SVG 3D engine for device mockups (laptops, phones, tablets) and small playful 3D toys on landing pages. Everything is projected to plain SVG paths, so the markup renders on the server, stays crisp at any size, and needs no WebGL.
 
@@ -6,8 +8,8 @@ Status: early.
 
 ## Packages
 
-- `packages/engine` (`@hinge/engine`): a perspective camera, 3D rotations and poses, 2D outline helpers and compact SVG path output. Zero runtime dependencies.
-- `packages/react` (`@hinge/react`): `Stage`, `Faces` and `Screen`, the React pieces any device draws with. MIT.
+- `packages/engine` (`@vectoys/engine`): a perspective camera, 3D rotations and poses, 2D outline helpers and compact SVG path output. Zero runtime dependencies.
+- `packages/react` (`@vectoys/react`): `Stage`, `Faces` and `Screen`, the React pieces any device draws with. MIT.
 
 ## Registry
 

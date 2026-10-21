@@ -1,7 +1,7 @@
 {
-  "name": "@hinge/react",
+  "name": "@vectoys/react",
   "version": "0.0.0",
-  "description": "React pieces for hinge scenes: a stage that scales with its parent, drawn faces and live screens.",
+  "description": "React pieces for vectoys scenes: a stage that scales with its parent, drawn faces and live screens.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -14,7 +14,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@hinge/engine": "workspace:*"
+    "@vectoys/engine": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18"

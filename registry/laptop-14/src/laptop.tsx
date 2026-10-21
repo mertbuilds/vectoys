@@ -1,15 +1,15 @@
-import { fixed } from "@hinge/engine";
-import { Screen, Stage } from "@hinge/react";
+import { fixed } from "@vectoys/engine";
+import { Screen, Stage } from "@vectoys/react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { BEZEL, GLASS, HOLE, ROUND, type View } from "./geometry";
 
 // The page's colours, as CSS variables, each with the light tone of the site
 // this laptop was first drawn for, so it shows as meant before they are set.
-const BG = "var(--hinge-bg, #ffffff)";
-const HAIRLINE = "var(--hinge-hairline, #8a8a8a)";
-const BORDER = "var(--hinge-border, #d4d4d4)";
-const SURFACE_TONE = "var(--hinge-surface, #f5f5f5)";
-const SHADOW = "var(--hinge-shadow, rgba(0, 0, 0, 0.08))";
+const BG = "var(--vectoys-bg, #ffffff)";
+const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
+const BORDER = "var(--vectoys-border, #d4d4d4)";
+const SURFACE_TONE = "var(--vectoys-surface, #f5f5f5)";
+const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
 
 // Anodised aluminium in close tones, lit from above: the tops are the page's
 // surface, the sides a step darker under the page's shadow, the rim round the
@@ -38,7 +38,7 @@ const stroke = {
 // Which field of holes shows: the full one where a hole is about a device
 // pixel (a scene 560px wide at two pixels a px), the half one down to half
 // that, the quarter one below. The stage is the container these ask about.
-const HOLES = "hinge-laptop-14-holes";
+const HOLES = "vectoys-laptop-14-holes";
 const HOLES_SHOWN = `
 .${HOLES}-0, .${HOLES}-2 { display: none; }
 @media (min-resolution: 2dppx) { @container (min-width: 560px) { .${HOLES}-0 { display: inline; } .${HOLES}-1 { display: none; } } }

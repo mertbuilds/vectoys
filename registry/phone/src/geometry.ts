@@ -16,7 +16,7 @@ import {
   type Pose,
   type ScreenRect,
   type Solid,
-} from "@hinge/engine";
+} from "@vectoys/engine";
 
 // A modern flagship phone: 71.5 by 149.6 mm and 8.3 mm thick, its corners
 // rounded by 10 mm and its sides by 2.5 mm where they meet the front and the

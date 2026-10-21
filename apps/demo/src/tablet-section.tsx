@@ -1,4 +1,4 @@
-import { Tablet, TURN, type Orientation } from "@hinge/tablet";
+import { Tablet, TURN, type Orientation } from "@vectoys/tablet";
 import { useEffect, useRef, useState } from "react";
 import { tween, useReducedMotion } from "./motion";
 

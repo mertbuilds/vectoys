@@ -1,4 +1,4 @@
-import type { Camera } from "@hinge/engine";
+import type { Camera } from "@vectoys/engine";
 import type { CSSProperties, ReactNode } from "react";
 
 type StageProps = {

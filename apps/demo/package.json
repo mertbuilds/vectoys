@@ -1,19 +1,19 @@
 {
-  "name": "hinge-demo",
+  "name": "vectoys-demo",
   "version": "0.0.0",
   "private": true,
   "description": "The first proof page: the laptop, phone and tablet working on one page.",
   "type": "module",
   "scripts": {
-    "dev": "portless hinge-demo vite",
+    "dev": "portless vectoys-demo vite",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hinge/laptop-14": "workspace:*",
-    "@hinge/phone": "workspace:*",
-    "@hinge/tablet": "workspace:*",
+    "@vectoys/laptop-14": "workspace:*",
+    "@vectoys/phone": "workspace:*",
+    "@vectoys/tablet": "workspace:*",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
