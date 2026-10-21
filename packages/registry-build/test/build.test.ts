@@ -13,7 +13,7 @@ test("writes an index and one shadcn registry item per device", async () => {
   const index: RegistryIndex = JSON.parse(await readFile(join(out, "index.json"), "utf8"));
   const names = index.items.map((item) => item.name);
   expect(names).toEqual([...names].sort());
-  expect(names).toEqual(expect.arrayContaining(["envelope", "keycap", "laptop-14", "phone", "tablet"]));
+  expect(names).toEqual(expect.arrayContaining(["envelope", "floppy", "keycap", "laptop-14", "phone", "tablet"]));
   expect(index.items.find((item) => item.name === "phone")).toMatchObject({ name: "phone", title: "Phone", type: "registry:component", license: "TBD" });
 
   const phone: RegistryItem = JSON.parse(await readFile(join(out, "phone.json"), "utf8"));

@@ -77,6 +77,23 @@
         "react": ">=18",
       },
     },
+    "registry/floppy": {
+      "name": "@vectoys/floppy",
+      "version": "0.0.0",
+      "dependencies": {
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "19.0.0",
+        "@types/react-dom": "19.0.0",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+      },
+      "peerDependencies": {
+        "react": ">=18",
+      },
+    },
     "registry/keycap": {
       "name": "@vectoys/keycap",
       "version": "0.0.0",
@@ -362,6 +379,8 @@
     "@vectoys/engine": ["@vectoys/engine@workspace:packages/engine"],
 
     "@vectoys/envelope": ["@vectoys/envelope@workspace:registry/envelope"],
+
+    "@vectoys/floppy": ["@vectoys/floppy@workspace:registry/floppy"],
 
     "@vectoys/keycap": ["@vectoys/keycap@workspace:registry/keycap"],
 
