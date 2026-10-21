@@ -1,8 +1,7 @@
 import { fixed, settled, spring, type Spring } from "@vectoys/engine";
-import { Faces, Screen, Stage, type Look } from "@vectoys/react";
+import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/react";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { FACE, FACE_ROUND, seen, type View } from "./geometry";
-import { useFrames, useReducedMotion } from "./motion";
 
 // The page's colours, as CSS variables, each with a light tone so the card
 // shows as meant before they are set. The back is in the finish.

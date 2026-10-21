@@ -1,8 +1,7 @@
 import { fixed, settled, spring, type Spring } from "@vectoys/engine";
-import { Faces, Screen, Stage, type Look } from "@vectoys/react";
+import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/react";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { SURPRISE, seen, type View } from "./geometry";
-import { useFrames, useReducedMotion } from "./motion";
 
 // The page's colours, as CSS variables, each with a tone so the gift shows as
 // meant before they are set: a box in the finish tied with a ribbon in the

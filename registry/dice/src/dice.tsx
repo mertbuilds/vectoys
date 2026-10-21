@@ -1,8 +1,7 @@
 import { fixed, type Rotation } from "@vectoys/engine";
-import { Faces, Stage, type Look } from "@vectoys/react";
+import { Faces, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/react";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { VALUES, resting, roll, rollAt, seen, type Value, type View } from "./geometry";
-import { useFrames, useReducedMotion } from "./motion";
 
 // The page's colours, as CSS variables, each with a light tone so the die
 // shows as meant before they are set: a die in the finish, else the surface,
