@@ -1,5 +1,5 @@
 {
-  "name": "vectoys",
+  "name": "vectoys-workspace",
   "private": true,
   "type": "module",
   "workspaces": ["packages/*", "registry/*", "apps/*"],

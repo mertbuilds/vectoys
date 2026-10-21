@@ -5,7 +5,7 @@
   "description": "The first proof page: the laptop, phone and tablet working on one page.",
   "type": "module",
   "scripts": {
-    "dev": "portless vectoys-demo vite",
+    "dev": "bun ../../packages/registry-build/src/main.ts && portless vectoys-demo vite",
     "build": "bun ../../packages/registry-build/src/main.ts && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
