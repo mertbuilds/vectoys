@@ -1,0 +1,8 @@
+{
+  "name": "card",
+  "title": "Flip card",
+  "description": "A card with live HTML on its front and its back that flips over on a click or a hover and leans towards the pointer, for pricing, team or feature cards.",
+  "files": ["src/geometry.ts", "src/motion.ts", "src/card.tsx"],
+  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "license": "TBD"
+}
