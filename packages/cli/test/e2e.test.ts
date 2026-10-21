@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import { buildRegistry } from "@vectoys/registry-build";
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -98,6 +98,19 @@ test("errors are plain and exit with 1", async () => {
   expect(missing.stderr).toBe(`vectoys: ${registry}/nothing-here.json answered 404, no such item.\n`);
   const scope = await run("add", "@acme/thing");
   expect(scope.stderr).toContain("No registry is set for @acme.");
+});
+
+test("an item named to climb out of the folder is turned away", async () => {
+  const files = [{ path: "x/Button.tsx", content: "export {};\n" }];
+  writeFileSync(join(out, "climb.json"), JSON.stringify({ name: "..", files }));
+  writeFileSync(join(out, "here.json"), JSON.stringify({ name: ".", files }));
+  for (const name of ["climb", "here"]) {
+    const { stderr, code } = await run("add", name, "--no-install");
+    expect(code).toBe(1);
+    expect(stderr).toContain("is not a registry item");
+  }
+  expect(existsSync(join(project, "src/components/Button.tsx"))).toBe(false);
+  expect(existsSync(target("Button.tsx"))).toBe(false);
 });
 
 test("the copied items typecheck against the workspace packages", () => {

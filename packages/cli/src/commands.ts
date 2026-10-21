@@ -43,10 +43,11 @@ export async function add(context: Context, specs: string[]) {
   for (const spec of specs) {
     const url = itemUrl(spec, config, context.registry);
     const item = check(await fetchJson<unknown>(url), url);
-    const folder = resolve(context.cwd, config.dir, item.name);
+    const root = resolve(context.cwd, config.dir);
+    const folder = resolve(root, item.name);
     for (const file of place(item.files)) {
       const path = resolve(folder, file.to);
-      if (!path.startsWith(folder + sep)) throw new Error(`${url} has a file that would land outside ${config.dir}.`);
+      if (!folder.startsWith(root + sep) || !path.startsWith(folder + sep)) throw new Error(`${url} has a file that would land outside ${config.dir}.`);
       await write(context, path, file.content);
     }
     for (const dependency of item.dependencies ?? []) dependencies.add(dependency);
@@ -76,7 +77,7 @@ function check(value: unknown, url: string): Item {
   const item = value as Partial<Item>;
   const fine =
     typeof item.name === "string" &&
-    /^[\w.-]+$/.test(item.name) &&
+    /^(?!\.{1,2}$)[\w.-]+$/.test(item.name) &&
     Array.isArray(item.files) &&
     item.files.every((file) => typeof file?.path === "string" && typeof file.content === "string");
   if (!fine) throw new Error(`${url} is not a registry item with a name and files that have content.`);
