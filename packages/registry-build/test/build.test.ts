@@ -11,8 +11,10 @@ afterAll(() => rm(out, { recursive: true, force: true }));
 test("writes an index and one shadcn registry item per device", async () => {
   await buildRegistry({ root, out, baseUrl: "https://example.test/r" });
   const index: RegistryIndex = JSON.parse(await readFile(join(out, "index.json"), "utf8"));
-  expect(index.items.map((item) => item.name)).toEqual(["laptop-14", "phone", "tablet"]);
-  expect(index.items[1]).toMatchObject({ name: "phone", title: "Phone", type: "registry:component", license: "TBD" });
+  const names = index.items.map((item) => item.name);
+  expect(names).toEqual([...names].sort());
+  expect(names).toEqual(expect.arrayContaining(["keycap", "laptop-14", "phone", "tablet"]));
+  expect(index.items.find((item) => item.name === "phone")).toMatchObject({ name: "phone", title: "Phone", type: "registry:component", license: "TBD" });
 
   const phone: RegistryItem = JSON.parse(await readFile(join(out, "phone.json"), "utf8"));
   expect(phone).toMatchObject({

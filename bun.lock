@@ -60,6 +60,23 @@
       "name": "@vectoys/registry-build",
       "version": "0.0.0",
     },
+    "registry/keycap": {
+      "name": "@vectoys/keycap",
+      "version": "0.0.0",
+      "dependencies": {
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "19.0.0",
+        "@types/react-dom": "19.0.0",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+      },
+      "peerDependencies": {
+        "react": ">=18",
+      },
+    },
     "registry/laptop-14": {
       "name": "@vectoys/laptop-14",
       "version": "0.0.0",
@@ -326,6 +343,8 @@
     "@typescript/typescript-win32-x64": ["@typescript/typescript-win32-x64@7.0.2", "", { "os": "win32", "cpu": "x64" }, "sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g=="],
 
     "@vectoys/engine": ["@vectoys/engine@workspace:packages/engine"],
+
+    "@vectoys/keycap": ["@vectoys/keycap@workspace:registry/keycap"],
 
     "@vectoys/laptop-14": ["@vectoys/laptop-14@workspace:registry/laptop-14"],
 
