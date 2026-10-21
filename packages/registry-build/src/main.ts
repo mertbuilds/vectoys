@@ -9,7 +9,7 @@ const option = (name: string) => {
   return at === -1 ? undefined : args[at + 1];
 };
 
-const out = resolve(option("--out") ?? join(root, "apps/demo/public/r"));
+const out = resolve(option("--out") ?? join(root, "apps/site/public/r"));
 const baseUrl = option("--base-url");
 const index = await buildRegistry({ root, out, ...(baseUrl ? { baseUrl } : {}) });
 console.log(`Wrote ${index.items.length} items to ${out}`);
