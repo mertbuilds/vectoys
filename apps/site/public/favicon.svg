@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .top { fill: #cfe0ff; } .left { fill: #6ea6ff; } .right { fill: #1f6fff; }
+    @media (prefers-color-scheme: dark) { .top { fill: #e4eeff; } .left { fill: #8fbaff; } .right { fill: #4d95ff; } }
+  </style>
+  <path class="top" d="M16 3l12 6.5L16 16 4 9.5z" />
+  <path class="left" d="M4 9.5L16 16v13L4 22.5z" />
+  <path class="right" d="M28 9.5L16 16v13l12-6.5z" />
+</svg>
