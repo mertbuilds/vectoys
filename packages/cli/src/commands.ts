@@ -4,7 +4,7 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { CONFIG_FILE, DEFAULT_REGISTRY, defaults, readConfig, writeConfig, type Config } from "./config";
 import { fetchJson } from "./fetch";
 import { place, type ItemFile } from "./files";
-import { detect, installCommand, missing } from "./pm";
+import { detect, installCommand, isPackageSpec, missing } from "./pm";
 import { confirm } from "./prompt";
 import { indexUrl, itemUrl } from "./resolve";
 
@@ -81,6 +81,9 @@ function check(value: unknown, url: string): Item {
     Array.isArray(item.files) &&
     item.files.every((file) => typeof file?.path === "string" && typeof file.content === "string");
   if (!fine) throw new Error(`${url} is not a registry item with a name and files that have content.`);
+  if (item.dependencies !== undefined && !(Array.isArray(item.dependencies) && item.dependencies.every(isPackageSpec))) {
+    throw new Error(`${url} lists dependencies that are not plain npm package names.`);
+  }
   return item as Item;
 }
 
@@ -112,6 +115,9 @@ function installMissing(context: Context, dependencies: string[]) {
     return;
   }
   context.log(`Running  ${line}`);
-  const result = spawnSync(command, args, { cwd: context.cwd, stdio: "inherit", shell: process.platform === "win32" });
+  // Windows runs package managers through cmd, which needs the shell; the
+  // specs are checked, and quoting keeps characters like ^ as they are.
+  const windows = process.platform === "win32";
+  const result = spawnSync(command, windows ? args.map((arg) => `"${arg}"`) : args, { cwd: context.cwd, stdio: "inherit", shell: windows });
   if (result.status !== 0) throw new Error(`"${line}" failed. Run it yourself to see why.`);
 }

@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CONFIG_FILE, defaults, readConfig, writeConfig } from "../src/config";
-import { detect, installCommand, missing } from "../src/pm";
+import { detect, installCommand, isPackageSpec, missing } from "../src/pm";
 
 let dir = "";
 afterEach(() => rmSync(dir, { recursive: true, force: true }));
@@ -48,4 +48,13 @@ test("only packages the project does not list are installed", () => {
   fresh();
   writeFileSync(join(dir, "package.json"), JSON.stringify({ dependencies: { "@vectoys/engine": "0.1.0" }, devDependencies: { left: "1" } }));
   expect(missing(dir, ["@vectoys/engine", "@vectoys/react@0.1.0", "left@^2", "right"])).toEqual(["@vectoys/react@0.1.0", "right"]);
+});
+
+test("only plain package specs count as dependencies", () => {
+  for (const spec of ["react", "@vectoys/engine", "@vectoys/react@0.1.0", "left-pad@^1.3.0", "lodash.merge@~4", "x@latest"]) {
+    expect(isPackageSpec(spec)).toBe(true);
+  }
+  for (const spec of ["--registry=http://evil.example", "--trust", "x & calc", "a;b", "$(id)", "", "@/x", "x@", "x@>=1 <2", 7, null]) {
+    expect(isPackageSpec(spec)).toBe(false);
+  }
 });

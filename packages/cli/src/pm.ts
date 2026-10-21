@@ -11,6 +11,15 @@ const LOCKFILES: [string, PackageManager][] = [
   ["package-lock.json", "npm"],
 ];
 
+// A package name with an optional version or tag, and nothing a package
+// manager or a shell could read as an option or a command.
+const SPEC = /^(@[a-z0-9][\w.-]*\/)?[a-z0-9][\w.-]*(@[\w.^~*+-]+)?$/i;
+
+/** Whether a registry's dependency is a plain npm package spec. */
+export function isPackageSpec(value: unknown): value is string {
+  return typeof value === "string" && SPEC.test(value);
+}
+
 /** The package manager whose lockfile the project has, npm if none. */
 export function detect(cwd: string): PackageManager {
   return LOCKFILES.find(([file]) => existsSync(join(cwd, file)))?.[1] ?? "npm";

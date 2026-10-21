@@ -113,6 +113,17 @@ test("an item named to climb out of the folder is turned away", async () => {
   expect(existsSync(target("Button.tsx"))).toBe(false);
 });
 
+test("an item with dependencies that are not package names is turned away", async () => {
+  const files = [{ path: "x/Button.tsx", content: "export {};\n" }];
+  for (const [name, dependencies] of [["flags", ["--registry=http://evil.example", "left-pad"]], ["shell", ["x & calc"]], ["text", "left-pad"]] as const) {
+    writeFileSync(join(out, `${name}.json`), JSON.stringify({ name, files, dependencies }));
+    const { stderr, code } = await run("add", name, "--no-install");
+    expect(code).toBe(1);
+    expect(stderr).toContain("lists dependencies that are not plain npm package names");
+    expect(existsSync(target(name))).toBe(false);
+  }
+});
+
 test("the copied items typecheck against the workspace packages", () => {
   const types = realpathSync(join(repo, "packages/react/node_modules/@types"));
   writeFileSync(
