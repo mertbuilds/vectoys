@@ -1,0 +1,14 @@
+{
+  "name": "hinge",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "registry/*", "apps/*"],
+  "scripts": {
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "typescript": "7.0.2"
+  }
+}

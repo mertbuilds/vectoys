@@ -1,0 +1,16 @@
+{
+  "name": "@hinge/engine",
+  "version": "0.0.0",
+  "description": "Perspective camera, 3D poses and SVG outline helpers for device mockups.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": ["src"],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  }
+}
