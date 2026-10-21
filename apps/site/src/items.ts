@@ -9,7 +9,7 @@ import { TabletPreview } from "./previews/tablet";
  * a placeholder until it has.
  */
 export const PREVIEWS: Readonly<Record<string, ComponentType>> = {
-  "laptop-14": LaptopPreview,
+  laptop: LaptopPreview,
   phone: PhonePreview,
   tablet: TabletPreview,
 };

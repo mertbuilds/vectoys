@@ -14,7 +14,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@vectoys/engine": "workspace:*",
-        "@vectoys/laptop-14": "workspace:*",
+        "@vectoys/laptop": "workspace:*",
         "@vectoys/phone": "workspace:*",
         "@vectoys/tablet": "workspace:*",
         "react": "19.0.0",
@@ -180,8 +180,8 @@
         "react": ">=18",
       },
     },
-    "registry/laptop-14": {
-      "name": "@vectoys/laptop-14",
+    "registry/laptop": {
+      "name": "@vectoys/laptop",
       "version": "0.0.0",
       "dependencies": {
         "@vectoys/engine": "workspace:*",
@@ -495,7 +495,7 @@
 
     "@vectoys/keycap": ["@vectoys/keycap@workspace:registry/keycap"],
 
-    "@vectoys/laptop-14": ["@vectoys/laptop-14@workspace:registry/laptop-14"],
+    "@vectoys/laptop": ["@vectoys/laptop@workspace:registry/laptop"],
 
     "@vectoys/monitor": ["@vectoys/monitor@workspace:registry/monitor"],
 

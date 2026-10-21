@@ -38,7 +38,7 @@ const stroke = {
 // Which field of holes shows: the full one where a hole is about a device
 // pixel (a scene 560px wide at two pixels a px), the half one down to half
 // that, the quarter one below. The stage is the container these ask about.
-const HOLES = "vectoys-laptop-14-holes";
+const HOLES = "vectoys-laptop-holes";
 const HOLES_SHOWN = `
 .${HOLES}-0, .${HOLES}-2 { display: none; }
 @media (min-resolution: 2dppx) { @container (min-width: 560px) { .${HOLES}-0 { display: inline; } .${HOLES}-1 { display: none; } } }

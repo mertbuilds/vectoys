@@ -31,11 +31,11 @@ test("writes an index and one shadcn registry item per device", async () => {
 });
 
 test("each copied file starts with a short header over the untouched source", async () => {
-  const laptop: RegistryItem = JSON.parse(await readFile(join(out, "laptop-14.json"), "utf8"));
+  const laptop: RegistryItem = JSON.parse(await readFile(join(out, "laptop.json"), "utf8"));
   const geometry = laptop.files[0]!;
-  const source = await readFile(join(root, "registry/laptop-14/src/geometry.ts"), "utf8");
+  const source = await readFile(join(root, "registry/laptop/src/geometry.ts"), "utf8");
   const lines = geometry.content.split("\n");
-  expect(lines[0]).toBe("// vectoys laptop-14, from https://example.test/r/laptop-14.json");
+  expect(lines[0]).toBe("// vectoys laptop, from https://example.test/r/laptop.json");
   expect(lines[1]).toBe("// License: TBD. Credit: vectoys (https://vectoys.com)");
   expect(lines.slice(2).join("\n")).toBe(source);
 });

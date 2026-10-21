@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@vectoys/engine": "workspace:*",
-    "@vectoys/laptop-14": "workspace:*",
+    "@vectoys/laptop": "workspace:*",
     "@vectoys/phone": "workspace:*",
     "@vectoys/tablet": "workspace:*",
     "react": "19.0.0",

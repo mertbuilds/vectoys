@@ -56,13 +56,13 @@ const target = (...path: string[]) => join(project, "src/components/vectoys", ..
 test("list shows the registry's items", async () => {
   const { stdout, code } = await run("list");
   expect(code).toBe(0);
-  expect(stdout).toContain("laptop-14  14 inch laptop (license: TBD)");
+  expect(stdout).toMatch(/^laptop +Laptop \(license: TBD\)$/m);
   expect(stdout).toContain("phone");
   expect(stdout).toContain("tablet");
 });
 
 test("add copies the items in with headers, and says what to install", async () => {
-  const { stdout, stderr, code } = await run("add", "laptop-14", "phone", `${registry}/tablet.json`, "--no-install");
+  const { stdout, stderr, code } = await run("add", "laptop", "phone", `${registry}/tablet.json`, "--no-install");
   expect(stderr).toBe("");
   expect(code).toBe(0);
   expect(JSON.parse(readFileSync(join(project, "vectoys.json"), "utf8"))).toEqual({
@@ -73,7 +73,7 @@ test("add copies the items in with headers, and says what to install", async () 
   expect(stdout).toContain("Packages install with bun.");
   expect(stdout).toContain("Install what the items need with: bun add @vectoys/engine @vectoys/react");
 
-  for (const [name, component] of [["laptop-14", "laptop.tsx"], ["phone", "phone.tsx"], ["tablet", "tablet.tsx"]] as const) {
+  for (const [name, component] of [["laptop", "laptop.tsx"], ["phone", "phone.tsx"], ["tablet", "tablet.tsx"]] as const) {
     const source = readFileSync(join(repo, "registry", name, "src", component), "utf8");
     const copied = readFileSync(target(name, component), "utf8");
     expect(copied).toStartWith(`// vectoys ${name}, from ${registry}/${name}.json\n// License: TBD. Credit: vectoys (https://vectoys.com)\n`);
@@ -161,8 +161,8 @@ test("the copied items typecheck against the workspace packages", () => {
   writeFileSync(
     join(project, "src/page.tsx"),
     [
-      'import { Laptop } from "./components/vectoys/laptop-14/laptop";',
-      'import { DESK } from "./components/vectoys/laptop-14/geometry";',
+      'import { Laptop } from "./components/vectoys/laptop/laptop";',
+      'import { DESK } from "./components/vectoys/laptop/geometry";',
       'import { Phone } from "./components/vectoys/phone/phone";',
       'import { Tablet } from "./components/vectoys/tablet/tablet";',
       "export const Page = () => (<><Laptop eye={DESK} closed={0.5}><p>a</p></Laptop><Phone yaw={30}><p>b</p></Phone><Tablet><p>c</p></Tablet></>);",

@@ -17,7 +17,7 @@ Status: early.
 
 Devices to copy into a project, each described by its `item.json`.
 
-- `registry/laptop-14`: a 14 inch laptop with a lid that opens and closes and live HTML on its display. License to be decided.
+- `registry/laptop`: a 14 inch laptop with a lid that opens and closes and live HTML on its display. License to be decided.
 - `registry/phone`: a modern flagship phone that turns any way, with side buttons, a camera bump and live HTML on its display. License to be decided.
 - `registry/tablet`: an 11 inch tablet that turns any way, upright or on its side, with live HTML on its display. License to be decided.
 
@@ -26,13 +26,13 @@ Devices to copy into a project, each described by its `item.json`.
 Items are copied into your project as source, so you can change them. The engine and the React pieces come as normal packages.
 
 ```sh
-npx vectoys add laptop-14
+npx vectoys add laptop
 ```
 
-This writes `vectoys.json`, copies the item to `src/components/vectoys/laptop-14/` (or `components/vectoys/` without a `src` folder), and installs `@vectoys/engine` and `@vectoys/react` with your package manager. `npx vectoys list` shows every item. The shadcn CLI works too:
+This writes `vectoys.json`, copies the item to `src/components/vectoys/laptop/` (or `components/vectoys/` without a `src` folder), and installs `@vectoys/engine` and `@vectoys/react` with your package manager. `npx vectoys list` shows every item. The shadcn CLI works too:
 
 ```sh
-npx shadcn add https://vectoys.com/r/laptop-14.json
+npx shadcn add https://vectoys.com/r/laptop.json
 ```
 
 Items from other registries go by scope once the scope is in `vectoys.json`:

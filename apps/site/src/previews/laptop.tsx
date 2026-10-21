@@ -1,4 +1,4 @@
-import { DESK, Laptop } from "@vectoys/laptop-14";
+import { DESK, Laptop } from "@vectoys/laptop";
 import { Wallpaper } from "./wallpaper";
 
 export const LaptopPreview = () => (

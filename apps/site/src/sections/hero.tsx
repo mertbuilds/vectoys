@@ -1,12 +1,12 @@
-import { DESK, Laptop, PHONE } from "@vectoys/laptop-14";
+import { DESK, Laptop, PHONE } from "@vectoys/laptop";
 import { useEffect, useRef, useState } from "react";
 import { CopyCommand } from "../components/copy-command";
 import { GitHubMark } from "../components/icons";
 import { REPO, addCommand } from "../registry";
 import { clamp, useMedia, useReducedMotion } from "../motion";
 
-const COMMAND = addCommand("laptop-14");
-const FOLDER = "src/components/vectoys/laptop-14";
+const COMMAND = addCommand("laptop");
+const FOLDER = "src/components/vectoys/laptop";
 
 // What the CLI prints for this command in a fresh npm project with a src folder.
 const OUTPUT = [
