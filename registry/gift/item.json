@@ -1,0 +1,8 @@
+{
+  "name": "gift",
+  "title": "Gift box",
+  "description": "A gift box tied with a ribbon and a bow: a click pops the lid up and off, and live HTML such as a coupon code rises out of the box.",
+  "files": ["src/geometry.ts", "src/motion.ts", "src/gift.tsx"],
+  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "license": "TBD"
+}

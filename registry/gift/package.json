@@ -1,0 +1,28 @@
+{
+  "name": "@vectoys/gift",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A gift box drawn with the vectoys engine whose lid pops off when clicked, and live content rises out of it.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@vectoys/engine": "workspace:*",
+    "@vectoys/react": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  }
+}
