@@ -116,7 +116,7 @@ export const Phone = memo(function Phone({ yaw = TURN.yaw, pitch = TURN.pitch, r
   return (
     <Stage camera={view.camera} overlay={display} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
-      <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} />
+      <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
       <path d={body.d} {...OUTLINE} />
     </Stage>
   );

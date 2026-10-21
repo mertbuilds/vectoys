@@ -2,15 +2,18 @@ export { camera, type Camera, type CameraOptions } from "./camera";
 export { grow, hull, keep, quarter, rounded, slot, toward, winding, type Box } from "./outline";
 export { fixed, line, shape } from "./path";
 export {
+  LIGHT,
   draw,
   faces,
   footprint,
+  lit,
   placed,
   plate,
   poses,
   slab,
   type Drawn,
   type Face,
+  type Light,
   type Part,
   type Plate,
   type Scene,

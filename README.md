@@ -50,6 +50,17 @@ npx vectoys add https://acme.dev/r/thing.json
 
 Serve one JSON file per item at `<base>/<name>.json`, in the [shadcn registry-item format](https://ui.shadcn.com/docs/registry/registry-item-json) with each file's source in `content`, and an `index.json` at `<base>/index.json` that lists `{ "items": [{ "name", "title", "description" }] }`. Any static host works; `bun run registry:build` shows how this repo writes its own to `apps/demo/public/r`.
 
+## Shading
+
+`draw` tells how much light falls on each face: every face it returns has a `normal` and a `shade` from the light's ambient share up to 1. The light is held still with the eye, not with the model, so as a device spins its sides brighten and darken as they turn. Pass `draw(scene, camera, { light: { direction, ambient } })` to move it; `direction` points towards the light in the scene's axes (x right, y down, z towards the eye).
+
+`<Faces shading />` uses it: each face's fill is mixed a few steps darker in less light, and the few faces turned right at the light are lifted a little. Only fills that are colours are shaded, never `none` or a `url(...)` paint. The phone and the tablet are shaded. The page tunes it with CSS variables:
+
+- `--vectoys-shade-strength`: how dark the faces in least light get, `0.5` by default, `0` for none.
+- `--vectoys-shade-color`: the colour mixed in, `black` by default.
+- `--vectoys-highlight-strength`: how far faces towards the light are lifted, `0.25` by default.
+- `--vectoys-highlight`: the colour they are lifted towards, `white` by default.
+
 ## Develop
 
 ```sh
