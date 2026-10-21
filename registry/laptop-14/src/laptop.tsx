@@ -119,7 +119,7 @@ type LaptopProps = {
 };
 
 /**
- * A MacBook seen from the front and a little above: one SVG drawn from the
+ * A 14 inch laptop seen from the front and a little above: one SVG drawn from the
  * laptop's projected outline, and the display's glass laid onto the lid with
  * live content on it, hidden while the lid faces away.
  */

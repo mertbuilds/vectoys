@@ -4,6 +4,7 @@
   "type": "module",
   "workspaces": ["packages/*", "registry/*", "apps/*"],
   "scripts": {
+    "dev": "bun run --filter hinge-demo dev",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun test"
   },

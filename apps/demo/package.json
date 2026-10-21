@@ -1,0 +1,26 @@
+{
+  "name": "hinge-demo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The first proof page: the laptop, phone and tablet working on one page.",
+  "type": "module",
+  "scripts": {
+    "dev": "portless hinge-demo vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hinge/laptop-14": "workspace:*",
+    "@hinge/phone": "workspace:*",
+    "@hinge/tablet": "workspace:*",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "vite": "7.3.7"
+  }
+}

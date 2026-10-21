@@ -18,7 +18,7 @@ import {
   type Solid,
 } from "@hinge/engine";
 
-// A 14 inch MacBook Pro: 312.6 mm wide, 221.2 mm deep and 15.5 mm thick, of
+// A 14 inch laptop: 312.6 mm wide, 221.2 mm deep and 15.5 mm thick, of
 // which the lid is about 4.5 mm. Sizes are hundredths of the scene's width,
 // at 66 for the width, in a scene 100 wide. The display is 302.5 by
 // 196.5 mm inside a 5 mm bezel.
