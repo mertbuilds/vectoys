@@ -32,3 +32,15 @@ test("no time leaves a spring where it was", () => {
   expect(spring({ value: 2, velocity: 1 }, 0, 0)).toEqual({ value: 2, velocity: 1 });
   expect(spring({ value: 2, velocity: 1 }, 0, -1)).toEqual({ value: 2, velocity: 1 });
 });
+
+test("a spring with its own stiffness and damping overshoots a little and settles on its target", () => {
+  let state = { value: 0, velocity: 0 };
+  let highest = 0;
+  for (let frame = 0; frame < 120; frame++) {
+    state = spring(state, 1, 0.016, { stiffness: 170, damping: 20 });
+    highest = Math.max(highest, state.value);
+  }
+  expect(highest).toBeGreaterThan(1);
+  expect(highest).toBeLessThan(1.2);
+  expect(settled(state, 1)).toBe(true);
+});
