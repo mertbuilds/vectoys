@@ -38,22 +38,30 @@ export function init(context: Context): Config {
 
 export async function add(context: Context, specs: string[]) {
   if (specs.length === 0) throw new Error('Name an item to add, as "vectoys add phone". Run "vectoys list" to see them.');
-  const config = readConfig(context.cwd) ?? init(context);
-  const dependencies = new Set<string>();
-  for (const spec of specs) {
-    const url = itemUrl(spec, config, context.registry);
-    const item = check(await fetchJson<unknown>(url), url);
-    const root = resolve(context.cwd, config.dir);
+  const found = readConfig(context.cwd);
+  const config = found ?? defaults(context.cwd, context.registryFlag ?? DEFAULT_REGISTRY);
+  // Every item is fetched and checked before anything is written, so one bad
+  // name leaves the project as it was.
+  const items = await Promise.all(
+    specs.map(async (spec) => {
+      const url = itemUrl(spec, config, context.registry);
+      return { url, item: check(await fetchJson<unknown>(url), url) };
+    }),
+  );
+  const root = resolve(context.cwd, config.dir);
+  const writes = items.flatMap(({ url, item }) => {
     const folder = resolve(root, item.name);
-    for (const file of place(item.files)) {
+    return place(item.files).map((file) => {
       const path = resolve(folder, file.to);
       if (!folder.startsWith(root + sep) || !path.startsWith(folder + sep)) throw new Error(`${url} has a file that would land outside ${config.dir}.`);
-      await write(context, path, file.content);
-    }
-    for (const dependency of item.dependencies ?? []) dependencies.add(dependency);
-    if (item.docs) context.log(item.docs);
-  }
-  installMissing(context, [...dependencies]);
+      return { path, content: file.content };
+    });
+  });
+
+  if (!found) init(context);
+  for (const { path, content } of writes) await write(context, path, content);
+  for (const { item } of items) if (item.docs) context.log(item.docs);
+  installMissing(context, [...new Set(items.flatMap(({ item }) => item.dependencies ?? []))]);
 }
 
 export async function list(context: Context, scope: string | undefined) {

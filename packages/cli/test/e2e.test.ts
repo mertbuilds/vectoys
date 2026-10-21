@@ -100,6 +100,15 @@ test("errors are plain and exit with 1", async () => {
   expect(scope.stderr).toContain("No registry is set for @acme.");
 });
 
+test("one missing item stops the add before any file is written", async () => {
+  mkdirSync(join(work, "empty"));
+  const { stderr, code } = await run("add", "tablet", "nothing-here", "--no-install", "--cwd", join(work, "empty"));
+  expect(code).toBe(1);
+  expect(stderr).toContain("nothing-here.json answered 404");
+  expect(existsSync(join(work, "empty/components"))).toBe(false);
+  expect(existsSync(join(work, "empty/vectoys.json"))).toBe(false);
+});
+
 test("an item named to climb out of the folder is turned away", async () => {
   const files = [{ path: "x/Button.tsx", content: "export {};\n" }];
   writeFileSync(join(out, "climb.json"), JSON.stringify({ name: "..", files }));
