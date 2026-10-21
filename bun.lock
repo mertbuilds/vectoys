@@ -26,6 +26,16 @@
         "vite": "7.3.7",
       },
     },
+    "packages/cli": {
+      "name": "vectoys",
+      "version": "0.0.0",
+      "bin": {
+        "vectoys": "./dist/index.js",
+      },
+      "devDependencies": {
+        "@vectoys/registry-build": "workspace:*",
+      },
+    },
     "packages/engine": {
       "name": "@vectoys/engine",
       "version": "0.0.0",
@@ -396,6 +406,8 @@
     "undici-types": ["undici-types@8.9.0", "", {}, "sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg=="],
 
     "update-browserslist-db": ["update-browserslist-db@1.3.4", "", { "dependencies": { "escalade": "^3.2.0", "picocolors": "^1.1.1" }, "peerDependencies": { "browserslist": ">= 4.21.0" }, "bin": { "update-browserslist-db": "cli.js" } }, "sha512-t8wonIOdQyOjtPd2VktlBu6QjTVTks6v8bSi7kd0r2Vll8TK1JYDZtRRdbmCHOAMphkZgrzK+L+vXK4pyZ8t4A=="],
+
+    "vectoys": ["vectoys@workspace:packages/cli"],
 
     "vectoys-demo": ["vectoys-demo@workspace:apps/demo"],
 
