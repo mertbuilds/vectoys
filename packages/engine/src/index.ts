@@ -4,6 +4,7 @@ export { fixed, line, shape } from "./path";
 export {
   draw,
   faces,
+  footprint,
   placed,
   plate,
   poses,

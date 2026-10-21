@@ -14,6 +14,12 @@ type Common = {
    */
   readonly order?: number;
   readonly children?: readonly Part[];
+  /**
+   * How far apart the points round a rounded corner stand, in the scene's
+   * units; a tenth by default. A coarser step draws far fewer side faces,
+   * which a part that turns and redraws every frame wants.
+   */
+  readonly step?: number;
 };
 
 /**
@@ -94,8 +100,8 @@ function profile(thickness: number, edge: number, bevel: "round" | "chamfer"): F
   ]);
 }
 
-function slabFaces({ box, radii = [0, 0], thickness, edge = 0, bevel = "round" }: Slab): Face[] {
-  const outline = distinct(rounded(box, radii));
+function slabFaces({ box, radii = [0, 0], thickness, edge = 0, bevel = "round", step }: Slab): Face[] {
+  const outline = distinct(rounded(box, radii, [], [], step));
   const rings = profile(thickness, edge, bevel).map(([inset, z]) =>
     (inset === 0 ? outline : grow(outline, -inset)).map(([x, y]): Solid => [x, y, z]),
   );
@@ -124,7 +130,7 @@ export function faces(part: Part): Face[] {
   const lift = part.lift ?? LIFT;
   return [
     {
-      points: distinct(rounded(part.box, part.radii ?? [0, 0])).map(([x, y]): Solid => [x, y, lift]),
+      points: distinct(rounded(part.box, part.radii ?? [0, 0], [], [], part.step)).map(([x, y]): Solid => [x, y, lift]),
       normal: [0, 0, 1],
       role: part.role ?? "plate",
     },
@@ -198,4 +204,24 @@ export function draw(scene: Scene, camera: Camera, { cull = true }: { cull?: boo
     return { part: part.name, d: shape(points), points };
   });
   return { faces: drawn, hulls };
+}
+
+/**
+ * A scene's shadow on the ground, for a device that floats over the page:
+ * every part as seen from straight above, grown by `spread`, laid `gap` under
+ * the lowest point, moved `ahead` towards the front and drawn by the camera.
+ * The model's z is up whatever the parts' poses, so the shadow follows a
+ * turning device the way light from overhead would. `facing` is false when
+ * the eye is under the ground, where the shadow cannot be seen.
+ */
+export function footprint(
+  scene: Scene,
+  camera: Camera,
+  { gap = 0, spread = 0, ahead = 0 }: { gap?: number; spread?: number; ahead?: number } = {},
+): Silhouette & { facing: boolean } {
+  const all = placed(scene).flatMap(({ part, pose }) => faces(part).flatMap((face) => face.points.map((point) => place(pose, point))));
+  const ground = Math.min(...all.map(([, , z]) => z)) - gap;
+  const above = hull(all.map(([x, y]): Flat => [x, y + ahead]));
+  const points = (spread > 0 ? grow(above, spread) : above).map(([x, y]) => camera.project([x, y, ground]));
+  return { part: "footprint", d: shape(points), points, facing: camera.facesEye([0, 0, ground], [0, 0, 1]) };
 }

@@ -6,6 +6,9 @@ import { Faces, Screen, Stage } from "../src";
 const EYE = camera({ height: 60, perspective: 300, yaw: -30, pitch: -20 });
 const RECT = { x: -4, y: -3, width: 8, height: 6 };
 
+/** Roles in a row that repeat, once each, as `Faces` joins them. */
+const runs = (roles: readonly string[]) => roles.filter((role, index) => role !== roles[index - 1]);
+
 test("a stage keeps the camera's aspect ratio and viewBox", () => {
   const html = renderToString(<Stage camera={EYE} />);
   expect(html).toContain('<svg viewBox="0 0 100 60"');
@@ -23,7 +26,21 @@ test("each part fills its hull in its side's look before its faces", () => {
   );
   const classes = [...html.matchAll(/class="(\w+)"/g)].map((match) => match[1]);
   const box = faces.filter((face) => face.part === "box").map((face) => face.role);
-  expect(classes).toEqual(["side", ...box, "glass", "glass"]);
+  expect(classes).toEqual(["side", ...runs(box), "glass", "glass"]);
+  expect(html.match(/<path/g)).toHaveLength(1 + runs(box).length + 2);
+});
+
+test("a part.role key gives one part its own look", () => {
+  const scene = [slab({ name: "box", box: [-5, -5, 5, 5], thickness: 2, children: [slab({ name: "bump", box: [-2, -2, 2, 2], thickness: 1, pose: { position: [0, 0, 1], rotation: rotateX(0) } })] })];
+  const { faces, hulls } = draw(scene, EYE);
+  const html = renderToString(
+    <svg>
+      <Faces faces={faces} hulls={hulls} styles={{ side: { className: "side" }, top: { className: "top" }, "bump.top": { className: "bump" } }} />
+    </svg>,
+  );
+  const classes = [...html.matchAll(/class="(\w+)"/g)].map((match) => match[1]);
+  const roles = (part: string) => faces.filter((face) => face.part === part).map((face) => face.role);
+  expect(classes).toEqual(["side", ...runs(roles("box")), "side", ...runs(roles("bump")).map((role) => (role === "top" ? "bump" : role))]);
 });
 
 test("a screen facing the eye takes a matrix and pointer events; one turned away is hidden", () => {

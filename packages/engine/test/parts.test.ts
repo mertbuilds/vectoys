@@ -4,6 +4,8 @@ import {
   compose,
   draw,
   faces,
+  footprint,
+  hull,
   place,
   plate,
   poses,
@@ -97,6 +99,13 @@ test("a rounded edge keeps the slab's faces closed and turned out", () => {
   expect(sides(chamfered)).toBe(3 * sides(flat));
 });
 
+test("a coarser step draws a rounded corner with fewer side faces", () => {
+  const sides = (step?: number) =>
+    faces(slab({ name: "phone", box: [-4, -8, 4, 8], radii: [2, 2], thickness: 0.8, ...(step && { step }) })).filter((face) => face.role === "side").length;
+  expect(sides()).toBe(4 * (20 + 1));
+  expect(sides(0.5)).toBe(4 * (4 + 1));
+});
+
 test("a child part lands where its composed pose puts it", () => {
   const base: Pose = { position: [3, -2, 1], rotation: rotateZ(25) };
   const lid: Pose = { position: [0, -5, 0], rotation: rotateX(-100) };
@@ -117,4 +126,21 @@ test("order draws a part first whatever its depth", () => {
   const names = (scene: Part[]) => draw(scene, CORNER).hulls.map((silhouette) => silhouette.part);
   expect(names([near, far])).toEqual(["far", "near"]);
   expect(names([far, { ...near, order: -1 }])).toEqual(["near", "far"]);
+});
+
+test("a footprint is the parts seen from above, grown and laid under the lowest point", () => {
+  const part = cube();
+  const square = (half: number, ahead = 0) =>
+    shape(
+      hull([
+        [-half, -half + ahead],
+        [half, -half + ahead],
+        [half, half + ahead],
+        [-half, half + ahead],
+      ]).map(([x, y]) => CORNER.project([x, y, -1.5])),
+    );
+  expect(footprint([part], CORNER, { gap: 1 }).d).toBe(square(0.5));
+  expect(footprint([part], CORNER, { gap: 1, spread: 0.25, ahead: 0.5 }).d).toBe(square(0.75, 0.5));
+  expect(footprint([part], CORNER).facing).toBe(true);
+  expect(footprint([part], camera({ height: 60, perspective: 300, pitch: 20 })).facing).toBe(false);
 });

@@ -5,11 +5,11 @@ import { BEZEL, GLASS, HOLE, ROUND, type View } from "./geometry";
 
 // The page's colours, as CSS variables, each with the light tone of the site
 // this laptop was first drawn for, so it shows as meant before they are set.
-const BG = "var(--bg, #ffffff)";
-const HAIRLINE = "var(--hairline, #8a8a8a)";
-const BORDER = "var(--border, #d4d4d4)";
-const SURFACE_TONE = "var(--surface, #f5f5f5)";
-const SHADOW = "var(--shadow, rgba(0, 0, 0, 0.08))";
+const BG = "var(--hinge-bg, #ffffff)";
+const HAIRLINE = "var(--hinge-hairline, #8a8a8a)";
+const BORDER = "var(--hinge-border, #d4d4d4)";
+const SURFACE_TONE = "var(--hinge-surface, #f5f5f5)";
+const SHADOW = "var(--hinge-shadow, rgba(0, 0, 0, 0.08))";
 
 // Anodised aluminium in close tones, lit from above: the tops are the page's
 // surface, the sides a step darker under the page's shadow, the rim round the

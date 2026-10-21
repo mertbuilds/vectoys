@@ -4,12 +4,12 @@ import type { Flat } from "./vector";
 export type Box = readonly [number, number, number, number];
 
 /**
- * A quarter turn as (cos, sin) in steps of about a tenth of a unit along the
- * arc, its second half mirrored from its first so left and right sides match
- * exactly.
+ * A quarter turn as (cos, sin) in steps of about `step` units along the arc,
+ * a tenth by default, its second half mirrored from its first so left and
+ * right sides match exactly.
  */
-export function quarter(radius: number): Flat[] {
-  const steps = Math.max(3, Math.ceil(radius / 0.1));
+export function quarter(radius: number, step = 0.1): Flat[] {
+  const steps = Math.max(3, Math.ceil(radius / step));
   const half = Array.from({ length: Math.floor(steps / 2) + 1 }, (_, step): Flat => {
     const turn = (Math.PI / 2) * (step / steps);
     return [Math.cos(turn), Math.sin(turn)];
@@ -25,15 +25,17 @@ export function quarter(radius: number): Flat[] {
  * The outline of a rounded rectangle from (left, top) to (right, bottom),
  * clockwise from its top right corner, with radii for the top and the bottom
  * corners, `bottomEdge` run along the bottom from right to left and `topEdge`
- * along the top from left to right.
+ * along the top from left to right. `step` is how far apart the corners'
+ * points stand, as `quarter` has it.
  */
 export function rounded(
   [left, top, right, bottom]: Box,
   [high, low]: Flat,
   bottomEdge: readonly Flat[] = [],
   topEdge: readonly Flat[] = [],
+  step?: number,
 ): Flat[] {
-  const [up, down] = [quarter(high), quarter(low)];
+  const [up, down] = [quarter(high, step), quarter(low, step)];
   return [
     ...up.map(([c, s]): Flat => [right - high + high * s, top + high - high * c]),
     ...down.map(([c, s]): Flat => [right - low + low * c, bottom - low + low * s]),
