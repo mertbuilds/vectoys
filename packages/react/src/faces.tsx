@@ -17,7 +17,8 @@ type FacesProps = {
   /**
    * Darken each face's fill by how little light falls on it, as `draw`'s
    * `shade` tells, and lift the few faces turned right at the light, so
-   * round edges read round. Only looks whose fill is a string are shaded.
+   * round edges read round. Only looks whose fill is a colour are shaded,
+   * not `none` or a `url(...)` paint.
    * The page tunes it with `--vectoys-shade-strength` (0.5 by default, 0 for
    * none), `--vectoys-shade-color` (black), `--vectoys-highlight-strength`
    * (0.25) and `--vectoys-highlight` (white).
@@ -46,10 +47,13 @@ const name = (step: number) => `--vectoys-step${step}`;
 const SHADED = [-1, ...Array.from({ length: STEPS }, (_, index) => index + 1)];
 const MIXES = Object.fromEntries(SHADED.map((step) => [name(step), mix(step)])) as CSSProperties;
 
-/** A look's fill mixed by its shade step, or the look as it is when its fill is not a string. */
+/** Whether a fill is a colour `color-mix` can take, and not `none` or a paint server. */
+const mixable = (fill: unknown): fill is string => typeof fill === "string" && fill !== "none" && !fill.startsWith("url(");
+
+/** A look's fill mixed by its shade step, or the look as it is when its fill is not a colour. */
 function shaded(look: Look | undefined, step: number): Look | undefined {
   const fill = look?.style?.fill ?? look?.fill;
-  if (!look || step === 0 || typeof fill !== "string") return look;
+  if (!look || step === 0 || !mixable(fill)) return look;
   return { ...look, style: { ...look.style, fill: `color-mix(in srgb, ${fill}, var(${name(step)}))` } };
 }
 

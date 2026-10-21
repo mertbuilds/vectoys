@@ -88,3 +88,15 @@ test("shading leaves a look without a string fill as it is", () => {
   expect(shaded).not.toContain("color-mix");
   expect(shaded.match(/class="side"/g)!.length).toBeGreaterThan(1);
 });
+
+test("shading leaves a fill of none or a paint server as it is", () => {
+  const scene = [slab({ name: "box", box: [-5, -5, 5, 5], thickness: 2, edge: 0.5 })];
+  const { faces, hulls } = draw(scene, EYE);
+  const html = renderToString(
+    <Faces faces={faces} hulls={hulls} styles={{ side: { style: { fill: "none" } }, top: { style: { fill: "url(#paint)" } } }} shading />,
+  );
+  expect(html).not.toContain("color-mix(in srgb, none");
+  expect(html).not.toContain("color-mix(in srgb, url(");
+  expect(html).toContain("fill:none");
+  expect(html).toContain("fill:url(#paint)");
+});
