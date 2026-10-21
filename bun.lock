@@ -77,6 +77,57 @@
         "react": ">=18",
       },
     },
+    "registry/envelope": {
+      "name": "@vectoys/envelope",
+      "version": "0.0.0",
+      "dependencies": {
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "19.0.0",
+        "@types/react-dom": "19.0.0",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+      },
+      "peerDependencies": {
+        "react": ">=18",
+      },
+    },
+    "registry/floppy": {
+      "name": "@vectoys/floppy",
+      "version": "0.0.0",
+      "dependencies": {
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "19.0.0",
+        "@types/react-dom": "19.0.0",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+      },
+      "peerDependencies": {
+        "react": ">=18",
+      },
+    },
+    "registry/keycap": {
+      "name": "@vectoys/keycap",
+      "version": "0.0.0",
+      "dependencies": {
+        "@vectoys/engine": "workspace:*",
+        "@vectoys/react": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "19.0.0",
+        "@types/react-dom": "19.0.0",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+      },
+      "peerDependencies": {
+        "react": ">=18",
+      },
+    },
     "registry/laptop-14": {
       "name": "@vectoys/laptop-14",
       "version": "0.0.0",
@@ -379,6 +430,12 @@
     "@vectoys/browser": ["@vectoys/browser@workspace:registry/browser"],
 
     "@vectoys/engine": ["@vectoys/engine@workspace:packages/engine"],
+
+    "@vectoys/envelope": ["@vectoys/envelope@workspace:registry/envelope"],
+
+    "@vectoys/floppy": ["@vectoys/floppy@workspace:registry/floppy"],
+
+    "@vectoys/keycap": ["@vectoys/keycap@workspace:registry/keycap"],
 
     "@vectoys/laptop-14": ["@vectoys/laptop-14@workspace:registry/laptop-14"],
 

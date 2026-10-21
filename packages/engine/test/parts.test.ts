@@ -182,3 +182,32 @@ test("draw keeps what it returned before shading, and lights by LIGHT unless tol
   const top = plain.faces.find((face) => round(face.normal).join() === "0,0,1")!;
   expect(Math.max(...plain.faces.map((face) => face.shade))).toBe(top.shade);
 });
+
+test("a taper stands the top in from the bottom, and the leaning sides still face out", () => {
+  const cap = slab({ name: "cap", box: [-9, -9, 9, 9], radii: [2, 2], thickness: 8, taper: 3 });
+  const all = faces(cap);
+  const top = all.find((face) => face.role === "top")!;
+  const bottom = all.find((face) => face.role === "bottom")!;
+  const reach = (face: Face) => Math.max(...face.points.map(([x]) => x));
+  expect(reach(bottom)).toBeCloseTo(9, 9);
+  expect(reach(top)).toBeCloseTo(6, 9);
+  for (const face of all.filter((face) => face.role === "side")) {
+    const [x, y] = face.points[0]!;
+    expect(face.normal[2]).toBeGreaterThan(0);
+    expect(face.normal[0] * x + face.normal[1] * y).toBeGreaterThan(0);
+  }
+});
+
+test("an outline draws in place of the rounded box", () => {
+  const triangle = [
+    [-5, 0],
+    [5, 0],
+    [0, 4],
+  ] as const;
+  const flap = slab({ name: "flap", box: [-5, 0, 5, 4], outline: triangle, thickness: 0.5 });
+  const all = faces(flap);
+  expect(all.find((face) => face.role === "top")!.points).toEqual(triangle.map(([x, y]) => [x, y, 0]));
+  expect(all.filter((face) => face.role === "side")).toHaveLength(3);
+  const sticker = plate({ name: "sticker", box: [-5, 0, 5, 4], outline: triangle, lift: 0.1 });
+  expect(faces(sticker)[0]!.points).toEqual(triangle.map(([x, y]) => [x, y, 0.1]));
+});
