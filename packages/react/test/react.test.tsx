@@ -1,0 +1,44 @@
+import { expect, test } from "bun:test";
+import { camera, draw, plate, rotateX, slab, type Pose } from "@hinge/engine";
+import { renderToString } from "react-dom/server";
+import { Faces, Screen, Stage } from "../src";
+
+const EYE = camera({ height: 60, perspective: 300, yaw: -30, pitch: -20 });
+const RECT = { x: -4, y: -3, width: 8, height: 6 };
+
+test("a stage keeps the camera's aspect ratio and viewBox", () => {
+  const html = renderToString(<Stage camera={EYE} />);
+  expect(html).toContain('<svg viewBox="0 0 100 60"');
+  expect(html).toContain("aspect-ratio:100 / 60");
+  expect(html).toContain("container-type:inline-size");
+});
+
+test("each part fills its hull in its side's look before its faces", () => {
+  const scene = [slab({ name: "box", box: [-5, -5, 5, 5], thickness: 2, children: [plate({ name: "glass", box: [-4, -4, 4, 4], role: "glass" })] })];
+  const { faces, hulls } = draw(scene, EYE);
+  const html = renderToString(
+    <svg>
+      <Faces faces={faces} hulls={hulls} styles={{ side: { className: "side" }, top: { className: "top" }, glass: { className: "glass" } }} />
+    </svg>,
+  );
+  const classes = [...html.matchAll(/class="(\w+)"/g)].map((match) => match[1]);
+  const box = faces.filter((face) => face.part === "box").map((face) => face.role);
+  expect(classes).toEqual(["side", ...box, "glass", "glass"]);
+});
+
+test("a screen facing the eye takes a matrix and pointer events; one turned away is hidden", () => {
+  const facing: Pose = { position: [0, 0, 0], rotation: rotateX(-90) };
+  const away: Pose = { position: [0, 0, 0], rotation: rotateX(90) };
+  const shown = renderToString(
+    <Screen camera={EYE} pose={facing} rect={RECT}>
+      live
+    </Screen>,
+  );
+  expect(shown).toContain("matrix3d(");
+  expect(shown).toContain("visibility:visible");
+  expect(shown).toContain("pointer-events:auto");
+  expect(shown).toContain("width:160px;height:120px");
+  const hidden = renderToString(<Screen camera={EYE} pose={away} rect={RECT} />);
+  expect(hidden).not.toContain("matrix3d(");
+  expect(hidden).toContain("visibility:hidden");
+});
