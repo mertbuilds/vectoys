@@ -115,6 +115,7 @@ export const Envelope = memo(function Envelope({ open, defaultOpen = false, onOp
   const { amount, isOpen, ask, setHover } = useOpening(open, defaultOpen, onOpenChange);
   const view = useMemo(() => seen(amount), [amount]);
   // The letter's content is live only once the flap has swung past upright and left it uncovered.
+  // Until then its box is clipped to nothing, so it takes no clicks meant for the opener under it.
   const out = view.flap > 90;
 
   const focus = (event: FocusEvent<HTMLButtonElement>) => {
@@ -135,7 +136,7 @@ export const Envelope = memo(function Envelope({ open, defaultOpen = false, onOp
           style={OPENER}
         />
       </Screen>
-      <Screen camera={view.camera} pose={view.card} rect={CARD} width={LETTER_WIDTH} style={{ clipPath: view.clip }}>
+      <Screen camera={view.camera} pose={view.card} rect={CARD} width={LETTER_WIDTH} style={{ clipPath: out ? view.clip : "inset(50%)" }}>
         <div inert={!out} style={{ ...FILL, visibility: out ? "visible" : "hidden" }}>
           {children}
         </div>
