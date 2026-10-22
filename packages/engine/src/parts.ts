@@ -118,11 +118,14 @@ const outlineOf = ({ box, radii = [0, 0], step, outline }: Part) => distinct(out
  * An outline drawn in towards its middle by `inset` on every side. Scaling
  * rather than offsetting keeps a corner round however far in it goes.
  */
-function shrink(outline: readonly Flat[], inset: number, [mx, my]: Flat): Flat[] {
+function shrink(outline: readonly Flat[], inset: number): Flat[] {
   const xs = outline.map(([x]) => x);
   const ys = outline.map(([, y]) => y);
-  const [width, height] = [Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)];
-  const [sx, sy] = [(width - 2 * inset) / width, (height - 2 * inset) / height];
+  const [left, right, top, bottom] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  // About the middle of the bounds, not the mean of the points, so an outline
+  // with more points on one side still stands in evenly all round.
+  const [mx, my] = [(left + right) / 2, (top + bottom) / 2];
+  const [sx, sy] = [(right - left - 2 * inset) / (right - left), (bottom - top - 2 * inset) / (bottom - top)];
   return outline.map(([x, y]): Flat => [mx + (x - mx) * sx, my + (y - my) * sy]);
 }
 
@@ -132,7 +135,7 @@ function slabFaces(part: Slab): Face[] {
   const centre = outline.reduce<Flat>(([x, y], [px, py]) => [x + px / outline.length, y + py / outline.length], [0, 0]);
   // The taper grows from nothing at the bottom to all of it at the top.
   const rings = profile(thickness, edge, bevel).map(([inset, z]) => {
-    const drawn = taper === 0 ? outline : shrink(outline, taper * (1 + z / thickness), centre);
+    const drawn = taper === 0 ? outline : shrink(outline, taper * (1 + z / thickness));
     return (inset === 0 ? drawn : grow(drawn, -inset)).map(([x, y]): Solid => [x, y, z]);
   });
   const middle: Solid = [centre[0], centre[1], -thickness / 2];

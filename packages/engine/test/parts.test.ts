@@ -198,6 +198,14 @@ test("a taper stands the top in from the bottom, and the leaning sides still fac
   }
 });
 
+test("a taper stands in evenly on every side when one side has more points than the other", () => {
+  const cap = slab({ name: "cap", box: [-9, -9, 9, 9], radii: [0, 8], thickness: 8, taper: 2 });
+  const top = faces(cap).find((face) => face.role === "top");
+  const xs = top?.points.map(([x]) => x) ?? [];
+  const ys = top?.points.map(([, y]) => y) ?? [];
+  expect([Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)].map((value) => Math.abs(value))).toEqual([7, 7, 7, 7].map((value) => expect.closeTo(value, 9)));
+});
+
 test("an outline draws in place of the rounded box", () => {
   const triangle = [
     [-5, 0],
