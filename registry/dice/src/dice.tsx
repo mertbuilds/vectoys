@@ -111,9 +111,11 @@ export function Dice({ value, onRoll, finish, label = "Roll the die", className,
   const frames = useFrames();
   const [state, setState] = useState<{ rotation: Rotation; hop: number }>(() => ({ rotation: resting(value ?? 5), hop: 0 }));
   const current = useRef(state);
-  const [shown, setShown] = useState<Value>(value ?? 5);
+  // What the live region says: empty while a roll is in the air, so every
+  // landing is read out, even on the face it was already on.
+  const [said, setSaid] = useState(`Showing ${value ?? 5}`);
   // The face the die is on or rolling to, and whether it is in the air.
-  const target = useRef<Value>(shown);
+  const target = useRef<Value>(value ?? 5);
   const rolling = useRef(false);
 
   const set = (next: { rotation: Rotation; hop: number }) => {
@@ -125,14 +127,19 @@ export function Dice({ value, onRoll, finish, label = "Roll the die", className,
     target.current = next;
     const land = () => {
       rolling.current = false;
-      setShown(next);
+      setSaid(`Showing ${next}`);
       onRoll?.(next);
     };
+    rolling.current = true;
+    setSaid("");
     if (reduced) {
       set({ rotation: resting(next), hop: 0 });
-      return land();
+      // A frame later, so the live region is empty in between and reads the face out.
+      return frames(() => {
+        land();
+        return false;
+      });
     }
-    rolling.current = true;
     const path = roll(current.current.rotation, next, Math.random() * 360);
     let ms = 0;
     frames((elapsed) => {
@@ -159,7 +166,7 @@ export function Dice({ value, onRoll, finish, label = "Roll the die", className,
     <>
       <style>{FOCUS_RING}</style>
       <button type="button" className={BUTTON} aria-label={label} style={BUTTON_STYLE} onClick={click} />
-      <span aria-live="polite" style={HIDDEN}>{`Showing ${shown}`}</span>
+      <span aria-live="polite" style={HIDDEN}>{said}</span>
     </>
   );
 
