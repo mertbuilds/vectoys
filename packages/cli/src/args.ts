@@ -7,6 +7,8 @@ export type Args = {
     yes: boolean;
     overwrite: boolean;
     install: boolean;
+    open: boolean;
+    dryRun: boolean;
     registry: string | undefined;
     cwd: string | undefined;
     dir: string | undefined;
@@ -26,6 +28,8 @@ export function parseArgs(argv: string[]): Args {
     yes: false,
     overwrite: false,
     install: true,
+    open: false,
+    dryRun: false,
     registry: undefined,
     cwd: undefined,
     dir: undefined,
@@ -44,6 +48,8 @@ export function parseArgs(argv: string[]): Args {
     else if (name === "-y" || name === "--yes") flags.yes = true;
     else if (name === "-o" || name === "--overwrite") flags.overwrite = true;
     else if (name === "--no-install") flags.install = false;
+    else if (name === "--open") flags.open = true;
+    else if (name === "--dry-run") flags.dryRun = true;
     else if (name.startsWith("-")) throw new Error(`Unknown option ${name}. Run "vectoys --help" to see the options.`);
     else positional.push(arg);
   }

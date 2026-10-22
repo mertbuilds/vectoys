@@ -5,6 +5,9 @@ import { parseArgs } from "./args";
 import { check } from "./check";
 import { add, init, list, type Context } from "./commands";
 import { create } from "./create";
+import { preview } from "./preview";
+import { skill } from "./skill";
+import { submit } from "./submit";
 
 const HELP = `vectoys ${version}: copy vectoys devices and toys into your project.
 
@@ -14,6 +17,11 @@ Usage
   vectoys list [@registry]     Show the items a registry has
   vectoys create <name>        Start a new item in ./<name> to draw and submit
   vectoys check [dir]          Check an item folder before you submit it (needs bun)
+  vectoys preview [dir]        Render an item to preview.html in light and dark (needs bun)
+  vectoys submit [dir]         Check an item, then open a pull request to add it (needs gh)
+  vectoys submit --registry <url>
+                               Open a pull request to list your registry on vectoys
+  vectoys skill                Print how a coding agent makes a new item
 
 Items
   phone                        From the default registry
@@ -21,12 +29,14 @@ Items
   https://acme.dev/r/x.json    From that URL
 
 Options
-  --registry <url>   The registry for plain names (or set VECTOYS_REGISTRY)
+  --registry <url>   The registry for plain names (or set VECTOYS_REGISTRY), or the one submit lists
   --cwd <dir>        Run in another folder
   --dir <dir>        Where create puts the new item's folder
   -y, --yes          Answer yes to every question
   -o, --overwrite    Replace files or a new item's folder that are already there
   --no-install       Do not install packages, only say which ones
+  --open             Open the preview once it is written
+  --dry-run          Say what submit would send, and send nothing
   -h, --help         Show this help
   -v, --version      Show the version
 `;
@@ -49,6 +59,9 @@ async function main(argv: string[]) {
   if (command === "list") return list(context, rest[0]);
   if (command === "create") return create(context, rest[0], flags.dir);
   if (command === "check") return check(context, rest[0]);
+  if (command === "preview") return void preview(context, rest[0], flags.open);
+  if (command === "submit") return void (await submit(context, rest[0], { registry: flags.registry, dryRun: flags.dryRun }));
+  if (command === "skill") return skill(context);
   throw new Error(`Unknown command "${command}". Run "vectoys --help" to see the commands.`);
 }
 

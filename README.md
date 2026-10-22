@@ -78,11 +78,19 @@ Start a new item, draw it with your own coding agent, and check it before you su
 ```sh
 npx vectoys create spinning-top --dir registry
 npx vectoys check registry/spinning-top
+npx vectoys preview registry/spinning-top --open
+npx vectoys submit registry/spinning-top
 ```
+
+`npx vectoys skill` prints how a coding agent makes an item, so you can point your agent at it.
 
 `create` writes `spinning-top/` (under `--dir`, else the current folder) with an `item.json`, a working component that draws a tilted, shaded slab, a `package.json`, a `tsconfig.json` and a test, as the items in `registry/` have. It does not write over a folder that is already there unless you pass `--overwrite`. Made in `registry/` of this repository, `bun install` links its packages.
 
 `check` prints a pass or fail line for each check and exits with 1 if any fails. It checks that `item.json` has what the registry needs, that the files are under 64 KB together, that the component renders on the server twice to the same markup with no `NaN` or `Infinity` in it, that its root is `role="img"` with an `aria-label` or its controls are labelled, and that neither `item.json` nor the rendered text names a brand or a device maker. It loads the component with [bun](https://bun.sh), so `check` needs bun, and the item's packages installed.
+
+`preview` renders the item the same way into `preview.html` in its folder, in light and dark side by side, and prints the file's path; `--open` opens it. If the component takes a `yaw`, it also shows it turned to -45, -20, 0, 20 and 45 degrees. `create` writes a `.gitignore` that leaves `preview.html` out.
+
+`submit` runs `check` and stops if any check fails. Then, with the [GitHub CLI](https://cli.github.com), it forks this repository, copies the files `item.json` lists, its `package.json`, `tsconfig.json` and `test/` to `registry/<name>/` on a branch `item/<name>`, and opens a pull request that lists the check results. `submit --registry <url>` reads `<url>/index.json` (or the URL itself if it ends in `.json`), checks that it lists items, and opens a pull request that adds your registry to `registries.json`. Submissions open when vectoys launches: until then `submit` checks, says what it would send, and sends nothing. `--dry-run` does the same at any time.
 
 ### Host your own registry
 
