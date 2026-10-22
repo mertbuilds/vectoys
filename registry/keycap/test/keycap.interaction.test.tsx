@@ -1,8 +1,9 @@
-import { afterEach, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, expect, mock, test } from "bun:test";
 import { fakeFrames, fire, mount } from "../../../packages/react/test/dom";
 import { Keycap } from "../src";
 
 const frames = fakeFrames();
+afterAll(frames.restore);
 afterEach(() => document.body.replaceChildren());
 
 test("a keycap is held while pressed by pointer or key, and runs the page's own handlers first", async () => {
