@@ -1,5 +1,6 @@
 export { camera, type Camera, type CameraOptions } from "./camera";
 export { grow, hull, keep, quarter, rounded, slot, toward, winding, type Box } from "./outline";
+export { DAMPING, STIFFNESS, settled, spring, type Spring, type SpringOptions } from "./motion";
 export { fixed, line, shape } from "./path";
 export {
   LIGHT,
@@ -32,10 +33,12 @@ export {
   multiply,
   place,
   rotate,
+  rotateAxis,
   rotateX,
   rotateY,
   rotateZ,
   scale,
+  slerp,
   subtract,
   type Flat,
   type Pose,

@@ -1,0 +1,37 @@
+{
+  "name": "vectoys-site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "vectoys.com: the landing page, the gallery and the registry at /r.",
+  "type": "module",
+  "scripts": {
+    "dev": "bun ../../packages/registry-build/src/main.ts && portless vectoys vite",
+    "build": "bun ../../packages/registry-build/src/main.ts && vite build && vite build --ssr src/entry-server.tsx --outDir dist/.server && bun scripts/prerender.ts",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@vectoys/browser": "workspace:*",
+    "@vectoys/card": "workspace:*",
+    "@vectoys/dice": "workspace:*",
+    "@vectoys/engine": "workspace:*",
+    "@vectoys/envelope": "workspace:*",
+    "@vectoys/floppy": "workspace:*",
+    "@vectoys/gift": "workspace:*",
+    "@vectoys/keycap": "workspace:*",
+    "@vectoys/laptop": "workspace:*",
+    "@vectoys/monitor": "workspace:*",
+    "@vectoys/phone": "workspace:*",
+    "@vectoys/react": "workspace:*",
+    "@vectoys/tablet": "workspace:*",
+    "@vectoys/watch": "workspace:*",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "vite": "7.3.7"
+  }
+}

@@ -1,6 +1,9 @@
 import type { Camera } from "@vectoys/engine";
 import type { CSSProperties, ReactNode } from "react";
 
+/** Inline style that may also set CSS variables, such as `--vectoys-finish`. */
+export type StyleWithVariables = CSSProperties & Partial<Record<`--${string}`, string | number>>;
+
 type StageProps = {
   /** The camera whose scene this is; its width and height make the viewBox and the aspect ratio. */
   camera: Pick<Camera, "width" | "height">;
@@ -9,7 +12,7 @@ type StageProps = {
   /** HTML laid over the drawing, such as a `Screen`. */
   overlay?: ReactNode;
   className?: string;
-  style?: CSSProperties;
+  style?: StyleWithVariables;
 };
 
 /**

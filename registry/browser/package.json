@@ -1,0 +1,28 @@
+{
+  "name": "@vectoys/browser",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A floating browser window drawn with the vectoys engine that turns any way, with live content on its page.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@vectoys/engine": "workspace:*",
+    "@vectoys/react": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  }
+}

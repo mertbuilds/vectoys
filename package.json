@@ -4,12 +4,13 @@
   "type": "module",
   "workspaces": ["packages/*", "registry/*", "apps/*"],
   "scripts": {
-    "dev": "bun run --filter vectoys-demo dev",
+    "dev": "bun run --filter vectoys-site dev",
     "registry:build": "bun packages/registry-build/src/main.ts",
     "typecheck": "bun run --filter '*' typecheck",
     "test": "bun test"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "20.14.5",
     "@types/bun": "1.3.14",
     "typescript": "7.0.2"
   }

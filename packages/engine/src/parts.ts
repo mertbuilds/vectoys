@@ -20,6 +20,12 @@ type Common = {
    * which a part that turns and redraws every frame wants.
    */
   readonly step?: number;
+  /**
+   * A convex outline in the part's x, y plane, clockwise as `rounded` runs,
+   * drawn in place of the rounded `box`, which then only bounds it: a
+   * triangle for an envelope's flap, or a disk with one corner cut.
+   */
+  readonly outline?: readonly Flat[];
 };
 
 /**
@@ -36,6 +42,11 @@ export type Slab = Common & {
   readonly thickness: number;
   readonly edge?: number;
   readonly bevel?: "round" | "chamfer";
+  /**
+   * How far the top's outline stands in from the bottom's on every side, so
+   * the sides lean in as a keycap's do; 0 keeps them upright.
+   */
+  readonly taper?: number;
 };
 
 /**
@@ -100,12 +111,34 @@ function profile(thickness: number, edge: number, bevel: "round" | "chamfer"): F
   ]);
 }
 
-function slabFaces({ box, radii = [0, 0], thickness, edge = 0, bevel = "round", step }: Slab): Face[] {
-  const outline = distinct(rounded(box, radii, [], [], step));
-  const rings = profile(thickness, edge, bevel).map(([inset, z]) =>
-    (inset === 0 ? outline : grow(outline, -inset)).map(([x, y]): Solid => [x, y, z]),
-  );
-  const middle: Solid = [(box[0] + box[2]) / 2, (box[1] + box[3]) / 2, -thickness / 2];
+/** A part's outline in its own x, y plane. */
+const outlineOf = ({ box, radii = [0, 0], step, outline }: Part) => distinct(outline ?? rounded(box, radii, [], [], step));
+
+/**
+ * An outline drawn in towards its middle by `inset` on every side. Scaling
+ * rather than offsetting keeps a corner round however far in it goes.
+ */
+function shrink(outline: readonly Flat[], inset: number): Flat[] {
+  const xs = outline.map(([x]) => x);
+  const ys = outline.map(([, y]) => y);
+  const [left, right, top, bottom] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  // About the middle of the bounds, not the mean of the points, so an outline
+  // with more points on one side still stands in evenly all round.
+  const [mx, my] = [(left + right) / 2, (top + bottom) / 2];
+  const [sx, sy] = [(right - left - 2 * inset) / (right - left), (bottom - top - 2 * inset) / (bottom - top)];
+  return outline.map(([x, y]): Flat => [mx + (x - mx) * sx, my + (y - my) * sy]);
+}
+
+function slabFaces(part: Slab): Face[] {
+  const { thickness, edge = 0, bevel = "round", taper = 0 } = part;
+  const outline = outlineOf(part);
+  const centre = outline.reduce<Flat>(([x, y], [px, py]) => [x + px / outline.length, y + py / outline.length], [0, 0]);
+  // The taper grows from nothing at the bottom to all of it at the top.
+  const rings = profile(thickness, edge, bevel).map(([inset, z]) => {
+    const drawn = taper === 0 ? outline : shrink(outline, taper * (1 + z / thickness));
+    return (inset === 0 ? drawn : grow(drawn, -inset)).map(([x, y]): Solid => [x, y, z]);
+  });
+  const middle: Solid = [centre[0], centre[1], -thickness / 2];
   const side = rings.slice(1).flatMap((lower, band) => {
     const upper = rings[band]!;
     return upper.map((a, index): Face => {
@@ -130,7 +163,7 @@ export function faces(part: Part): Face[] {
   const lift = part.lift ?? LIFT;
   return [
     {
-      points: distinct(rounded(part.box, part.radii ?? [0, 0], [], [], part.step)).map(([x, y]): Solid => [x, y, lift]),
+      points: outlineOf(part).map(([x, y]): Solid => [x, y, lift]),
       normal: [0, 0, 1],
       role: part.role ?? "plate",
     },

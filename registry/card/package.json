@@ -1,0 +1,28 @@
+{
+  "name": "@vectoys/card",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A flip card drawn with the vectoys engine, with live content on its front and its back.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@vectoys/engine": "workspace:*",
+    "@vectoys/react": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  }
+}

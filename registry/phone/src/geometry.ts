@@ -6,7 +6,6 @@ import {
   multiply,
   place,
   plate,
-  poses,
   rotate,
   rotateX,
   rotateY,
@@ -192,7 +191,8 @@ export function seen({ yaw = TURN.yaw, pitch = TURN.pitch, roll = TURN.roll }: T
     camera: eye,
     scene,
     drawn: draw(scene, eye),
-    glass: poses(scene).get("glass")!,
+    // The glass lies on the body with no turn of its own.
+    glass: pose,
     // Seen from under the ground, there is no shadow to draw.
     shadow: contact.facing ? { contact: contact.d, ground: far.d } : null,
   };

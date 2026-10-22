@@ -104,7 +104,7 @@ type PhoneProps = Turn & {
 export const Phone = memo(function Phone({ yaw = TURN.yaw, pitch = TURN.pitch, roll = TURN.roll, finish, children }: PhoneProps) {
   const id = `phone-${useId().replace(/[^\w-]/g, "")}`;
   const view = useMemo(() => seen({ yaw, pitch, roll }), [yaw, pitch, roll]);
-  const body = view.drawn.hulls.find((hull) => hull.part === "body")!;
+  const body = view.drawn.hulls.find((hull) => hull.part === "body");
 
   const display = (
     <Screen camera={view.camera} pose={view.glass} rect={DISPLAY} width={VIEWPORT} style={DISPLAY_STYLE}>
@@ -114,10 +114,10 @@ export const Phone = memo(function Phone({ yaw = TURN.yaw, pitch = TURN.pitch, r
   );
 
   return (
-    <Stage camera={view.camera} overlay={display} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
+    <Stage camera={view.camera} overlay={display} style={finish ? { "--vectoys-finish": finish } : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-      <path d={body.d} {...OUTLINE} />
+      {body && <path d={body.d} {...OUTLINE} />}
     </Stage>
   );
 });

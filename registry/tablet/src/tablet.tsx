@@ -96,7 +96,7 @@ export const Tablet = memo(function Tablet({
 }: TabletProps) {
   const id = `tablet-${useId().replace(/[^\w-]/g, "")}`;
   const view = useMemo(() => seen({ yaw, pitch, roll }, orientation), [yaw, pitch, roll, orientation]);
-  const body = view.drawn.hulls.find((hull) => hull.part === "body")!;
+  const body = view.drawn.hulls.find((hull) => hull.part === "body");
   const { pose, rect } = view.display;
 
   const display = (
@@ -112,10 +112,10 @@ export const Tablet = memo(function Tablet({
   );
 
   return (
-    <Stage camera={view.camera} overlay={display} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
+    <Stage camera={view.camera} overlay={display} style={finish ? { "--vectoys-finish": finish } : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-      <path d={body.d} {...OUTLINE} />
+      {body && <path d={body.d} {...OUTLINE} />}
     </Stage>
   );
 });

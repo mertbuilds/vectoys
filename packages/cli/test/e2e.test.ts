@@ -56,13 +56,13 @@ const target = (...path: string[]) => join(project, "src/components/vectoys", ..
 test("list shows the registry's items", async () => {
   const { stdout, code } = await run("list");
   expect(code).toBe(0);
-  expect(stdout).toContain("laptop-14  14 inch laptop (license: TBD)");
+  expect(stdout).toMatch(/^laptop +Laptop \(license: TBD\)$/m);
   expect(stdout).toContain("phone");
   expect(stdout).toContain("tablet");
 });
 
 test("add copies the items in with headers, and says what to install", async () => {
-  const { stdout, stderr, code } = await run("add", "laptop-14", "phone", `${registry}/tablet.json`, "--no-install");
+  const { stdout, stderr, code } = await run("add", "laptop", "phone", `${registry}/tablet.json`, "--no-install");
   expect(stderr).toBe("");
   expect(code).toBe(0);
   expect(JSON.parse(readFileSync(join(project, "vectoys.json"), "utf8"))).toEqual({
@@ -73,7 +73,7 @@ test("add copies the items in with headers, and says what to install", async () 
   expect(stdout).toContain("Packages install with bun.");
   expect(stdout).toContain("Install what the items need with: bun add @vectoys/engine @vectoys/react");
 
-  for (const [name, component] of [["laptop-14", "laptop.tsx"], ["phone", "phone.tsx"], ["tablet", "tablet.tsx"]] as const) {
+  for (const [name, component] of [["laptop", "laptop.tsx"], ["phone", "phone.tsx"], ["tablet", "tablet.tsx"]] as const) {
     const source = readFileSync(join(repo, "registry", name, "src", component), "utf8");
     const copied = readFileSync(target(name, component), "utf8");
     expect(copied).toStartWith(`// vectoys ${name}, from ${registry}/${name}.json\n// License: TBD. Credit: vectoys (https://vectoys.com)\n`);
@@ -133,6 +133,34 @@ test("an item with dependencies that are not package names is turned away", asyn
   }
 });
 
+// Each item in use on a page, so the typecheck below covers every one.
+const USES: Record<string, { imports: string[]; jsx: string }> = {
+  browser: { imports: ['import { Browser } from "./components/vectoys/browser/browser";'], jsx: '<Browser url="example.com" depth={20} offset={[4, 2]}><p>a</p></Browser>' },
+  card: { imports: ['import { Card } from "./components/vectoys/card/card";'], jsx: "<Card front={<p>a</p>} back={<p>b</p>} trigger=\"hover\" />" },
+  dice: { imports: ['import { Dice } from "./components/vectoys/dice/dice";'], jsx: "<Dice value={3} onRoll={(value) => value} />" },
+  envelope: { imports: ['import { Envelope } from "./components/vectoys/envelope/envelope";'], jsx: "<Envelope open={0.5}><p>a</p></Envelope>" },
+  floppy: { imports: ['import { Floppy } from "./components/vectoys/floppy/floppy";'], jsx: '<Floppy href="/kit.zip">kit</Floppy>' },
+  gift: { imports: ['import { Gift } from "./components/vectoys/gift/gift";'], jsx: '<Gift ribbon="#fff">SAVE20</Gift>' },
+  keycap: { imports: ['import { Keycap, KeycapRow } from "./components/vectoys/keycap/keycap";'], jsx: '<Keycap onPress={() => {}}>Go</Keycap><KeycapRow keys={["a", "b"]} />' },
+  laptop: {
+    imports: ['import { Laptop } from "./components/vectoys/laptop/laptop";', 'import { DESK } from "./components/vectoys/laptop/geometry";'],
+    jsx: "<Laptop eye={DESK} closed={0.5}><p>a</p></Laptop>",
+  },
+  monitor: { imports: ['import { Monitor } from "./components/vectoys/monitor/monitor";'], jsx: "<Monitor tilt={10}><p>a</p></Monitor>" },
+  phone: { imports: ['import { Phone } from "./components/vectoys/phone/phone";'], jsx: "<Phone yaw={30}><p>b</p></Phone>" },
+  tablet: { imports: ['import { Tablet } from "./components/vectoys/tablet/tablet";'], jsx: "<Tablet><p>c</p></Tablet>" },
+  watch: { imports: ['import { Watch } from "./components/vectoys/watch/watch";'], jsx: '<Watch band="#333"><p>d</p></Watch>' },
+};
+
+test("every item in the index adds, and the page uses each one", async () => {
+  const names: string[] = JSON.parse(readFileSync(join(out, "index.json"), "utf8")).items.map((item: { name: string }) => item.name);
+  expect(Object.keys(USES).sort()).toEqual([...names].sort());
+  const { stderr, code } = await run("add", ...names, "--no-install", "--overwrite");
+  expect(stderr).toBe("");
+  expect(code).toBe(0);
+  for (const name of names) expect(existsSync(target(name, "geometry.ts"))).toBe(true);
+});
+
 test("the copied items typecheck against the workspace packages", () => {
   const types = realpathSync(join(repo, "packages/react/node_modules/@types"));
   writeFileSync(
@@ -160,13 +188,7 @@ test("the copied items typecheck against the workspace packages", () => {
   );
   writeFileSync(
     join(project, "src/page.tsx"),
-    [
-      'import { Laptop } from "./components/vectoys/laptop-14/laptop";',
-      'import { DESK } from "./components/vectoys/laptop-14/geometry";',
-      'import { Phone } from "./components/vectoys/phone/phone";',
-      'import { Tablet } from "./components/vectoys/tablet/tablet";',
-      "export const Page = () => (<><Laptop eye={DESK} closed={0.5}><p>a</p></Laptop><Phone yaw={30}><p>b</p></Phone><Tablet><p>c</p></Tablet></>);",
-    ].join("\n"),
+    [...Object.values(USES).flatMap((use) => use.imports), `export const Page = () => (<>${Object.values(USES).map((use) => use.jsx).join("")}</>);`].join("\n"),
   );
   const check = Bun.spawnSync([join(repo, "node_modules/.bin/tsc"), "-p", project]);
   expect(check.stdout.toString() + check.stderr.toString()).toBe("");

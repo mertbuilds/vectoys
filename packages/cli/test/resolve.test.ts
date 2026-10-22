@@ -10,7 +10,7 @@ const config: Config = {
 
 test("a plain name comes from the default registry, or the one given", () => {
   expect(itemUrl("phone", config)).toBe("https://vectoys.com/r/phone.json");
-  expect(itemUrl("laptop-14", config, "http://localhost:4000/r")).toBe("http://localhost:4000/r/laptop-14.json");
+  expect(itemUrl("laptop", config, "http://localhost:4000/r")).toBe("http://localhost:4000/r/laptop.json");
 });
 
 test("a scoped name comes from the registry its scope maps to", () => {
