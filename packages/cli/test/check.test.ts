@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { accessibleName, brands, check, checks } from "../src/check";
@@ -50,9 +50,9 @@ test("a render with NaN in it fails", () => {
 
 test("brand names fail in item.json and in what renders", () => {
   const { folder, edit } = item("branded");
-  edit("item.json", (text) => text.replace('"title": "Branded"', '"title": "Pixel slab"'));
+  edit("item.json", (text) => text.replace('"title": "Branded"', '"title": "Xbox slab"'));
   edit("src/branded.tsx", (text) => text.replace('label = "Branded"', 'label = "An iPhone on a desk"'));
-  expect(failed(folder)).toEqual(["item.json names brands: pixel", "the rendered text names brands: iphone"]);
+  expect(failed(folder)).toEqual(["item.json names brands: xbox", "the rendered text names brands: iphone"]);
   expect(() => check(quiet, "branded")).toThrow("2 of 8 checks fail.");
 }, 30_000);
 
@@ -66,13 +66,22 @@ test("a bad item.json fails before anything renders", () => {
   expect(failed(folder)).toEqual(['files lists "src/gone.tsx", which is not a file in the folder']);
 });
 
-test("brand names match whole words in any case", () => {
-  expect(brands("A Galaxy of pixels on WINDOWS, not windowsill")).toEqual(["galaxy", "windows"]);
+test("brand names match whole words in any case, and plain words only inside a product's name", () => {
+  expect(brands("An iPhone, an XBOX and a Surface  Pro, not an imacs")).toEqual(["iphone", "xbox", "surface pro"]);
+  expect(brands("browser windows on the main surface of a galaxy of pixels")).toEqual([]);
+  expect(brands("an Apple Watch by apple")).toEqual(["apple watch", "apple"]);
 });
+
+test("every item in the registry passes every check", () => {
+  const items = readdirSync(join(repo, "registry"), { withFileTypes: true }).filter((entry) => entry.isDirectory());
+  expect(items.length).toBeGreaterThan(0);
+  for (const entry of items) expect({ item: entry.name, failed: failed(join(repo, "registry", entry.name)) }).toEqual({ item: entry.name, failed: [] });
+}, 60_000);
 
 test("markup is named by a labelled image root or by its labelled controls", () => {
   expect(accessibleName('<div role="img" aria-label="A die"><svg></svg></div>')).toBe('the root is role="img" with an aria-label');
   expect(accessibleName('<div role="img" aria-label=" "></div>')).toBeUndefined();
+  expect(accessibleName('<div role="group" aria-label="Browser window"><a href="/x"></a></div>')).toBe('the root is role="group" with an aria-label');
   expect(accessibleName('<div><button type="button"><span>Save</span></button><a href="/x" aria-label="Get it"></a></div>')).toBe("its 2 controls are labelled");
   expect(accessibleName('<div><button type="button"></button></div>')).toBeUndefined();
   expect(accessibleName("<div><svg></svg></div>")).toBeUndefined();

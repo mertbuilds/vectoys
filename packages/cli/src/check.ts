@@ -7,27 +7,30 @@ import { ITEM_NAME, type Context } from "./commands";
 import { componentName } from "./create";
 import { isPackageSpec } from "./pm";
 
-/** Brand and device names an item may not use: items are generic, never a maker's product. */
+/**
+ * Brand and product names an item may not use: items are generic, never a
+ * maker's product. Words that are also plain English, such as surface or
+ * windows, count only as part of a product's name.
+ */
 export const BRANDS = [
+  "apple watch",
+  "galaxy tab",
+  "pixel phone",
+  "surface pro",
   "iphone",
   "ipad",
   "macbook",
   "imac",
-  "apple",
-  "galaxy",
-  "pixel",
-  "surface",
   "airpods",
-  "android",
-  "windows",
-  "playstation",
-  "xbox",
-  "nintendo",
+  "apple",
   "google",
   "microsoft",
   "samsung",
+  "playstation",
+  "xbox",
+  "nintendo",
 ];
-const BRAND = new RegExp(`\\b(${BRANDS.join("|")})\\b`, "gi");
+const BRAND = new RegExp(`\\b(${BRANDS.map((brand) => brand.replace(" ", "\\s+")).join("|")})\\b`, "gi");
 
 /** The most an item's files may weigh together, in bytes. */
 export const MAX_SOURCE = 64 * 1024;
@@ -36,7 +39,7 @@ export type Result = { pass: boolean; line: string };
 
 /** The brand names in `text`, lower case, each once. */
 export function brands(text: string): string[] {
-  return [...new Set([...text.matchAll(BRAND)].map((match) => match[0].toLowerCase()))];
+  return [...new Set([...text.matchAll(BRAND)].map((match) => match[0].toLowerCase().replace(/\s+/g, " ")))];
 }
 
 // Run by bun, which loads TSX as it is. React comes from the item's own
@@ -106,7 +109,8 @@ const labelled = (attributes: string) => /\saria-label="[^"]*\S[^"]*"/.test(attr
 /** How the markup is named for assistive technology, or undefined if it is not. */
 export function accessibleName(html: string): string | undefined {
   const root = /^<[a-z][\w-]*([^>]*)>/i.exec(html);
-  if (root && /\srole="img"/.test(root[1] ?? "") && labelled(root[1] ?? "")) return 'the root is role="img" with an aria-label';
+  const role = /\srole="(img|group)"/.exec(root?.[1] ?? "")?.[1];
+  if (role && labelled(root?.[1] ?? "")) return `the root is role="${role}" with an aria-label`;
   const controls = [...html.matchAll(/<(button|a|input|select|textarea)\b([^>]*)>/gi)].filter(([, tag, attributes]) => tag?.toLowerCase() !== "a" || /\shref=/.test(attributes ?? ""));
   if (controls.length === 0) return undefined;
   const named = controls.every((control) => {
@@ -179,7 +183,7 @@ export function checks(dir: string): Result[] {
   results.push({ pass: shown.length === 0, line: shown.length ? `the rendered text names brands: ${shown.join(", ")}` : "the rendered text names no brands" });
 
   const name = accessibleName(html);
-  results.push({ pass: name !== undefined, line: name ?? 'the root is not role="img" with an aria-label, and it has no labelled controls' });
+  results.push({ pass: name !== undefined, line: name ?? 'the root is not role="img" or "group" with an aria-label, and it has no labelled controls' });
   return results;
 }
 
