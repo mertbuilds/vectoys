@@ -1007,6 +1007,19 @@ code.inline {
   color: var(--muted);
 }
 
+/* On a phone the gallery's commands wrap, so the whole address shows. */
+@media (max-width: 719px) {
+  #gallery .command {
+    height: auto;
+    min-height: 46px;
+  }
+
+  #gallery .command code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* Bring your own */
 
 .files {
