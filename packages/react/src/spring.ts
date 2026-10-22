@@ -1,12 +1,6 @@
 import { settled, spring, type Spring, type SpringOptions } from "@vectoys/engine";
 import { useEffect, useRef, useState } from "react";
-
-const REDUCED = "(prefers-reduced-motion: reduce)";
-const reduced = () => typeof matchMedia === "function" && matchMedia(REDUCED).matches;
-
-// A frame that comes late, as after a hidden tab, moves at most this far, so
-// the value never jumps.
-const LONGEST_FRAME = 1 / 30;
+import { useFrames, useReducedMotion } from "./motion";
 
 /**
  * A number that springs to `target` whenever it changes, one frame at a
@@ -15,6 +9,8 @@ const LONGEST_FRAME = 1 / 30;
  * reduced motion, so the state still changes, only without the motion.
  */
 export function useSpring(target: number, { stiffness, damping }: SpringOptions = {}): number {
+  const reduced = useReducedMotion();
+  const frames = useFrames();
   const [value, setValue] = useState(target);
   const state = useRef<Spring>({ value: target, velocity: 0 });
 
@@ -24,20 +20,21 @@ export function useSpring(target: number, { stiffness, damping }: SpringOptions 
       state.current = { value: target, velocity: 0 };
       setValue(target);
     };
-    if (reduced()) return rest();
-    let frame = 0;
-    let last: number | undefined;
-    const tick = (now: number) => {
-      const seconds = last === undefined ? 0 : Math.min((now - last) / 1000, LONGEST_FRAME);
-      last = now;
-      state.current = spring(state.current, target, seconds, options);
-      if (settled(state.current, target)) return rest();
+    if (reduced) {
+      // A run already in flight ends on its next frame.
+      frames(() => false);
+      return rest();
+    }
+    frames((elapsed) => {
+      state.current = spring(state.current, target, elapsed / 1000, options);
+      if (settled(state.current, target)) {
+        rest();
+        return false;
+      }
       setValue(state.current.value);
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, stiffness, damping]);
+      return true;
+    });
+  }, [target, stiffness, damping, reduced, frames]);
 
   return value;
 }

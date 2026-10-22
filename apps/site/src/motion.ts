@@ -13,7 +13,7 @@ export function useMedia(query: string): boolean {
   );
 }
 
-export const useReducedMotion = () => useMedia("(prefers-reduced-motion: reduce)");
+export { useReducedMotion } from "@vectoys/react";
 
 /**
  * True from the first time the element's middle comes up past `line` of the

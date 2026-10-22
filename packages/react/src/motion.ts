@@ -1,18 +1,22 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
+// Without a window, as on the server or in a test, nothing asks for less motion.
+const canMatch = () => typeof matchMedia === "function";
+
+function subscribe(changed: () => void) {
+  if (!canMatch()) return () => {};
+  const list = matchMedia(REDUCED);
+  list.addEventListener("change", changed);
+  return () => list.removeEventListener("change", changed);
+}
+
+const reducedNow = () => canMatch() && matchMedia(REDUCED).matches;
+const reducedOnServer = () => false;
 
 /** Whether the page asks for less motion, kept up to date; false on the server. */
 export function useReducedMotion(): boolean {
-  return useSyncExternalStore(
-    (changed) => {
-      const list = matchMedia(REDUCED);
-      list.addEventListener("change", changed);
-      return () => list.removeEventListener("change", changed);
-    },
-    () => matchMedia(REDUCED).matches,
-    () => false,
-  );
+  return useSyncExternalStore(subscribe, reducedNow, reducedOnServer);
 }
 
 // A frame longer than this, as after a hidden tab comes back, counts as this
