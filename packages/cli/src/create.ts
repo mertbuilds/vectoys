@@ -55,6 +55,7 @@ export function scaffold(name: string, author?: string): Record<string, string> 
 
   return {
     "item.json": json(item),
+    ".gitignore": "preview.html\n",
     "package.json": json(pkg),
     "tsconfig.json": json(tsconfig),
     "src/geometry.ts": `import { camera, draw, plate, rotateX, slab, type Part, type Pose } from "@vectoys/engine";

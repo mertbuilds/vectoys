@@ -43,9 +43,11 @@ export function brands(text: string): string[] {
 }
 
 // Run by bun, which loads TSX as it is. React comes from the item's own
-// folder, so the component and the renderer share one copy.
+// folder, so the component and the renderer share one copy. The script finds
+// the component `entry` exports, `wanted` if it can, and runs `body` with it.
 const MARK = "@@vectoys-check@@";
-const RUNNER = `
+export function bunScript(body: string): string {
+  return `
 const [entry, dir, wanted] = process.argv.slice(2);
 const done = (value) => process.stdout.write("\\n${MARK}" + JSON.stringify(value));
 try {
@@ -55,12 +57,15 @@ try {
   const isComponent = (value) => typeof value === "function" || (typeof value === "object" && value !== null && "$$typeof" in value);
   const name = isComponent(mod[wanted]) ? wanted : Object.keys(mod).find((key) => /^[A-Z]/.test(key) && isComponent(mod[key]));
   if (!name) throw new Error("it exports no component");
-  const render = () => renderToStaticMarkup(createElement(mod[name]));
-  done({ name, html: [render(), render()] });
+  ${body}
 } catch (error) {
   done({ error: error instanceof Error ? error.message : String(error) });
 }
 `;
+}
+
+const RUNNER = bunScript(`const render = () => renderToStaticMarkup(createElement(mod[name]));
+  done({ name, html: [render(), render()] });`);
 
 type Rendered = { name: string; html: [string, string] } | { error: string };
 
@@ -77,24 +82,32 @@ function isRendered(value: unknown): value is Rendered {
   );
 }
 
-/** Renders the component `entry` exports, twice, with no props, in bun. */
-function render(entry: string, dir: string, wanted: string): Rendered {
+/** Runs a `bunScript` in bun on the component `entry` exports; what the script hands back, or why it could not run. */
+export function runInBun(script: string, entry: string, dir: string, wanted: string): { value: unknown } | { error: string } {
   const work = mkdtempSync(join(tmpdir(), "vectoys-check-"));
   try {
     const runner = join(work, "render.mjs");
-    writeFileSync(runner, RUNNER);
-    const result = spawnSync("bun", [runner, entry, dir, wanted], { cwd: dir, encoding: "utf8", timeout: 60_000 });
+    writeFileSync(runner, script);
+    const result = spawnSync("bun", [runner, entry, dir, wanted], { cwd: dir, encoding: "utf8", timeout: 60_000, maxBuffer: 64 * 1024 * 1024 });
     if (result.error) {
       const missing = "code" in result.error && result.error.code === "ENOENT";
-      return { error: missing ? "check needs bun to load the item's TSX: https://bun.sh" : result.error.message };
+      return { error: missing ? "it needs bun to load the item's TSX: https://bun.sh" : result.error.message };
     }
     const at = result.stdout.lastIndexOf(MARK);
     if (at === -1) return { error: result.stderr.trim() || "bun stopped without rendering it" };
     const value: unknown = JSON.parse(result.stdout.slice(at + MARK.length));
-    return isRendered(value) ? value : { error: "bun gave back something other than markup" };
+    if (typeof value === "object" && value !== null && "error" in value && typeof value.error === "string") return { error: value.error };
+    return { value };
   } finally {
     rmSync(work, { recursive: true, force: true });
   }
+}
+
+/** Renders the component `entry` exports, twice, with no props, in bun. */
+function render(entry: string, dir: string, wanted: string): Rendered {
+  const ran = runInBun(RUNNER, entry, dir, wanted);
+  if ("error" in ran) return ran;
+  return isRendered(ran.value) ? ran.value : { error: "bun gave back something other than markup" };
 }
 
 /** The text a page shows or reads out: the markup's text and its labels, without styles. */
@@ -137,7 +150,7 @@ function itemProblem(item: ItemSource, dir: string): string | undefined {
 }
 
 /** Reads and checks item.json; the item, or the reason it fails. */
-function readItem(dir: string): ItemSource | string {
+export function readItem(dir: string): ItemSource | string {
   const path = join(dir, "item.json");
   if (!existsSync(path)) return "there is no item.json";
   let value: unknown;
@@ -155,6 +168,11 @@ function readItem(dir: string): ItemSource | string {
   }
 }
 
+/** The .tsx file an item's component is in: the one named after the item, else the first. */
+export function componentFile(item: ItemSource): string | undefined {
+  return item.files.find((file) => basename(file, ".tsx") === item.name && extname(file) === ".tsx") ?? item.files.find((file) => extname(file) === ".tsx");
+}
+
 /** Every check on the item folder `dir`, in order; stops after item.json if it fails. */
 export function checks(dir: string): Result[] {
   const item = readItem(dir);
@@ -168,7 +186,7 @@ export function checks(dir: string): Result[] {
   const named = brands([item.name, item.title, item.description].join(" "));
   results.push({ pass: named.length === 0, line: named.length ? `item.json names brands: ${named.join(", ")}` : "item.json names no brands" });
 
-  const component = item.files.find((file) => basename(file, ".tsx") === item.name && extname(file) === ".tsx") ?? item.files.find((file) => extname(file) === ".tsx");
+  const component = componentFile(item);
   if (!component) return [...results, { pass: false, line: "files lists no .tsx component to render" }];
   const rendered = render(resolve(dir, component), dir, componentName(item.name));
   if ("error" in rendered) return [...results, { pass: false, line: `${component} does not render on the server: ${rendered.error}` }];
