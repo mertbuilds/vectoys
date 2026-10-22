@@ -7,7 +7,7 @@ import { INDEX_DATA } from "../src/registry";
 // HTML before any script runs, then drops the server build.
 const dist = resolve(import.meta.dir, "../dist");
 const server = join(dist, ".server");
-const { render } = (await import(join(server, "entry-server.js"))) as { render: (index: RegistryIndex) => string };
+const { render }: { render: (index: RegistryIndex) => string } = await import(join(server, "entry-server.js"));
 
 const index: RegistryIndex = JSON.parse(await readFile(join(dist, "r/index.json"), "utf8"));
 const page = join(dist, "index.html");
