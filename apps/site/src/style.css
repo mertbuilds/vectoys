@@ -14,6 +14,7 @@
   --vectoys-hairline: #8a8e96;
   --vectoys-border: #d2d5db;
   --vectoys-shadow: rgba(10, 14, 22, 0.1);
+  --vectoys-focus: var(--muted);
 
   --display: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
   --body: "Funnel Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
