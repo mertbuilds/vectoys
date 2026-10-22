@@ -8,6 +8,13 @@ test("commands, items and flags", () => {
   expect(args.flags).toMatchObject({ install: false, yes: true, overwrite: false, registry: "http://x/r", cwd: "app" });
 });
 
+test("create takes the folder to put the item under", () => {
+  const args = parseArgs(["create", "top", "--dir", "registry", "-o"]);
+  expect(args.rest).toEqual(["top"]);
+  expect(args.flags).toMatchObject({ dir: "registry", overwrite: true, cwd: undefined });
+  expect(parseArgs(["create", "top", "--dir=registry"]).flags.dir).toBe("registry");
+});
+
 test("bad flags say what is wrong", () => {
   expect(() => parseArgs(["add", "--registry"])).toThrow("--registry needs a value.");
   expect(() => parseArgs(["add", "--force"])).toThrow("Unknown option --force.");

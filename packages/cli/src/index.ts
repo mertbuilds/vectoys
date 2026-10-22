@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { version } from "../package.json";
 import { parseArgs } from "./args";
 import { add, init, list, type Context } from "./commands";
+import { create } from "./create";
 
 const HELP = `vectoys ${version}: copy vectoys devices and toys into your project.
 
@@ -10,6 +11,7 @@ Usage
   vectoys init                 Write vectoys.json with where items go
   vectoys add <item...>        Copy items in and install what they need
   vectoys list [@registry]     Show the items a registry has
+  vectoys create <name>        Start a new item in ./<name> to draw and submit
 
 Items
   phone                        From the default registry
@@ -19,8 +21,9 @@ Items
 Options
   --registry <url>   The registry for plain names (or set VECTOYS_REGISTRY)
   --cwd <dir>        Run in another folder
+  --dir <dir>        Where create puts the new item's folder
   -y, --yes          Answer yes to every question
-  -o, --overwrite    Replace files that are already there
+  -o, --overwrite    Replace files or a new item's folder that are already there
   --no-install       Do not install packages, only say which ones
   -h, --help         Show this help
   -v, --version      Show the version
@@ -42,6 +45,7 @@ async function main(argv: string[]) {
   if (command === "init") return void init(context);
   if (command === "add") return add(context, rest);
   if (command === "list") return list(context, rest[0]);
+  if (command === "create") return create(context, rest[0], flags.dir);
   throw new Error(`Unknown command "${command}". Run "vectoys --help" to see the commands.`);
 }
 

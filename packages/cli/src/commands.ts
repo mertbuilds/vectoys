@@ -20,6 +20,9 @@ export type Context = {
   log: (line: string) => void;
 };
 
+/** What an item may be named: one folder name, never `.` or `..`. */
+export const ITEM_NAME = /^(?!\.{1,2}$)[\w.-]+$/;
+
 type Item = { name: string; title?: string; dependencies?: string[]; files: ItemFile[]; docs?: string };
 type Index = { items: { name: string; title?: string; description?: string; license?: string }[] };
 
@@ -85,7 +88,7 @@ function check(value: unknown, url: string): Item {
   const item = value as Partial<Item>;
   const fine =
     typeof item.name === "string" &&
-    /^(?!\.{1,2}$)[\w.-]+$/.test(item.name) &&
+    ITEM_NAME.test(item.name) &&
     Array.isArray(item.files) &&
     item.files.every((file) => typeof file?.path === "string" && typeof file.content === "string");
   if (!fine) throw new Error(`${url} is not a registry item with a name and files that have content.`);

@@ -9,10 +9,15 @@ export type Args = {
     install: boolean;
     registry: string | undefined;
     cwd: string | undefined;
+    dir: string | undefined;
   };
 };
 
-const VALUES = new Set(["--registry", "--cwd"]);
+const VALUES = new Map<string, "registry" | "cwd" | "dir">([
+  ["--registry", "registry"],
+  ["--cwd", "cwd"],
+  ["--dir", "dir"],
+]);
 
 export function parseArgs(argv: string[]): Args {
   const flags: Args["flags"] = {
@@ -23,15 +28,17 @@ export function parseArgs(argv: string[]): Args {
     install: true,
     registry: undefined,
     cwd: undefined,
+    dir: undefined,
   };
   const positional: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]!;
     const [name, inline] = arg.startsWith("--") && arg.includes("=") ? [arg.slice(0, arg.indexOf("=")), arg.slice(arg.indexOf("=") + 1)] : [arg, undefined];
-    if (VALUES.has(name)) {
+    const key = VALUES.get(name);
+    if (key) {
       const value = inline ?? argv[++i];
       if (!value) throw new Error(`${name} needs a value.`);
-      flags[name === "--registry" ? "registry" : "cwd"] = value;
+      flags[key] = value;
     } else if (name === "-h" || name === "--help") flags.help = true;
     else if (name === "-v" || name === "--version") flags.version = true;
     else if (name === "-y" || name === "--yes") flags.yes = true;
