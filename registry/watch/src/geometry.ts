@@ -1,5 +1,4 @@
 import {
-  IDENTITY,
   camera,
   draw,
   footprint,
