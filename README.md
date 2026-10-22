@@ -48,7 +48,7 @@ Toys:
 
 ## Install an item
 
-Items are copied into your project as source, so you can change them. The engine and the React pieces come as normal packages.
+Items are copied into your project as source, so you can change them. The engine and the React pieces come as normal packages. Items need React 19 or later.
 
 ```sh
 npx vectoys add laptop

@@ -63,7 +63,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "packages/registry-build": {
@@ -84,7 +84,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/card": {
@@ -101,7 +101,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/dice": {
@@ -118,7 +118,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/envelope": {
@@ -135,7 +135,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/floppy": {
@@ -152,7 +152,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/gift": {
@@ -169,7 +169,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/keycap": {
@@ -186,7 +186,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/laptop": {
@@ -203,7 +203,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/monitor": {
@@ -220,7 +220,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/phone": {
@@ -237,7 +237,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/tablet": {
@@ -254,7 +254,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
     "registry/watch": {
@@ -271,7 +271,7 @@
         "react-dom": "19.0.0",
       },
       "peerDependencies": {
-        "react": ">=18",
+        "react": ">=19",
       },
     },
   },
