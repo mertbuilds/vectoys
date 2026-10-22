@@ -78,6 +78,8 @@ type TabletProps = Turn & {
   orientation?: Orientation;
   /** The back's colour; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
+  /** The device's name for assistive technology. */
+  label?: string;
   /** Live content on the display, laid out `VIEWPORT` pixels across its short side. */
   children?: ReactNode;
 };
@@ -93,6 +95,7 @@ export const Tablet = memo(function Tablet({
   orientation = "portrait",
   finish,
   children,
+  label = "Tablet",
 }: TabletProps) {
   const id = `tablet-${useId().replace(/[^\w-]/g, "")}`;
   const view = useMemo(() => seen({ yaw, pitch, roll }, orientation), [yaw, pitch, roll, orientation]);
@@ -111,8 +114,10 @@ export const Tablet = memo(function Tablet({
     </Screen>
   );
 
+  // Empty, the device is a picture; with live content it is a group, so its
+  // links and buttons stay reachable inside it.
   return (
-    <Stage camera={view.camera} overlay={display} style={finish ? { "--vectoys-finish": finish } : {}}>
+    <Stage role={children == null ? "img" : "group"} label={label} camera={view.camera} overlay={display} style={finish ? { "--vectoys-finish": finish } : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
       {body && <path d={body.d} {...OUTLINE} />}

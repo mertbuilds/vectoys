@@ -62,6 +62,8 @@ const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]
 type MonitorProps = Turn & {
   /** The colour of the back and the stand; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
+  /** The device's name for assistive technology. */
+  label?: string;
   /** Live content on the display, laid out as on a screen `VIEWPORT` pixels wide. */
   children?: ReactNode;
 };
@@ -71,7 +73,7 @@ type MonitorProps = Turn & {
  * the stand: one SVG drawn from its parts, and live content laid onto its
  * display, hidden while the display faces away.
  */
-export const Monitor = memo(function Monitor({ yaw = TURN.yaw, pitch = TURN.pitch, tilt = TURN.tilt, finish, children }: MonitorProps) {
+export const Monitor = memo(function Monitor({ yaw = TURN.yaw, pitch = TURN.pitch, tilt = TURN.tilt, finish, children, label = "Monitor" }: MonitorProps) {
   const id = `monitor-${useId().replace(/[^\w-]/g, "")}`;
   const view = useMemo(() => seen({ yaw, pitch, tilt }), [yaw, pitch, tilt]);
   const panel = view.drawn.hulls.find((hull) => hull.part === "panel");
@@ -82,8 +84,10 @@ export const Monitor = memo(function Monitor({ yaw = TURN.yaw, pitch = TURN.pitc
     </Screen>
   );
 
+  // Empty, the device is a picture; with live content it is a group, so its
+  // links and buttons stay reachable inside it.
   return (
-    <Stage camera={view.camera} overlay={display} style={finish ? { "--vectoys-finish": finish } : {}}>
+    <Stage role={children == null ? "img" : "group"} label={label} camera={view.camera} overlay={display} style={finish ? { "--vectoys-finish": finish } : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
       {panel && <path d={panel.d} {...OUTLINE} />}

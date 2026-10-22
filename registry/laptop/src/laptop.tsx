@@ -1,7 +1,7 @@
 import { fixed } from "@vectoys/engine";
 import { Screen, Stage } from "@vectoys/react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
-import { BEZEL, GLASS, HOLE, ROUND, type View } from "./geometry";
+import { BEZEL, DESK, GLASS, HOLE, ROUND, type View } from "./geometry";
 
 // The page's colours, as CSS variables, each with the light tone of the site
 // this laptop was first drawn for, so it shows as meant before they are set.
@@ -110,10 +110,12 @@ const GLASS_STYLE: CSSProperties = {
 const FILL: CSSProperties = { position: "absolute", inset: 0 };
 
 type LaptopProps = {
-  /** How far the lid has closed, from 0 (open) to 1 (shut on the base). */
-  closed: number;
-  /** The eye that sees it: `DESK` or `PHONE`. */
-  eye: View;
+  /** How far the lid has closed, from 0 (open) to 1 (shut on the base); open by default. */
+  closed?: number;
+  /** The eye that sees it: `DESK` or `PHONE`; `DESK` by default. */
+  eye?: View;
+  /** The laptop's name for assistive technology. */
+  label?: string;
   /** Live content on the display, laid out as on a screen about 1280 pixels wide. */
   children?: ReactNode;
 };
@@ -123,7 +125,7 @@ type LaptopProps = {
  * laptop's projected outline, and the display's glass laid onto the lid with
  * live content on it, hidden while the lid faces away.
  */
-export const Laptop = memo(function Laptop({ closed, eye, children }: LaptopProps) {
+export const Laptop = memo(function Laptop({ closed = 0, eye = DESK, children, label = "Laptop" }: LaptopProps) {
   const id = `laptop-${eye.id}-${useId().replace(/[^\w-]/g, "")}`;
   const { DECK, camera } = eye;
   const lid = useMemo(() => eye.lidArt(closed), [eye, closed]);
@@ -152,8 +154,10 @@ export const Laptop = memo(function Laptop({ closed, eye, children }: LaptopProp
     </Screen>
   );
 
+  // Empty, the device is a picture; with live content it is a group, so its
+  // links and buttons stay reachable inside it.
   return (
-    <Stage camera={camera} overlay={glass}>
+    <Stage role={children == null ? "img" : "group"} label={label} camera={camera} overlay={glass}>
       <defs>
         {defs(id, camera)}
         {lid.shadow && (
