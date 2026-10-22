@@ -7,9 +7,7 @@ import {
   useState,
   type ComponentProps,
   type CSSProperties,
-  type KeyboardEvent,
   type MouseEvent,
-  type PointerEvent,
   type ReactNode,
 } from "react";
 import { HOVER, LABEL, LABEL_ROUND, TRAVEL, seen, type View } from "./geometry";
@@ -94,19 +92,50 @@ const Shadow = ({ id, shadow }: { id: string; shadow: View["shadow"] }) => (
 
 const PRESS_KEYS = new Set([" ", "Enter"]);
 
+/** The button's own events the cap follows; a caller's handlers for them still run, first. */
+type PressHandlers = Pick<
+  ComponentProps<"button">,
+  "onPointerEnter" | "onPointerLeave" | "onPointerDown" | "onPointerUp" | "onPointerCancel" | "onKeyDown" | "onKeyUp" | "onBlur"
+>;
+
 /** Whether the cap is under the pointer and whether it is held down, from the button's own events. */
-function usePress(disabled: boolean) {
+function usePress(disabled: boolean, caller: PressHandlers) {
   const [hover, setHover] = useState(false);
   const [held, setHeld] = useState(false);
-  const handlers = {
-    onPointerEnter: () => setHover(true),
-    onPointerLeave: () => (setHover(false), setHeld(false)),
-    onPointerDown: (event: PointerEvent<HTMLButtonElement>) => event.button === 0 && setHeld(true),
-    onPointerUp: () => setHeld(false),
-    onPointerCancel: () => setHeld(false),
-    onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => PRESS_KEYS.has(event.key) && setHeld(true),
-    onKeyUp: (event: KeyboardEvent<HTMLButtonElement>) => PRESS_KEYS.has(event.key) && setHeld(false),
-    onBlur: () => setHeld(false),
+  const handlers: PressHandlers = {
+    onPointerEnter: (event) => {
+      caller.onPointerEnter?.(event);
+      setHover(true);
+    },
+    onPointerLeave: (event) => {
+      caller.onPointerLeave?.(event);
+      setHover(false);
+      setHeld(false);
+    },
+    onPointerDown: (event) => {
+      caller.onPointerDown?.(event);
+      if (event.button === 0) setHeld(true);
+    },
+    onPointerUp: (event) => {
+      caller.onPointerUp?.(event);
+      setHeld(false);
+    },
+    onPointerCancel: (event) => {
+      caller.onPointerCancel?.(event);
+      setHeld(false);
+    },
+    onKeyDown: (event) => {
+      caller.onKeyDown?.(event);
+      if (PRESS_KEYS.has(event.key)) setHeld(true);
+    },
+    onKeyUp: (event) => {
+      caller.onKeyUp?.(event);
+      if (PRESS_KEYS.has(event.key)) setHeld(false);
+    },
+    onBlur: (event) => {
+      caller.onBlur?.(event);
+      setHeld(false);
+    },
   };
   return { hover: hover && !disabled, held: held && !disabled, handlers };
 }
@@ -129,7 +158,7 @@ export type KeycapProps = Omit<ComponentProps<"button">, "children"> & {
  */
 export const Keycap = memo(function Keycap({ children, onPress, finish, onClick, style, disabled = false, ...button }: KeycapProps) {
   const id = `keycap-${useId().replace(/[^\w-]/g, "")}`;
-  const { hover, held, handlers } = usePress(disabled);
+  const { hover, held, handlers } = usePress(disabled, button);
   // The cap bottoms out on the switch, so the spring's overshoot never shows past it.
   const travel = Math.min(useSpring(held ? TRAVEL : hover ? -HOVER : 0), TRAVEL);
   const view = useMemo(() => seen(travel), [travel]);
