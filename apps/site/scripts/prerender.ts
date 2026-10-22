@@ -13,10 +13,8 @@ const index: RegistryIndex = JSON.parse(await readFile(join(dist, "r/index.json"
 const page = join(dist, "index.html");
 const template = await readFile(page, "utf8");
 const data = JSON.stringify(index).replace(/</g, "\\u003c");
-const html = template.replace(
-  '<div id="root"></div>',
-  `<div id="root">${render(index)}</div><script type="application/json" id="${INDEX_DATA}">${data}</script>`,
-);
+// A function, so a "$" in the page or the data is written as it is, not read as a pattern.
+const html = template.replace('<div id="root"></div>', () => `<div id="root">${render(index)}</div><script type="application/json" id="${INDEX_DATA}">${data}</script>`);
 if (html === template) throw new Error('dist/index.html has no <div id="root"></div> to draw into');
 
 await writeFile(page, html);
