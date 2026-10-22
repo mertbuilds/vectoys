@@ -128,7 +128,7 @@ export type FloppyProps = {
   download?: string | boolean;
   /** Called when the disk is pressed, by pointer, touch or keyboard. */
   onPress?: () => void;
-  /** An accessible name in place of the label's text, such as "Download the press kit". */
+  /** An accessible name in place of the label's text, such as "Download the press kit"; "Floppy disk" when there is no text. */
   label?: string;
   /** The plastic's colour; by default the page's `--vectoys-finish`, else near black. */
   finish?: string;
@@ -150,7 +150,7 @@ export const Floppy = memo(function Floppy({ children, href, download = true, on
   const body = view.drawn.hulls.find((hull) => hull.part === "body");
 
   const text = <span style={LABEL_TEXT}>{children}</span>;
-  const common = { ...handlers, "aria-label": label, onClick: onPress, "data-pressed": held || undefined, style: FACE_STYLE };
+  const common = { ...handlers, "aria-label": label ?? (children == null ? "Floppy disk" : undefined), onClick: onPress, "data-pressed": held || undefined, style: FACE_STYLE };
   const face = href ? (
     <a href={href} download={download === true ? "" : download || undefined} {...common}>
       {text}
