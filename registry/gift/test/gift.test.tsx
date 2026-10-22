@@ -10,6 +10,14 @@ test.each([0, 0.2, 0.5, 0.8, 1])("draws %p of the way open with no NaN", (open) 
   expect(JSON.stringify(view)).not.toContain("NaN");
 });
 
+test("the lid's top faces the eye all the way open, so its ribbon and bow draw over it", () => {
+  for (let step = 0; step <= 40; step++) {
+    const faces = seen(step / 40).drawn.faces;
+    expect(faces.some((face) => face.part === "lid" && face.role === "top")).toBe(true);
+    expect(faces.filter((face) => face.part.startsWith("ribbon-")).length).toBe(2);
+  }
+});
+
 test("renders on the server with an accessible button and the surprise hidden", () => {
   const html = renderToString(
     <Gift label="Open your gift" finish="#3b82f6" ribbon="#ffffff">

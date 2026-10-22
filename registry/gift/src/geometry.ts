@@ -134,14 +134,15 @@ const easeOutBack = (t: number) => 1 + 2.4 * (t - 1) ** 3 + 1.4 * (t - 1) ** 2;
 
 /**
  * The lid `open` of the way off, from 0 (on the box) to 1: it pops straight
- * up, then tilts its front up towards the eye and drifts back and to the
- * right, out of the way of what comes out. `peek` lifts it a little, as a
- * hover does.
+ * up, then tips its back up so its top and bow turn towards the eye, and
+ * drifts back and to the right, out of the way of what comes out. `peek`
+ * lifts it a little, as a hover does. Its top faces the eye all the way,
+ * so the ribbon and the bow on it always draw over the lid.
  */
 function lidPose(open: number, peek: number): Pose {
   const rise = easeOutBack(clamp(open / 0.55)) * TALL * 0.95 + peek * mm(5);
   const drift = easeInOut(clamp((open - 0.2) / 0.8));
-  const rotation = combine(rotateZ(-14 * drift + peek * 3), rotateX(28 * drift), rotateY(-10 * drift));
+  const rotation = combine(rotateZ(-14 * drift + peek * 3), rotateX(-28 * drift), rotateY(-10 * drift));
   // The lid turns about its middle, half way down its depth.
   const middle: Solid = [mm(30) * drift, -mm(34) * drift, TALL + LID_DEEP / 2 + rise];
   const offset = rotate(rotation, [0, 0, LID_DEEP / 2]);
