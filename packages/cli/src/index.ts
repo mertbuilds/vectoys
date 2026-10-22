@@ -2,6 +2,7 @@
 import { resolve } from "node:path";
 import { version } from "../package.json";
 import { parseArgs } from "./args";
+import { check } from "./check";
 import { add, init, list, type Context } from "./commands";
 import { create } from "./create";
 
@@ -12,6 +13,7 @@ Usage
   vectoys add <item...>        Copy items in and install what they need
   vectoys list [@registry]     Show the items a registry has
   vectoys create <name>        Start a new item in ./<name> to draw and submit
+  vectoys check [dir]          Check an item folder before you submit it (needs bun)
 
 Items
   phone                        From the default registry
@@ -46,6 +48,7 @@ async function main(argv: string[]) {
   if (command === "add") return add(context, rest);
   if (command === "list") return list(context, rest[0]);
   if (command === "create") return create(context, rest[0], flags.dir);
+  if (command === "check") return check(context, rest[0]);
   throw new Error(`Unknown command "${command}". Run "vectoys --help" to see the commands.`);
 }
 
