@@ -1,4 +1,4 @@
-import { fixed, settled, spring, type Spring } from "@vectoys/engine";
+import { fixed, settled, spring, type Spring, type SpringOptions } from "@vectoys/engine";
 import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/react";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { FACE, FACE_ROUND, seen, type View } from "./geometry";
@@ -160,8 +160,8 @@ export function Card({
       return;
     }
     frames((elapsed) => {
-      const next = {} as Springs;
-      for (const key of KEYS) next[key] = spring(springs.current[key], target.current[key], elapsed / 1000, key === "flip" ? FLIP_SPRING : TILT_SPRING);
+      const step = (key: keyof Angles, options: SpringOptions) => spring(springs.current[key], target.current[key], elapsed / 1000, options);
+      const next: Springs = { flip: step("flip", FLIP_SPRING), yaw: step("yaw", TILT_SPRING), pitch: step("pitch", TILT_SPRING) };
       springs.current = next;
       setAngles({ flip: next.flip.value, yaw: next.yaw.value, pitch: next.pitch.value });
       return !KEYS.every((key) => settled(next[key], target.current[key]));
@@ -206,7 +206,7 @@ export function Card({
 
   const click = (event: MouseEvent<HTMLDivElement>) => {
     // Links and fields in the content keep their own clicks.
-    const control = (event.target as Element).closest("a, button, input, select, textarea, label, summary");
+    const control = event.target instanceof Element ? event.target.closest("a, button, input, select, textarea, label, summary") : null;
     if (control && control !== button.current) return;
     const keyboard = event.detail === 0;
     if (!keyboard && !inside(event)) return;
@@ -216,7 +216,7 @@ export function Card({
   };
 
   const view = useMemo(() => seen(angles), [angles]);
-  const card = view.drawn.hulls.find((hull) => hull.part === "card")!;
+  const card = view.drawn.hulls.find((hull) => hull.part === "card");
 
   const overlay = (
     <>
@@ -243,7 +243,7 @@ export function Card({
       <Stage camera={view.camera} overlay={overlay}>
         {view.shadow && <Shadow id={id} shadow={view.shadow} />}
         <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-        <path d={card.d} {...OUTLINE} />
+        {card && <path d={card.d} {...OUTLINE} />}
       </Stage>
     </div>
   );

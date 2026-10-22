@@ -97,7 +97,7 @@ type DiceProps = {
   style?: CSSProperties;
 };
 
-const random = (): Value => VALUES[Math.floor(Math.random() * VALUES.length)]!;
+const random = (): Value => VALUES[Math.floor(Math.random() * VALUES.length)] ?? 1;
 
 /**
  * A die that rolls when clicked, tapped or pressed: it hops, tumbles a few
@@ -152,7 +152,7 @@ export function Dice({ value, onRoll, finish, label = "Roll the die", className,
   };
 
   const view = useMemo(() => seen(state.rotation, state.hop), [state]);
-  const die = view.drawn.hulls.find((hull) => hull.part === "die")!;
+  const die = view.drawn.hulls.find((hull) => hull.part === "die");
 
   const overlay = (
     <>
@@ -164,10 +164,10 @@ export function Dice({ value, onRoll, finish, label = "Roll the die", className,
 
   return (
     <div className={className} style={{ position: "relative", touchAction: "manipulation", ...style }}>
-      <Stage camera={view.camera} overlay={overlay} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
+      <Stage camera={view.camera} overlay={overlay} style={finish ? { "--vectoys-finish": finish } : {}}>
         <Shadow id={id} shadow={view.shadow} />
         <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-        <path d={die.d} {...OUTLINE} />
+        {die && <path d={die.d} {...OUTLINE} />}
       </Stage>
     </div>
   );

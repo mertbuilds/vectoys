@@ -162,7 +162,7 @@ export const Keycap = memo(function Keycap({ children, onPress, finish, onClick,
   // The cap bottoms out on the switch, so the spring's overshoot never shows past it.
   const travel = Math.min(useSpring(held ? TRAVEL : hover ? -HOVER : 0), TRAVEL);
   const view = useMemo(() => seen(travel), [travel]);
-  const cap = view.drawn.hulls.find((hull) => hull.part === "cap")!;
+  const cap = view.drawn.hulls.find((hull) => hull.part === "cap");
 
   const press = (event: MouseEvent<HTMLButtonElement>) => {
     onClick?.(event);
@@ -186,10 +186,10 @@ export const Keycap = memo(function Keycap({ children, onPress, finish, onClick,
   );
 
   return (
-    <Stage camera={view.camera} overlay={label} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
+    <Stage camera={view.camera} overlay={label} style={finish ? { "--vectoys-finish": finish } : {}}>
       <Shadow id={id} shadow={view.shadow} />
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-      <path d={cap.d} {...OUTLINE} />
+      {cap && <path d={cap.d} {...OUTLINE} />}
     </Stage>
   );
 });

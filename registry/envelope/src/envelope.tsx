@@ -145,7 +145,7 @@ export const Envelope = memo(function Envelope({ open, defaultOpen = false, onOp
   );
 
   return (
-    <Stage camera={view.camera} overlay={overlay} style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}>
+    <Stage camera={view.camera} overlay={overlay} style={finish ? { "--vectoys-finish": finish } : {}}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
     </Stage>

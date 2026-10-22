@@ -4,7 +4,6 @@ import {
   footprint,
   multiply,
   plate,
-  poses,
   rotate,
   rotateX,
   rotateY,
@@ -159,7 +158,7 @@ export function seen({ yaw = TURN.yaw, pitch = TURN.pitch, roll = TURN.roll }: T
     camera: eye,
     scene,
     drawn: draw(scene, eye),
-    window: poses(scene).get("window")!,
+    window: pose,
     // Seen from under the ground, there is no shadow to draw.
     shadow: contact.facing ? { contact: contact.d, ground: far.d } : null,
   };

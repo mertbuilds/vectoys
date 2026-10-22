@@ -27,8 +27,8 @@ export function Gallery({ index }: { index: RegistryIndex | null }) {
     if (items) return;
     let current = true;
     fetch("/r/index.json")
-      .then((response) => response.json() as Promise<RegistryIndex>)
-      .then((loaded) => current && setItems(loaded.items))
+      .then((response) => response.json())
+      .then((loaded: RegistryIndex) => current && setItems(loaded.items))
       .catch(() => current && setItems([]));
     return () => {
       current = false;

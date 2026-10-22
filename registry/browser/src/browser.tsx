@@ -116,7 +116,7 @@ export const Browser = memo(function Browser({
   const id = `browser-${useId().replace(/[^\w-]/g, "")}`;
   const [x = 0, y = 0] = offset ?? [];
   const view = useMemo(() => seen({ yaw, pitch, roll }, { depth, offset: [x, y] }), [yaw, pitch, roll, depth, x, y]);
-  const hull = view.drawn.hulls.find((part) => part.part === "window")!;
+  const hull = view.drawn.hulls.find((part) => part.part === "window");
 
   const overlay = (
     <>
@@ -133,7 +133,7 @@ export const Browser = memo(function Browser({
     <Stage camera={view.camera} overlay={overlay} style={theme ? { colorScheme: theme } : {}}>
       {shadow && view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-      <path d={hull.d} {...OUTLINE} />
+      {hull && <path d={hull.d} {...OUTLINE} />}
     </Stage>
   );
 });

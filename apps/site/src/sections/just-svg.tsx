@@ -1,4 +1,5 @@
 import { Phone, TURN } from "@vectoys/phone";
+import type { StyleWithVariables } from "@vectoys/react";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { clamp, useInFocus, useReducedMotion } from "../motion";
 
@@ -98,6 +99,7 @@ export function JustSvg() {
   // The drawing grows inside the frame and slides so the focus stays in the middle, without leaving a gap at an edge.
   const offset = (share: number) => clamp(50 - share * zoom * 100, (1 - zoom) * 100, 0);
   const focus = measure?.focus ?? { x: 0.5, y: 0.5 };
+  const zoomVariable: StyleWithVariables = { "--zoom": zoom };
   const zoomed: CSSProperties = { width: `${zoom * 100}%`, left: `${offset(focus.x)}%`, top: `${offset(focus.y)}%` };
 
   return (
@@ -134,7 +136,7 @@ export function JustSvg() {
           onPointerMove={move}
           onPointerUp={up}
           onPointerCancel={up}
-          style={{ "--zoom": zoom } as CSSProperties}
+          style={zoomVariable}
         >
           <div className="xray-zoom" style={zoomed} ref={drawing}>
             <Phone yaw={turn.yaw} pitch={turn.pitch}>

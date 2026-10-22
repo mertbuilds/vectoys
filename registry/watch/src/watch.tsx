@@ -1,5 +1,5 @@
 import { fixed } from "@vectoys/engine";
-import { Faces, Screen, Stage, type Look } from "@vectoys/react";
+import { Faces, Screen, Stage, type Look, type StyleWithVariables } from "@vectoys/react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { DISPLAY, DISPLAY_ROUND, TURN, seen, type Turn, type View } from "./geometry";
 
@@ -91,8 +91,8 @@ type WatchProps = Turn & {
 export const Watch = memo(function Watch({ yaw = TURN.yaw, pitch = TURN.pitch, roll = TURN.roll, finish, band, children }: WatchProps) {
   const id = `watch-${useId().replace(/[^\w-]/g, "")}`;
   const view = useMemo(() => seen({ yaw, pitch, roll }), [yaw, pitch, roll]);
-  const body = view.drawn.hulls.find((hull) => hull.part === "case")!;
-  const colours = { ...(finish ? { "--vectoys-finish": finish } : {}), ...(band ? { "--vectoys-band": band } : {}) } as CSSProperties;
+  const body = view.drawn.hulls.find((hull) => hull.part === "case");
+  const colours: StyleWithVariables = { ...(finish && { "--vectoys-finish": finish }), ...(band && { "--vectoys-band": band }) };
 
   const display = (
     <Screen camera={view.camera} pose={view.glass} rect={DISPLAY} width={VIEWPORT} style={DISPLAY_STYLE}>
@@ -104,7 +104,7 @@ export const Watch = memo(function Watch({ yaw = TURN.yaw, pitch = TURN.pitch, r
     <Stage camera={view.camera} overlay={display} style={colours}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-      <path d={body.d} {...OUTLINE} />
+      {body && <path d={body.d} {...OUTLINE} />}
     </Stage>
   );
 });

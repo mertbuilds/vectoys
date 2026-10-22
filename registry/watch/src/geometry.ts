@@ -6,7 +6,6 @@ import {
   multiply,
   place,
   plate,
-  poses,
   rotate,
   rotateX,
   rotateY,
@@ -106,7 +105,8 @@ function joint(bend: number, toward: 1 | -1): Pose {
 function strap(toward: 1 | -1, order: number): Part {
   const name = toward > 0 ? "strap-top" : "strap-bottom";
   const link = (index: number, pose: Pose): Part => {
-    const last = index === BENDS.length - 1;
+    const next = BENDS[index + 1];
+    const last = next === undefined;
     // The last link ends round, as a strap's tip does, as far as the link's length allows.
     const end = last ? Math.min(BAND / 2, LINK) : mm(1);
     const box: Box = toward > 0 ? [-BAND / 2, -LINK, BAND / 2, 0] : [-BAND / 2, 0, BAND / 2, LINK];
@@ -121,7 +121,7 @@ function strap(toward: 1 | -1, order: number): Part {
       step: STEP,
       order,
       pose,
-      children: last ? [] : [link(index + 1, joint(BENDS[index + 1]!, toward))],
+      children: next === undefined ? [] : [link(index + 1, joint(next, toward))],
     });
   };
   // The strap leaves the case from inside its edge, in the middle of its thickness.
@@ -213,7 +213,8 @@ export function seen({ yaw = TURN.yaw, pitch = TURN.pitch, roll = TURN.roll }: T
     camera: eye,
     scene,
     drawn: draw(scene, eye),
-    glass: poses(scene).get("glass")!,
+    // The glass lies on the case with no turn of its own.
+    glass: pose,
     // Seen from under the ground, there is no shadow to draw.
     shadow: contact.facing ? { contact: contact.d, ground: far.d } : null,
   };

@@ -135,11 +135,11 @@ export function slerp(from: Rotation, to: Rotation, share: number): Rotation {
   let q = quaternion(to);
   let cos = p[0] * q[0] + p[1] * q[1] + p[2] * q[2] + p[3] * q[3];
   // A quaternion and its negative are one rotation; the one nearer goes the short way.
-  if (cos < 0) [q, cos] = [q.map((value) => -value) as unknown as Quaternion, -cos];
+  if (cos < 0) [q, cos] = [[-q[0], -q[1], -q[2], -q[3]], -cos];
   const angle = Math.acos(Math.min(cos, 1));
   // Nearly the same rotation: a straight blend is as good and does not divide by nought.
   const [kp, kq] = angle < 1e-6 ? [1 - share, share] : [Math.sin((1 - share) * angle) / Math.sin(angle), Math.sin(share * angle) / Math.sin(angle)];
-  const blend = p.map((value, index) => kp * value + kq * q[index]!) as unknown as Quaternion;
+  const blend: Quaternion = [kp * p[0] + kq * q[0], kp * p[1] + kq * q[1], kp * p[2] + kq * q[2], kp * p[3] + kq * q[3]];
   const length = Math.hypot(...blend);
-  return matrix(blend.map((value) => value / length) as unknown as Quaternion);
+  return matrix([blend[0] / length, blend[1] / length, blend[2] / length, blend[3] / length]);
 }

@@ -1,4 +1,4 @@
-import { camera, draw, footprint, plate, poses, rotateX, slab, type Box, type Flat, type Part, type Pose, type ScreenRect } from "@vectoys/engine";
+import { camera, draw, footprint, plate, rotateX, slab, type Box, type Flat, type Part, type Pose, type ScreenRect } from "@vectoys/engine";
 
 // A 3.5 inch floppy disk, 90 by 94 mm and 3.3 mm thick, its top right corner
 // cut 3.5 mm across. Seen from its label side: a metal shutter 48 by 30 mm
@@ -62,14 +62,15 @@ const piece = (name: string, box: Box, lift: number, order: number, role = name)
 
 /** The shutter `slide` units left of shut, as three strips round its window so the opening shows through it. */
 function shutter(slide: number): Part[] {
-  const [left, top, right, bottom] = SHUTTER.map((value, index) => (index % 2 === 0 ? value - slide : value));
-  const [windowLeft, windowTop, windowRight, windowBottom] = SHUTTER_WINDOW.map((value, index) => (index % 2 === 0 ? value - slide : value));
+  const slid = ([left, top, right, bottom]: Box): Box => [left - slide, top, right - slide, bottom];
+  const [left, top, right, bottom] = slid(SHUTTER);
+  const [windowLeft, windowTop, windowRight, windowBottom] = slid(SHUTTER_WINDOW);
   const strip = (name: string, box: Box) => plate({ name, box, lift: 0.04, role: "shutter", order: 3 });
   return [
-    strip("shutter-left", [left!, top!, windowLeft!, bottom!]),
-    strip("shutter-right", [windowRight!, top!, right!, bottom!]),
-    strip("shutter-top", [windowLeft!, top!, windowRight!, windowTop!]),
-    strip("shutter-bottom", [windowLeft!, windowBottom!, windowRight!, bottom!]),
+    strip("shutter-left", [left, top, windowLeft, bottom]),
+    strip("shutter-right", [windowRight, top, right, bottom]),
+    strip("shutter-top", [windowLeft, top, windowRight, windowTop]),
+    strip("shutter-bottom", [windowLeft, windowBottom, windowRight, bottom]),
   ];
 }
 
@@ -132,7 +133,7 @@ export function seen(hover = 0, press = 0) {
     camera: eye,
     scene,
     drawn: draw(scene, eye),
-    body: poses(scene).get("body")!,
+    body: pose,
     shadow: contact.facing ? { contact: contact.d, ground: far.d } : null,
   };
 }

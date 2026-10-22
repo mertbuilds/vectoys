@@ -147,14 +147,19 @@ export function seen(open = 0) {
   const ground = (spread: number, ahead: number) => footprint(body, eye, { gap: mm(14), spread, ahead });
   const [contact, far] = [ground(mm(2), 0), ground(mm(10), mm(6))];
   const placed = poses(scene);
+  const pose = (name: string) => {
+    const found = placed.get(name);
+    if (!found) throw new Error(`The envelope has no ${name}`);
+    return found;
+  };
   return {
     camera: eye,
     scene,
     drawn: draw(scene, eye),
     flap,
     rise,
-    card: placed.get("card")!,
-    back: placed.get("back")!,
+    card: pose("card"),
+    back: pose("back"),
     clip: shown(rise),
     shadow: contact.facing ? { contact: contact.d, ground: far.d } : null,
   };

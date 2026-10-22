@@ -147,7 +147,7 @@ export const Floppy = memo(function Floppy({ children, href, download = true, on
   const hover = Math.max(0, Math.min(1, useSpring(raised ? 1 : 0, { stiffness: 260, damping: 26 })));
   const press = Math.max(0, useSpring(held ? 1 : 0));
   const view = useMemo(() => seen(hover, press), [hover, press]);
-  const body = view.drawn.hulls.find((hull) => hull.part === "body")!;
+  const body = view.drawn.hulls.find((hull) => hull.part === "body");
 
   const text = <span style={LABEL_TEXT}>{children}</span>;
   const common = { ...handlers, "aria-label": label, onClick: onPress, "data-pressed": held || undefined, style: FACE_STYLE };
@@ -169,11 +169,11 @@ export const Floppy = memo(function Floppy({ children, href, download = true, on
           {face}
         </Screen>
       }
-      style={finish ? ({ "--vectoys-finish": finish } as CSSProperties) : {}}
+      style={finish ? { "--vectoys-finish": finish } : {}}
     >
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-      <path d={body.d} {...OUTLINE} />
+      {body && <path d={body.d} {...OUTLINE} />}
     </Stage>
   );
 });

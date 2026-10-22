@@ -1,5 +1,5 @@
 import { fixed, settled, spring, type Spring } from "@vectoys/engine";
-import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/react";
+import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look, type StyleWithVariables } from "@vectoys/react";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { SURPRISE, seen, type View } from "./geometry";
 
@@ -84,7 +84,8 @@ const FOCUS_RING = `.${BUTTON}{outline:none}.${BUTTON}:focus-visible{outline:2px
 // drawn in turn with the box's and the lid's outlines between them. The lid
 // always stands over the box's top, so it is never behind it.
 const onBox = (part: string) => part === "box" || part === "inside" || part.startsWith("box-ribbon");
-const LAYERS = [onBox, (part: string) => part === "lid", (part: string) => !onBox(part) && part !== "lid"];
+const isLid = (part: string) => part === "lid";
+const overLid = (part: string) => !onBox(part) && !isLid(part);
 
 /** The soft shadow under the box, under names of its own so any number of gifts share a page. */
 const Shadow = ({ id, shadow }: { id: string; shadow: View["shadow"] }) => (
@@ -201,22 +202,25 @@ export function Gift({ children, open, defaultOpen = false, onOpenChange, finish
     </>
   );
 
-  const vars = { ...(finish ? { "--vectoys-finish": finish } : {}), ...(ribbon ? { "--vectoys-accent": ribbon } : {}) } as CSSProperties;
-  const layers = LAYERS.map((has) => ({
+  const vars: StyleWithVariables = { ...(finish && { "--vectoys-finish": finish }), ...(ribbon && { "--vectoys-accent": ribbon }) };
+  const layer = (has: (part: string) => boolean) => ({
     faces: view.drawn.faces.filter((face) => has(face.part)),
     hulls: view.drawn.hulls.filter((hull) => has(hull.part)),
-  }));
-  const outline = (part: string) => <path d={view.drawn.hulls.find((hull) => hull.part === part)!.d} {...OUTLINE} />;
+  });
+  const outline = (part: string) => {
+    const hull = view.drawn.hulls.find((hull) => hull.part === part);
+    return hull && <path d={hull.d} {...OUTLINE} />;
+  };
 
   return (
     <div className={className} style={{ position: "relative", touchAction: "manipulation", ...style }}>
       <Stage camera={view.camera} overlay={overlay} style={vars}>
         <Shadow id={id} shadow={view.shadow} />
-        <Faces {...layers[0]!} styles={STYLES} shading />
+        <Faces {...layer(onBox)} styles={STYLES} shading />
         {outline("box")}
-        <Faces {...layers[1]!} styles={STYLES} shading />
+        <Faces {...layer(isLid)} styles={STYLES} shading />
         {outline("lid")}
-        <Faces {...layers[2]!} styles={STYLES} shading />
+        <Faces {...layer(overLid)} styles={STYLES} shading />
       </Stage>
     </div>
   );

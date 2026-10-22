@@ -1,4 +1,4 @@
-import { IDENTITY, camera, draw, footprint, plate, poses, slab, type Box, type Part, type ScreenRect } from "@vectoys/engine";
+import { IDENTITY, camera, draw, footprint, plate, slab, type Box, type Part, type ScreenRect } from "@vectoys/engine";
 
 // A mechanical key on a short run of keyboard deck: a sculpted cap 18 mm
 // square at its foot and 12.8 mm across its dished top, 9 mm tall, on a
@@ -41,6 +41,9 @@ export const LABEL_ROUND = (CAP_ROUND * TOP) / CAP;
 const square = (size: number): Box => [-size / 2, -size / 2, size / 2, size / 2];
 const at = (z: number) => ({ position: [0, 0, z] as const, rotation: IDENTITY });
 
+/** Where the cap's top sits with the cap `travel` millimetres down. */
+const capPose = (travel: number) => at(DECK_THICKNESS + CAP_FOOT + CAP_HEIGHT - mm(travel));
+
 /** The cap, `travel` millimetres down from rest (up when negative), with its dish on top. */
 function cap(travel: number): Part {
   const dish = DISH.map((inset, index) =>
@@ -63,7 +66,7 @@ function cap(travel: number): Part {
     edge: CAP_EDGE,
     step: STEP,
     order: 3,
-    pose: at(DECK_THICKNESS + CAP_FOOT + CAP_HEIGHT - mm(travel)),
+    pose: capPose(travel),
     children: dish,
   });
 }
@@ -101,7 +104,7 @@ export function seen(travel = 0) {
     camera: eye,
     scene,
     drawn: draw(scene, eye),
-    top: poses(scene).get("cap")!,
+    top: capPose(travel),
     shadow: { contact: ground(mm(0.6), 0), ground: ground(mm(4), mm(2)) },
   };
 }

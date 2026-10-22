@@ -5,7 +5,6 @@ import {
   draw,
   footprint,
   plate,
-  poses,
   rotateX,
   slab,
   type Part,
@@ -64,9 +63,13 @@ type Side = { back: boolean; above: boolean };
  * back. Its own z is out of its face and its y runs down it, as `DISPLAY` is
  * given.
  */
-function panel(tilt: number, { back }: Side): Part {
+function panelPose(tilt: number): Pose {
   const pivot: Pose = { position: [0, -THICKNESS - MOUNT_DEPTH, PIVOT_HEIGHT - MIDDLE], rotation: rotateX(tilt) };
   const upright: Pose = { position: [0, THICKNESS + MOUNT_DEPTH, 0], rotation: rotateX(-90) };
+  return compose(pivot, upright);
+}
+
+function panel(tilt: number, { back }: Side): Part {
   return slab({
     name: "panel",
     box: [-WIDTH / 2, -HEIGHT / 2, WIDTH / 2, HEIGHT / 2],
@@ -74,7 +77,7 @@ function panel(tilt: number, { back }: Side): Part {
     thickness: THICKNESS,
     edge: EDGE,
     step: STEP,
-    pose: compose(pivot, upright),
+    pose: panelPose(tilt),
     children: [
       plate({
         name: "glass",
@@ -156,7 +159,8 @@ export function seen({ yaw = TURN.yaw, pitch = TURN.pitch, tilt = TURN.tilt }: T
     camera: eye,
     scene,
     drawn: draw(scene, eye),
-    glass: poses(scene).get("glass")!,
+    // The glass lies on the panel with no turn of its own.
+    glass: panelPose(tilt),
     // Seen from under the desk, there is no shadow to draw.
     shadow: contact.facing ? { contact: contact.d, ground: far.d } : null,
   };
