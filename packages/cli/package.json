@@ -7,7 +7,7 @@
   "bin": {
     "vectoys": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": ["dist", "SKILL.md"],
   "engines": {
     "node": ">=18"
   },
