@@ -104,7 +104,7 @@ Every item reads its colours from CSS variables, so a page themes them all at on
 - `--vectoys-focus`: the focus ring of the card, the die and the gift box, `currentColor`.
 - `--vectoys-focus-width`: how thick that ring is, `1px`.
 
-The browser window picks dark tones for `--vectoys-bg`, `--vectoys-surface`, `--vectoys-hairline`, `--vectoys-ink` and `--vectoys-shadow` under a dark colour scheme or `theme="dark"`. The shading variables are below.
+Under a dark colour scheme the browser window, the keycap and the die fall back to dark tones instead: `--vectoys-surface` `#262626`, `--vectoys-hairline` `#5a5a5a`, `--vectoys-ink` `#ededed`, `--vectoys-shadow` `rgba(0, 0, 0, 0.4)`, and for the browser `--vectoys-bg` `#161616`. The browser also takes `theme="dark"`. The shading variables are below.
 
 ## Develop
 

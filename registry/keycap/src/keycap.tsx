@@ -12,14 +12,15 @@ import {
 } from "react";
 import { HOVER, LABEL, LABEL_ROUND, TRAVEL, seen, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a light tone so the key
-// shows as meant before they are set. The cap is in the finish, the label in
-// the ink.
-const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
-const SURFACE = "var(--vectoys-surface, #f5f5f5)";
-const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
+// The page's colours, as CSS variables. Each falls back to a tone for light
+// and one for dark, picked by the page's colour scheme, so the key reads on
+// a dark page with nothing set. The cap is in the finish, the label in the
+// ink.
+const HAIRLINE = "var(--vectoys-hairline, light-dark(#8a8a8a, #5a5a5a))";
+const SURFACE = "var(--vectoys-surface, light-dark(#f5f5f5, #262626))";
+const SHADOW = "var(--vectoys-shadow, light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4)))";
 const FINISH = `var(--vectoys-finish, ${SURFACE})`;
-const INK = "var(--vectoys-ink, #1d1d1c)";
+const INK = "var(--vectoys-ink, light-dark(#1d1d1c, #ededed))";
 
 // The cap's sides a step under its top and the dish a touch deeper, a dark
 // switch housing, on a deck a step under the surface.

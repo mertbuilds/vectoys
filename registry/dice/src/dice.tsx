@@ -3,14 +3,15 @@ import { Faces, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/r
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { VALUES, resting, roll, rollAt, seen, type Value, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a light tone so the die
-// shows as meant before they are set: a die in the finish, else the surface,
-// with pips in the ink.
-const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
-const SURFACE = "var(--vectoys-surface, #f5f5f5)";
-const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
+// The page's colours, as CSS variables. Each falls back to a tone for light
+// and one for dark, picked by the page's colour scheme, so the die reads on
+// a dark page with nothing set: a die in the finish, else the surface, with
+// pips in the ink.
+const HAIRLINE = "var(--vectoys-hairline, light-dark(#8a8a8a, #5a5a5a))";
+const SURFACE = "var(--vectoys-surface, light-dark(#f5f5f5, #262626))";
+const SHADOW = "var(--vectoys-shadow, light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4)))";
 const FINISH = `var(--vectoys-finish, ${SURFACE})`;
-const INK = "var(--vectoys-ink, #1d1d1c)";
+const INK = "var(--vectoys-ink, light-dark(#1d1d1c, #ededed))";
 const FOCUS = "var(--vectoys-focus, currentColor)";
 const FOCUS_WIDTH = "var(--vectoys-focus-width, 1px)";
 
