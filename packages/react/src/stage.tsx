@@ -11,6 +11,10 @@ type StageProps = {
   children?: ReactNode;
   /** HTML laid over the drawing, such as a `Screen`. */
   overlay?: ReactNode;
+  /** The box's role for assistive technology, such as `img` for a picture or `group` round live content. */
+  role?: "img" | "group";
+  /** The box's name for assistive technology. */
+  label?: string;
   className?: string;
   style?: StyleWithVariables;
 };
@@ -21,9 +25,11 @@ type StageProps = {
  * screens over it and anything sized in `cqw` scale together, and the server
  * draws it the same as the client.
  */
-export function Stage({ camera, children, overlay, className, style }: StageProps) {
+export function Stage({ camera, children, overlay, role, label, className, style }: StageProps) {
   return (
     <div
+      role={role}
+      aria-label={label}
       className={className}
       style={{ position: "relative", width: "100%", aspectRatio: `${camera.width} / ${camera.height}`, containerType: "inline-size", ...style }}
     >
