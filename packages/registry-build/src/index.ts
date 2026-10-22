@@ -64,7 +64,7 @@ export async function buildRegistry({ root, out, baseUrl = BASE_URL }: Options):
 }
 
 async function readItem(root: string, dir: string, baseUrl: string): Promise<RegistryItem> {
-  const source = check(JSON.parse(await readFile(join(root, "registry", dir, "item.json"), "utf8")), dir);
+  const source = checkItem(JSON.parse(await readFile(join(root, "registry", dir, "item.json"), "utf8")), `registry/${dir}/item.json`);
   const url = `${baseUrl}/${source.name}.json`;
   const credit = source.credit ?? AUTHOR;
   const files = await Promise.all(
@@ -92,12 +92,13 @@ async function readItem(root: string, dir: string, baseUrl: string): Promise<Reg
   };
 }
 
-function check(value: unknown, dir: string): ItemSource {
+/** An item.json's contents as an ItemSource, or an error naming `file` and the first field it lacks. */
+export function checkItem(value: unknown, file: string): ItemSource {
   const item = value as Partial<ItemSource>;
   for (const key of ["name", "title", "description", "license"] as const) {
-    if (typeof item[key] !== "string" || item[key] === "") throw new Error(`registry/${dir}/item.json needs a "${key}"`);
+    if (typeof item[key] !== "string" || item[key] === "") throw new Error(`${file} needs a "${key}"`);
   }
-  if (!Array.isArray(item.files) || item.files.length === 0) throw new Error(`registry/${dir}/item.json needs "files"`);
+  if (!Array.isArray(item.files) || item.files.length === 0) throw new Error(`${file} needs "files"`);
   return item as ItemSource;
 }
 
