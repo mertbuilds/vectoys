@@ -707,16 +707,29 @@ code.inline {
 /* The screen is real */
 
 .tablet-wrap {
+  --stage: min(100%, 760px);
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 }
 
+/* The tablet's square frame has room for it to roll a quarter turn, so the
+   stage gives back the empty band above and below it at rest. */
 .tablet-stage {
-  width: 100%;
-  max-width: 560px;
-  margin-block: -6% -8%;
+  flex: none;
+  width: var(--stage);
+  margin-block: calc(var(--stage) * -0.12) calc(var(--stage) * -0.08);
+}
+
+/* On a phone the frame is wider than the column, so the tablet on its side
+   spans it; only a corner in the middle of a roll passes the gutter. */
+@media (max-width: 719px) {
+  .tablet-wrap {
+    --stage: 132%;
+    overflow-x: clip;
+    overflow-clip-margin: 16px;
+  }
 }
 
 .xray-wrap {
@@ -890,6 +903,13 @@ code.inline {
 
 .preview-square {
   width: 80%;
+}
+
+/* Wider than its well: the tablet's frame leaves room to roll, which the
+   negative margins give back so it sits in the middle. */
+.preview-tablet {
+  width: 118%;
+  margin: -19% -9%;
 }
 
 .preview-wide {
