@@ -40,3 +40,20 @@ test("a page that drives the envelope decides how far open it is", async () => {
   expect(opener?.getAttribute("aria-expanded")).toBe("true");
   await unmount();
 });
+
+test("a closed envelope clips its letter away, so clicks pass through to the page", async () => {
+  const { host, unmount } = await mount(
+    <Envelope>
+      <a href="#join">Join</a>
+    </Envelope>,
+  );
+  const opener = host.querySelector("button");
+  const screen = host.querySelector("a")?.parentElement?.parentElement;
+  if (!opener || !screen) throw new Error("no opener or screen");
+  expect(screen.style.clipPath).toBe("inset(50%)");
+
+  await fire(opener, new MouseEvent("click", { bubbles: true }));
+  await frames.advance(1500);
+  expect(screen.style.clipPath).not.toBe("inset(50%)");
+  await unmount();
+});
