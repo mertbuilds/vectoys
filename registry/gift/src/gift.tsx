@@ -12,6 +12,7 @@ const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
 const FINISH = "var(--vectoys-finish, #e5484d)";
 const ACCENT = "var(--vectoys-accent, #f5c84c)";
 const FOCUS = "var(--vectoys-focus, currentColor)";
+const FOCUS_WIDTH = "var(--vectoys-focus-width, 1px)";
 
 const fill = (color: string): Look => ({ style: { fill: color } });
 const STYLES: Record<string, Look> = {
@@ -78,7 +79,7 @@ const BUTTON_STYLE: CSSProperties = {
   cursor: "pointer",
   appearance: "none",
 };
-const FOCUS_RING = `.${BUTTON}{outline:none}.${BUTTON}:focus-visible{outline:2px solid ${FOCUS};outline-offset:2px}`;
+const FOCUS_RING = `.${BUTTON}{outline:none}.${BUTTON}:focus-visible{outline:${FOCUS_WIDTH} solid ${FOCUS};outline-offset:2px}`;
 
 // The box with its ribbon, the lid, and the ribbon and bow on the lid, each
 // drawn in turn with the box's and the lid's outlines between them. The lid

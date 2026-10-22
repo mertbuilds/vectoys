@@ -102,6 +102,7 @@ Every item reads its colours from CSS variables, so a page themes them all at on
 - `--vectoys-paper`: the floppy disk's label, `#f7f6f1`.
 - `--vectoys-paper-ink`: the text on that label, `#1d1d1c`.
 - `--vectoys-focus`: the focus ring of the card, the die and the gift box, `currentColor`.
+- `--vectoys-focus-width`: how thick that ring is, `1px`.
 
 The browser window picks dark tones for `--vectoys-bg`, `--vectoys-surface`, `--vectoys-hairline`, `--vectoys-ink` and `--vectoys-shadow` under a dark colour scheme or `theme="dark"`. The shading variables are below.
 

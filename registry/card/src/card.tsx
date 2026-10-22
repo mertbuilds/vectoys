@@ -10,6 +10,7 @@ const SURFACE = "var(--vectoys-surface, #f5f5f5)";
 const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
 const FINISH = `var(--vectoys-finish, ${SURFACE})`;
 const FOCUS = "var(--vectoys-focus, currentColor)";
+const FOCUS_WIDTH = "var(--vectoys-focus-width, 1px)";
 
 const fill = (color: string): Look => ({ style: { fill: color } });
 const STYLES: Record<string, Look> = {
@@ -73,7 +74,7 @@ const BUTTON_STYLE: CSSProperties = {
   cursor: "pointer",
   appearance: "none",
 };
-const FOCUS_RING = `.${BUTTON}{outline:none}.${BUTTON}:focus-visible{outline:2px solid ${FOCUS};outline-offset:4px}`;
+const FOCUS_RING = `.${BUTTON}{outline:none}.${BUTTON}:focus-visible{outline:${FOCUS_WIDTH} solid ${FOCUS};outline-offset:4px}`;
 
 /** The soft shadow under the card, under names of its own so any number of cards share a page. */
 const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]> }) => (

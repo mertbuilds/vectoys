@@ -95,7 +95,7 @@ pre {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 1px solid var(--muted);
   outline-offset: 2px;
 }
 
@@ -825,8 +825,7 @@ code.inline {
 }
 
 .pack-add input:focus-visible {
-  outline: 0;
-  box-shadow: inset 0 0 0 3px #1f6fff;
+  outline: 1px solid var(--muted);
 }
 
 .pack-add button {
