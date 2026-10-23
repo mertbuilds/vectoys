@@ -2,7 +2,7 @@ import { DESK, Laptop, PHONE } from "@vectoys/laptop";
 import { useEffect, useRef, useState } from "react";
 import { CopyCommand } from "../components/copy-command";
 import { GitHubMark } from "../components/icons";
-import { REPO, addCommand } from "../registry";
+import { REPO, REPO_PUBLIC, addCommand } from "../registry";
 import { clamp, useMedia, useReducedMotion } from "../motion";
 
 const COMMAND = addCommand("laptop");
@@ -144,9 +144,11 @@ export function Hero() {
         </p>
         <div className="hero-actions">
           <CopyCommand command={COMMAND} />
-          <a href={REPO} target="_blank" rel="noreferrer" className="button">
-            <GitHubMark /> View on GitHub
-          </a>
+          {REPO_PUBLIC && (
+            <a href={REPO} target="_blank" rel="noreferrer" className="button">
+              <GitHubMark /> View on GitHub
+            </a>
+          )}
         </div>
       </div>
       <div className="hero-stage" ref={stage}>

@@ -1,4 +1,4 @@
-import { REPO } from "../registry";
+import { REPO, REPO_PUBLIC } from "../registry";
 import { GitHubMark } from "./icons";
 
 export function Header() {
@@ -7,9 +7,11 @@ export function Header() {
       <a href="/" className="wordmark">
         vectoys
       </a>
-      <a href={REPO} target="_blank" rel="noreferrer" className="icon-button" aria-label="GitHub">
-        <GitHubMark />
-      </a>
+      {REPO_PUBLIC && (
+        <a href={REPO} target="_blank" rel="noreferrer" className="icon-button" aria-label="GitHub">
+          <GitHubMark />
+        </a>
+      )}
       <nav className="site-nav" aria-label="Sections">
         <a href="#gallery">Gallery</a>
         <a href="#your-registry">Registry</a>
