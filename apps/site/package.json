@@ -5,8 +5,8 @@
   "description": "vectoys.com: the landing page, the gallery and the registry at /r.",
   "type": "module",
   "scripts": {
-    "dev": "bun ../../packages/registry-build/src/main.ts && portless vectoys vite",
-    "build": "bun ../../packages/registry-build/src/main.ts && vite build && vite build --ssr src/entry-server.tsx --outDir dist/.server && bun scripts/prerender.ts",
+    "dev": "bun ../../packages/registry-build/src/main.ts && bun scripts/agent-files.ts && portless vectoys vite",
+    "build": "bun ../../packages/registry-build/src/main.ts && bun scripts/agent-files.ts && vite build && vite build --ssr src/entry-server.tsx --outDir dist/.server && bun scripts/prerender.ts",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

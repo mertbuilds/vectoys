@@ -3,3 +3,5 @@ dist/
 *.tsbuildinfo
 .DS_Store
 apps/site/public/r/
+apps/site/public/llms.txt
+apps/site/public/skill.md

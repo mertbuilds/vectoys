@@ -89,6 +89,8 @@ type BrowserProps = Turn &
     shadow?: boolean;
     /** Live content on the page, laid out as in a window `VIEWPORT` pixels wide. */
     children?: ReactNode;
+    /** The window's name for assistive technology. */
+    label?: string;
   };
 
 /**
@@ -112,6 +114,7 @@ export const Browser = memo(function Browser({
   theme,
   shadow = true,
   children,
+  label = "Browser window",
 }: BrowserProps) {
   const id = `browser-${useId().replace(/[^\w-]/g, "")}`;
   const [x = 0, y = 0] = offset ?? [];
@@ -129,8 +132,10 @@ export const Browser = memo(function Browser({
     </>
   );
 
+  // Empty, the window is a picture; with live content it is a group, so its
+  // links and buttons stay reachable inside it.
   return (
-    <Stage camera={view.camera} overlay={overlay} style={theme ? { colorScheme: theme } : {}}>
+    <Stage role={children == null ? "img" : "group"} label={label} camera={view.camera} overlay={overlay} style={theme ? { colorScheme: theme } : {}}>
       {shadow && view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
       {hull && <path d={hull.d} {...OUTLINE} />}

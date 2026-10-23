@@ -80,6 +80,8 @@ type WatchProps = Turn & {
   finish?: string;
   /** The band's colour; by default the page's `--vectoys-band`, else a shade under its surface. */
   band?: string;
+  /** The device's name for assistive technology. */
+  label?: string;
   /** Live content on the display, laid out as on a screen `VIEWPORT` pixels wide. */
   children?: ReactNode;
 };
@@ -88,7 +90,7 @@ type WatchProps = Turn & {
  * A smartwatch that turns any way: one SVG drawn from its parts, and live
  * content laid onto its display, hidden while the display faces away.
  */
-export const Watch = memo(function Watch({ yaw = TURN.yaw, pitch = TURN.pitch, roll = TURN.roll, finish, band, children }: WatchProps) {
+export const Watch = memo(function Watch({ yaw = TURN.yaw, pitch = TURN.pitch, roll = TURN.roll, finish, band, children, label = "Smartwatch" }: WatchProps) {
   const id = `watch-${useId().replace(/[^\w-]/g, "")}`;
   const view = useMemo(() => seen({ yaw, pitch, roll }), [yaw, pitch, roll]);
   const body = view.drawn.hulls.find((hull) => hull.part === "case");
@@ -100,8 +102,10 @@ export const Watch = memo(function Watch({ yaw = TURN.yaw, pitch = TURN.pitch, r
     </Screen>
   );
 
+  // Empty, the device is a picture; with live content it is a group, so its
+  // links and buttons stay reachable inside it.
   return (
-    <Stage camera={view.camera} overlay={display} style={colours}>
+    <Stage role={children == null ? "img" : "group"} label={label} camera={view.camera} overlay={display} style={colours}>
       {view.shadow && <Shadow id={id} shadow={view.shadow} />}
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
       {body && <path d={body.d} {...OUTLINE} />}

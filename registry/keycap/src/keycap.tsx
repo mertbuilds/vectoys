@@ -142,7 +142,7 @@ function usePress(disabled: boolean, caller: PressHandlers) {
 }
 
 export type KeycapProps = Omit<ComponentProps<"button">, "children"> & {
-  /** The label on the cap's top, live HTML laid out about `LABEL_WIDTH` pixels across; it names the button too. */
+  /** The label on the cap's top, live HTML laid out about `LABEL_WIDTH` pixels across; it names the button too, "Key" without one. */
   children?: ReactNode;
   /** Called when the key is pressed, by pointer, touch or keyboard. */
   onPress?: () => void;
@@ -174,6 +174,7 @@ export const Keycap = memo(function Keycap({ children, onPress, finish, onClick,
     <Screen camera={view.camera} pose={view.top} rect={LABEL} width={LABEL_WIDTH}>
       <button
         type="button"
+        aria-label={children == null ? "Key" : undefined}
         {...button}
         {...handlers}
         disabled={disabled}
