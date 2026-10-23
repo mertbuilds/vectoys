@@ -1,0 +1,11 @@
+{
+  "name": "vectoys",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist"
+  },
+  "routes": [
+    { "pattern": "vectoys.com", "custom_domain": true },
+    { "pattern": "www.vectoys.com", "custom_domain": true }
+  ]
+}
