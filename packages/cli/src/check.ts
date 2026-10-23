@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, extname, join, relative, resolve, sep } from "node:path";
 import { checkItem, type ItemSource } from "@vectoys/registry-build";
@@ -143,6 +143,12 @@ function itemProblem(item: ItemSource, dir: string): string | undefined {
   if (!ITEM_NAME.test(item.name)) return `"${item.name}" is not an item name`;
   const file = item.files.find((path) => typeof path !== "string" || !resolve(dir, path).startsWith(dir + sep) || !existsSync(resolve(dir, path)));
   if (file !== undefined) return `files lists ${JSON.stringify(file)}, which is not a file in the folder`;
+  const other = item.files.find((path) => !lstatSync(resolve(dir, path)).isFile());
+  if (other !== undefined) {
+    const stat = lstatSync(resolve(dir, other));
+    const kind = stat.isSymbolicLink() ? "a symlink, " : stat.isDirectory() ? "a folder, " : "";
+    return `files lists ${JSON.stringify(other)}, which is ${kind}not a regular file`;
+  }
   if (item.dependencies !== undefined && !(Array.isArray(item.dependencies) && item.dependencies.every(isPackageSpec))) {
     return "dependencies are not all plain npm package names";
   }
@@ -179,7 +185,7 @@ export function checks(dir: string): Result[] {
   if (typeof item === "string") return [{ pass: false, line: item }];
   const results: Result[] = [{ pass: true, line: "item.json has what the registry needs" }];
 
-  const size = item.files.reduce((sum, file) => sum + statSync(resolve(dir, file)).size, 0);
+  const size = item.files.reduce((sum, file) => sum + lstatSync(resolve(dir, file)).size, 0);
   const kb = (bytes: number) => `${(bytes / 1024).toFixed(1)} KB`;
   results.push({ pass: size < MAX_SOURCE, line: `the files are ${kb(size)}, ${size < MAX_SOURCE ? "under" : "over"} ${kb(MAX_SOURCE)}` });
 

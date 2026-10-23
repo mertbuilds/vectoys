@@ -66,6 +66,15 @@ test("a bad item.json fails before anything renders", () => {
   expect(failed(folder)).toEqual(['files lists "src/gone.tsx", which is not a file in the folder']);
 });
 
+test("files must be regular files, not folders or symlinks", () => {
+  const { folder, edit } = item("linked");
+  edit("item.json", (text) => text.replace('"src/geometry.ts"', '"src"'));
+  expect(failed(folder)).toEqual(['files lists "src", which is a folder, not a regular file']);
+  edit("item.json", (text) => text.replace('"src"', '"src/link.ts"'));
+  symlinkSync(join(repo, "package.json"), join(folder, "src/link.ts"));
+  expect(failed(folder)).toEqual(['files lists "src/link.ts", which is a symlink, not a regular file']);
+});
+
 test("brand names match whole words in any case, and plain words only inside a product's name", () => {
   expect(brands("An iPhone, an XBOX and a Surface  Pro, not an imacs")).toEqual(["iphone", "xbox", "surface pro"]);
   expect(brands("browser windows on the main surface of a galaxy of pixels")).toEqual([]);
