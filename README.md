@@ -84,7 +84,7 @@ npx vectoys submit registry/spinning-top
 
 `npx vectoys skill` prints how a coding agent makes an item, so you can point your agent at it.
 
-`create` writes `spinning-top/` (under `--dir`, else the current folder) with an `item.json`, a working component that draws a tilted, shaded slab, a `package.json`, a `tsconfig.json` and a test, as the items in `registry/` have. It does not write over a folder that is already there unless you pass `--overwrite`. Made in `registry/` of this repository, `bun install` links its packages.
+`create` writes `spinning-top/` (under `--dir`, else the current folder) with an `item.json`, a working component that draws a tilted, shaded slab, a `package.json`, a `tsconfig.json` and a test, as the items in `registry/` have. It does not write over a folder that is already there unless you pass `--overwrite`. Made in `registry/` of this repository, `bun install` links its packages. Made anywhere else, it asks for `@vectoys/engine` and `@vectoys/react` by version, which install from npm once vectoys launches, and writes a `tsconfig.json` of its own; `submit` turns both back into the form the items in `registry/` have.
 
 `check` prints a pass or fail line for each check and exits with 1 if any fails. It checks that `item.json` has what the registry needs, that the files are under 64 KB together, that the component renders on the server twice to the same markup with no `NaN` or `Infinity` in it, that its root is `role="img"` with an `aria-label` or its controls are labelled, and that neither `item.json` nor the rendered text names a brand or a device maker. It loads the component with [bun](https://bun.sh), so `check` needs bun, and the item's packages installed.
 

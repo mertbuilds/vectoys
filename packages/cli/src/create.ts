@@ -1,7 +1,33 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve, sep } from "node:path";
+import { devDependencies } from "../../../package.json";
+import { compilerOptions } from "../../../tsconfig.base.json";
+import { version } from "../package.json";
 import { ITEM_NAME, type Context } from "./commands";
+
+/** The tsconfig an item in registry/ of the vectoys repository extends. */
+export const BASE_TSCONFIG = "../../tsconfig.base.json";
+
+/** An item's tsconfig.json: extending the repository's base inside it, else with the base's options written out. */
+export function itemTsconfig(inRepo: boolean) {
+  const include = ["src", "test"];
+  if (inRepo) return { extends: BASE_TSCONFIG, compilerOptions: { jsx: "react-jsx" }, include };
+  return { compilerOptions: { ...compilerOptions, jsx: "react-jsx" }, include };
+}
+
+/** Whether `folder` is under registry/ of a vectoys checkout, where its packages are the workspace's own. */
+export function inVectoysRepo(folder: string): boolean {
+  for (let dir = dirname(folder); ; dir = dirname(dir)) {
+    const pkg = join(dir, "package.json");
+    if (existsSync(pkg) && existsSync(join(dir, "registry"))) {
+      const value: unknown = JSON.parse(readFileSync(pkg, "utf8"));
+      const named = typeof value === "object" && value !== null && "name" in value && value.name === "vectoys-workspace";
+      if (named) return folder.startsWith(join(dir, "registry") + sep);
+    }
+    if (dirname(dir) === dir) return false;
+  }
+}
 
 /** The component an item named `name` exports: `my-toy` is `MyToy`. */
 export function componentName(name: string): string {
@@ -25,7 +51,7 @@ function gitAuthor(cwd: string): string | undefined {
 }
 
 /** The files of a new item named `name`, by their path in its folder. */
-export function scaffold(name: string, author?: string): Record<string, string> {
+export function scaffold(name: string, author?: string, inRepo = false): Record<string, string> {
   const component = componentName(name);
   const title = titleOf(name);
   const item = {
@@ -37,6 +63,9 @@ export function scaffold(name: string, author?: string): Record<string, string> 
     license: "TBD",
     ...(author ? { author } : {}),
   };
+  // In the repository the workspace links the packages; elsewhere they come
+  // from npm at the version this CLI was released with, as all share one.
+  const vectoys = inRepo ? "workspace:*" : `^${version}`;
   const pkg = {
     name: `@vectoys/${name}`,
     version: "0.0.0",
@@ -46,11 +75,17 @@ export function scaffold(name: string, author?: string): Record<string, string> 
     sideEffects: false,
     exports: { ".": "./src/index.ts" },
     scripts: { typecheck: "tsc --noEmit", test: "bun test" },
-    dependencies: { "@vectoys/engine": "workspace:*", "@vectoys/react": "workspace:*" },
+    dependencies: { "@vectoys/engine": vectoys, "@vectoys/react": vectoys },
     peerDependencies: { react: ">=19" },
-    devDependencies: { "@types/react": "19.0.0", "@types/react-dom": "19.0.0", react: "19.0.0", "react-dom": "19.0.0" },
+    devDependencies: {
+      ...(inRepo ? {} : { "@types/bun": devDependencies["@types/bun"] }),
+      "@types/react": "19.0.0",
+      "@types/react-dom": "19.0.0",
+      react: "19.0.0",
+      "react-dom": "19.0.0",
+    },
   };
-  const tsconfig = { extends: "../../tsconfig.base.json", compilerOptions: { jsx: "react-jsx" }, include: ["src", "test"] };
+  const tsconfig = itemTsconfig(inRepo);
   const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 
   return {
@@ -172,7 +207,7 @@ export function create(context: Context, name: string | undefined, under: string
   const folder = resolve(context.cwd, under ?? ".", name);
   const shown = relative(context.cwd, folder) || ".";
   if (existsSync(folder) && !context.overwrite) throw new Error(`${shown} is already there. Pass --overwrite to write over it.`);
-  for (const [path, content] of Object.entries(scaffold(name, gitAuthor(context.cwd)))) {
+  for (const [path, content] of Object.entries(scaffold(name, gitAuthor(context.cwd), inVectoysRepo(folder)))) {
     const to = join(folder, path);
     mkdirSync(dirname(to), { recursive: true });
     writeFileSync(to, content);

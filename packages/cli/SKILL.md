@@ -9,7 +9,7 @@ vectoys draws 3D objects as plain SVG paths. An item is a small React component 
 
 ## Workflow
 
-1. `npx vectoys create <name>` writes `./<name>/` (or under `--dir <dir>`): `item.json`, `src/geometry.ts`, `src/<name>.tsx`, `src/index.ts`, a test, `package.json` and `tsconfig.json`. It renders a shaded, tilted slab. Install the item's packages before you check it.
+1. `npx vectoys create <name>` writes `./<name>/` (or under `--dir <dir>`): `item.json`, `src/geometry.ts`, `src/<name>.tsx`, `src/index.ts`, a test, `package.json` and `tsconfig.json`. It renders a shaded, tilted slab. Under `registry/` of a vectoys checkout it uses the workspace's packages, which `bun install` links. Anywhere else it asks for `@vectoys/engine` and `@vectoys/react` by version, which install from npm once vectoys launches. Install the item's packages before you check it.
 2. Edit `src/geometry.ts` (parts, camera, poses) and `src/<name>.tsx` (looks, motion, interaction). Write a real `title` and `description` in `item.json`. List every source file in `files`.
 3. `npx vectoys check <dir>` runs 8 checks: item.json is valid, the files are under 64 KB together, item.json names no brand, the component renders on the server with no props, the markup has no `NaN` or `Infinity`, two renders give the same markup, the rendered text names no brand, and the root has an accessible name. It needs bun. Fix every FAIL line.
 4. `npx vectoys preview <dir>` writes `<dir>/preview.html` (`--open` opens it): the item rendered on the server in light and dark, and at a row of yaws when the component takes a `yaw` prop. Look at it. Faces drawn in the wrong order, gaps, and parts that float show here, not in the checks.

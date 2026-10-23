@@ -83,6 +83,15 @@ test("submit opens a pull request that adds the item's files to the registry", a
   expect(lines.at(-1)).toBe("Opened https://github.com/mertbuilds/vectoys/pull/7");
 }, 30_000);
 
+test("submit copies an item made outside the repository in the form registry/ items have", async () => {
+  const { runner, committed } = fake();
+  await submit(context().context, "plate", { registry: undefined, dryRun: false, submissionsOpen: true, run: runner });
+  const pkg = JSON.parse(committed["registry/plate/package.json"] ?? "");
+  expect(pkg.dependencies).toEqual({ "@vectoys/engine": "workspace:*", "@vectoys/react": "workspace:*" });
+  expect(pkg.devDependencies).toEqual({ "@types/react": "19.0.0", "@types/react-dom": "19.0.0", react: "19.0.0", "react-dom": "19.0.0" });
+  expect(JSON.parse(committed["registry/plate/tsconfig.json"] ?? "")).toEqual(JSON.parse(readFileSync(join(repo, "registry/floppy/tsconfig.json"), "utf8")));
+}, 30_000);
+
 test("while submissions are closed, submit checks the item, says what it would do and calls no gh", async () => {
   create(context().context, "closed", undefined);
   const { context: here, lines } = context();

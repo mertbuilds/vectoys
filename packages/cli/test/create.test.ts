@@ -1,10 +1,15 @@
 import { afterAll, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { checkItem } from "@vectoys/registry-build";
+import { compilerOptions } from "../../../tsconfig.base.json";
+import { version } from "../package.json";
 import type { Context } from "../src/commands";
-import { componentName, create } from "../src/create";
+import { componentName, create, inVectoysRepo } from "../src/create";
+
+const repo = resolve(import.meta.dir, "../../..");
+const readJson = (path: string): unknown => JSON.parse(readFileSync(path, "utf8"));
 
 const work = mkdtempSync(join(tmpdir(), "vectoys-create-"));
 afterAll(() => rmSync(work, { recursive: true, force: true }));
@@ -35,6 +40,30 @@ test("create writes an item folder like the registry's own", () => {
 test("create puts the folder under --dir", () => {
   create(context().context, "slab", "registry");
   expect(existsSync(join(work, "registry/slab/item.json"))).toBe(true);
+});
+
+test("outside a vectoys checkout, create writes version ranges and a tsconfig of its own", () => {
+  create(context().context, "standalone", undefined);
+  const folder = join(work, "standalone");
+  expect(readJson(join(folder, "package.json"))).toMatchObject({
+    dependencies: { "@vectoys/engine": `^${version}`, "@vectoys/react": `^${version}` },
+    devDependencies: { "@types/bun": expect.any(String) },
+  });
+  expect(readJson(join(folder, "tsconfig.json"))).toEqual({ compilerOptions: { ...compilerOptions, jsx: "react-jsx" }, include: ["src", "test"] });
+});
+
+test("under registry/ of a vectoys checkout, create keeps the workspace's packages and base tsconfig", () => {
+  const checkout = join(work, "checkout");
+  mkdirSync(join(checkout, "registry"), { recursive: true });
+  writeFileSync(join(checkout, "package.json"), JSON.stringify({ name: "vectoys-workspace" }));
+  create({ ...context().context, cwd: checkout }, "linked", "registry");
+  const folder = join(checkout, "registry/linked");
+  const pkg = readJson(join(folder, "package.json"));
+  expect(pkg).toMatchObject({ dependencies: { "@vectoys/engine": "workspace:*", "@vectoys/react": "workspace:*" } });
+  expect(JSON.stringify(pkg)).not.toContain("@types/bun");
+  expect(readJson(join(folder, "tsconfig.json"))).toEqual(readJson(join(repo, "registry/floppy/tsconfig.json")));
+  expect(inVectoysRepo(join(checkout, "elsewhere/linked"))).toBe(false);
+  expect(inVectoysRepo(join(repo, "registry/new"))).toBe(true);
 });
 
 test("create turns away bad names and an existing folder unless told to overwrite", () => {

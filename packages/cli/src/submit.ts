@@ -2,8 +2,10 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
+import { compilerOptions } from "../../../tsconfig.base.json";
 import { checks, readItem } from "./check";
 import { ITEM_NAME, type Context } from "./commands";
+import { BASE_TSCONFIG } from "./create";
 import { fetchJson } from "./fetch";
 
 /** Whether submit sends anything: it only says what it would until vectoys launches. */
@@ -82,6 +84,32 @@ export function itemFiles(dir: string, listed: string[]): string[] {
   return [...new Set(["item.json", ...listed, ...extra])];
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** Turns an item copied from outside the repository into the form registry/ items have: workspace packages and the shared tsconfig. */
+export function inRepoForm(folder: string) {
+  const pkgPath = join(folder, "package.json");
+  if (existsSync(pkgPath)) {
+    const pkg: unknown = JSON.parse(readFileSync(pkgPath, "utf8"));
+    if (!isRecord(pkg)) throw new Error("The item's package.json is not an object.");
+    for (const field of ["dependencies", "devDependencies", "peerDependencies"]) {
+      const deps = pkg[field];
+      if (!isRecord(deps)) continue;
+      for (const name of Object.keys(deps)) if (name.startsWith("@vectoys/")) deps[name] = "workspace:*";
+      if (field === "devDependencies") delete deps["@types/bun"];
+    }
+    writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
+  }
+  const tsPath = join(folder, "tsconfig.json");
+  if (existsSync(tsPath)) {
+    const tsconfig: unknown = JSON.parse(readFileSync(tsPath, "utf8"));
+    if (!isRecord(tsconfig)) throw new Error("The item's tsconfig.json is not an object.");
+    const own = isRecord(tsconfig.compilerOptions) ? tsconfig.compilerOptions : {};
+    const kept = Object.fromEntries(Object.entries(own).filter(([key]) => !(key in compilerOptions)));
+    writeFileSync(tsPath, `${JSON.stringify({ extends: BASE_TSCONFIG, ...tsconfig, compilerOptions: kept }, null, 2)}\n`);
+  }
+}
+
 function itemChange(context: Context, dir: string): Change {
   const shown = relative(context.cwd, dir) || ".";
   context.log(`Checking ${shown}`);
@@ -118,6 +146,7 @@ function itemChange(context: Context, dir: string): Change {
         mkdirSync(dirname(to), { recursive: true });
         cpSync(join(dir, file), to, { recursive: true });
       }
+      inRepoForm(join(clone, "registry", item.name));
     },
   };
 }
