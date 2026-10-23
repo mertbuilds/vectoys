@@ -47,10 +47,22 @@ function must(runner: Run, command: string, args: string[], cwd: string): string
   return result.stdout.trim();
 }
 
-/** Forks the upstream, commits the change on a branch of the fork and opens a pull request; its URL. */
-function openPullRequest(change: Change, runner: Run, cwd: string): string {
+/** The URL of the open pull request from `head`, if there is one. */
+function openPullRequestFrom(head: string, runner: Run, cwd: string): string | undefined {
+  const found: unknown = JSON.parse(must(runner, "gh", ["pr", "list", "--repo", UPSTREAM, "--head", head, "--state", "open", "--json", "url"], cwd) || "[]");
+  const first: unknown = Array.isArray(found) ? found[0] : undefined;
+  return typeof first === "object" && first !== null && "url" in first && typeof first.url === "string" ? first.url : undefined;
+}
+
+/**
+ * Forks the upstream, syncs the fork's main, commits the change on a branch of
+ * the fork and opens a pull request, or updates the one already open from that
+ * branch; its URL and whether it was opened.
+ */
+function openPullRequest(change: Change, runner: Run, cwd: string): { url: string; opened: boolean } {
   const login = must(runner, "gh", ["api", "user", "--jq", ".login"], cwd);
   must(runner, "gh", ["repo", "fork", UPSTREAM, "--clone=false"], cwd);
+  must(runner, "gh", ["repo", "sync", `${login}/vectoys`, "--branch", "main"], cwd);
   const work = mkdtempSync(join(tmpdir(), "vectoys-submit-"));
   try {
     const clone = join(work, "vectoys");
@@ -59,8 +71,14 @@ function openPullRequest(change: Change, runner: Run, cwd: string): string {
     change.write(clone);
     must(runner, "git", ["add", "--all"], clone);
     must(runner, "git", ["commit", "-m", change.title], clone);
-    must(runner, "git", ["push", "--set-upstream", "origin", change.branch], clone);
-    return must(runner, "gh", ["pr", "create", "--repo", UPSTREAM, "--base", "main", "--head", `${login}:${change.branch}`, "--title", change.title, "--body", change.body], clone);
+    // The shallow clone tracks only main, so the lease names the branch's commit on the fork, or none if it has no such branch.
+    const ref = `refs/heads/${change.branch}`;
+    const pushed = must(runner, "git", ["ls-remote", "origin", ref], clone).split("\t")[0] ?? "";
+    must(runner, "git", ["push", `--force-with-lease=${ref}:${pushed}`, "--set-upstream", "origin", change.branch], clone);
+    const head = `${login}:${change.branch}`;
+    const open = openPullRequestFrom(head, runner, clone);
+    if (open) return { url: open, opened: false };
+    return { url: must(runner, "gh", ["pr", "create", "--repo", UPSTREAM, "--base", "main", "--head", head, "--title", change.title, "--body", change.body], clone), opened: true };
   } finally {
     rmSync(work, { recursive: true, force: true });
   }
@@ -69,12 +87,12 @@ function openPullRequest(change: Change, runner: Run, cwd: string): string {
 /** The steps every submission takes around its own. */
 function steps(change: Pick<Change, "branch" | "title">, own: string[]): string[] {
   return [
-    `Fork ${UPSTREAM} to your GitHub account with gh`,
+    `Fork ${UPSTREAM} to your GitHub account with gh and bring its main up to date`,
     "Clone the fork into a temporary folder",
     `Make the branch ${change.branch}`,
     ...own,
     `Commit "${change.title}" and push the branch to the fork`,
-    `Open a pull request to ${UPSTREAM} main`,
+    `Open a pull request to ${UPSTREAM} main, or update the one already open from the branch`,
   ];
 }
 
@@ -229,7 +247,7 @@ export async function submit(context: Context, given: string | undefined, option
     context.log(CLOSED);
     return undefined;
   }
-  const url = openPullRequest(change, runner, context.cwd);
-  context.log(`Opened ${url}`);
+  const { url, opened } = openPullRequest(change, runner, context.cwd);
+  context.log(`${opened ? "Opened" : "Updated"} ${url}`);
   return url;
 }

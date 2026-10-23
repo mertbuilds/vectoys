@@ -32,8 +32,8 @@ function context() {
   return { context: given, lines };
 }
 
-/** A fake gh and git: records each call, clones into an empty folder and keeps what the commit holds. */
-function fake(existing?: string) {
+/** A fake gh and git: records each call, clones into an empty folder and keeps what the commit holds; `open` is a pull request already open from the branch. */
+function fake(existing?: string, open?: string) {
   const calls: string[] = [];
   const committed: Record<string, string> = {};
   const runner: Run = (command, args, cwd): Ran => {
@@ -52,6 +52,8 @@ function fake(existing?: string) {
         if (path.isFile()) committed[join(path.parentPath, path.name).slice(cwd.length + 1)] = readFileSync(join(path.parentPath, path.name), "utf8");
       }
     }
+    if (command === "git" && args[0] === "ls-remote" && open) return ok(`abc123\t${args[2]}\n`);
+    if (command === "gh" && args[0] === "pr" && args[1] === "list") return ok(JSON.stringify(open ? [{ url: open }] : []));
     if (command === "gh" && args[0] === "pr") return ok("https://github.com/mertbuilds/vectoys/pull/7\n");
     return ok();
   };
@@ -67,11 +69,20 @@ test("submit opens a pull request that adds the item's files to the registry", a
   expect(url).toBe("https://github.com/mertbuilds/vectoys/pull/7");
   expect(calls[0]).toBe("gh api user --jq .login");
   expect(calls[1]).toBe("gh repo fork mertbuilds/vectoys --clone=false");
-  expect(calls[2]).toMatch(/^gh repo clone octo\/vectoys \S+ -- --depth 1$/);
-  expect(calls.slice(3, 7)).toEqual(["git checkout -b item/plate", "git add --all", "git commit -m Add the plate item", "git push --set-upstream origin item/plate"]);
-  expect(calls[7]).toStartWith("gh pr create --repo mertbuilds/vectoys --base main --head octo:item/plate --title Add the plate item --body Adds `registry/plate`");
-  expect(calls[7]).toContain("- pass: Plate renders on the server");
-  expect(calls[7]).toContain("I agree to license it under the vectoys items license.");
+  expect(calls[2]).toBe("gh repo sync octo/vectoys --branch main");
+  expect(calls[3]).toMatch(/^gh repo clone octo\/vectoys \S+ -- --depth 1$/);
+  expect(calls.slice(4, 10)).toEqual([
+    "git checkout -b item/plate",
+    "git add --all",
+    "git commit -m Add the plate item",
+    "git ls-remote origin refs/heads/item/plate",
+    "git push --force-with-lease=refs/heads/item/plate: --set-upstream origin item/plate",
+    "gh pr list --repo mertbuilds/vectoys --head octo:item/plate --state open --json url",
+  ]);
+  expect(calls[10]).toStartWith("gh pr create --repo mertbuilds/vectoys --base main --head octo:item/plate --title Add the plate item --body Adds `registry/plate`");
+  expect(calls[10]).toContain("- pass: Plate renders on the server");
+  expect(calls[10]).toContain("I agree to license it under the vectoys items license.");
+  expect(calls).toHaveLength(11);
   expect(Object.keys(committed).sort()).toEqual([
     "registry/plate/item.json",
     "registry/plate/package.json",
@@ -90,6 +101,17 @@ test("submit copies an item made outside the repository in the form registry/ it
   expect(pkg.dependencies).toEqual({ "@vectoys/engine": "workspace:*", "@vectoys/react": "workspace:*" });
   expect(pkg.devDependencies).toEqual({ "@types/react": "19.0.0", "@types/react-dom": "19.0.0", react: "19.0.0", "react-dom": "19.0.0" });
   expect(JSON.parse(committed["registry/plate/tsconfig.json"] ?? "")).toEqual(JSON.parse(readFileSync(join(repo, "registry/floppy/tsconfig.json"), "utf8")));
+}, 30_000);
+
+test("a second submit pushes the branch again and updates the pull request already open", async () => {
+  const { context: here, lines } = context();
+  const { runner, calls } = fake(undefined, "https://github.com/mertbuilds/vectoys/pull/7");
+  expect(await submit(here, "plate", { registry: undefined, dryRun: false, submissionsOpen: true, run: runner })).toBe("https://github.com/mertbuilds/vectoys/pull/7");
+  expect(calls).toContain("gh repo sync octo/vectoys --branch main");
+  expect(calls).toContain("git push --force-with-lease=refs/heads/item/plate:abc123 --set-upstream origin item/plate");
+  expect(calls.at(-1)).toBe("gh pr list --repo mertbuilds/vectoys --head octo:item/plate --state open --json url");
+  expect(calls.some((call) => call.startsWith("gh pr create"))).toBe(false);
+  expect(lines.at(-1)).toBe("Updated https://github.com/mertbuilds/vectoys/pull/7");
 }, 30_000);
 
 test("while submissions are closed, submit checks the item, says what it would do and calls no gh", async () => {
