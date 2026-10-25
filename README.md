@@ -138,6 +138,8 @@ bun run dev
 
 `bun run dev` builds the registry and serves the site at https://vectoys.localhost through portless.
 
+Pushing to main deploys vectoys.com through GitHub Actions.
+
 ## License
 
 MIT, for the engine, the React pieces, the CLI and every item in `registry/`. See [LICENSE](LICENSE).
