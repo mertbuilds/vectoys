@@ -31,8 +31,8 @@
   "devDependencies": {
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
+    "@vinena/knobs": "^0.5.1",
     "@vitejs/plugin-react": "5.2.0",
-    "devknobs": "0.4.0",
     "vite": "7.3.7"
   }
 }
