@@ -19,10 +19,10 @@ if (root.hasChildNodes()) hydrateRoot(root, app);
 else createRoot(root).render(app);
 
 if (import.meta.env.DEV) {
-  // Dev-only: devknobs emulates color scheme, motion, contrast, locale, geo and
+  // Dev-only: @vinena/knobs emulates color scheme, motion, contrast, locale, geo and
   // layout from inside the page (⇧K toggles it), and grabs an element's context
   // for an agent (⇧G).
-  void import("devknobs")
+  void import("@vinena/knobs")
     .then(({ mount }) => mount())
-    .catch((error: unknown) => console.warn("devknobs failed to load", error));
+    .catch((error: unknown) => console.warn("@vinena/knobs failed to load", error));
 }

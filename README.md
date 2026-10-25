@@ -136,7 +136,7 @@ bun run test
 bun run dev
 ```
 
-`bun run dev` builds the registry and serves the site at https://vectoys.localhost through portless. In dev the site loads devknobs: ⇧K opens the panel, ⇧G grabs an element for an agent. It never ships in the production build.
+`bun run dev` builds the registry and serves the site at https://vectoys.localhost through portless. In dev the site loads `@vinena/knobs`: ⇧K opens the panel, ⇧G grabs an element for an agent. It never ships in the production build.
 
 `bun run test` builds the packages first, since some CLI tests run items against the built `dist`.
 
