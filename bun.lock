@@ -57,7 +57,7 @@
       "name": "@vinena/vectoys-react",
       "version": "0.1.0",
       "dependencies": {
-        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys": "workspace:^",
       },
       "devDependencies": {
         "@types/react": "19.0.0",

@@ -10,7 +10,7 @@ Status: early.
 
 - `packages/engine` (`@vinena/vectoys`): a perspective camera, 3D rotations and poses, 2D outline helpers and compact SVG path output. Zero runtime dependencies.
 - `packages/react` (`@vinena/vectoys-react`): `Stage`, `Faces` and `Screen`, the React pieces any item draws with, and the motion hooks `useSpring`, `useFrames` and `useReducedMotion`. MIT.
-- `packages/cli` (`vectoys`): the CLI that copies items into a project. MIT.
+- `packages/cli` (`@vinena/vectoys-cli`, command `vectoys`): the CLI that copies items into a project. MIT.
 - `packages/registry-build`: writes the registry JSON the site serves at `/r`.
 - `apps/site`: vectoys.com, the landing page and the gallery, which also serves the registry at `/r`.
 
@@ -132,13 +132,19 @@ Under a dark colour scheme the browser window, the keycap and the die fall back 
 ```sh
 bun install
 bun run typecheck
-bun test
+bun run test
 bun run dev
 ```
 
 `bun run dev` builds the registry and serves the site at https://vectoys.localhost through portless. In dev the site loads devknobs: ⇧K opens the panel, ⇧G grabs an element for an agent. It never ships in the production build.
 
+`bun run test` builds the packages first, since some CLI tests run items against the built `dist`.
+
 Pushing to main deploys vectoys.com through GitHub Actions.
+
+## Release
+
+`bun run release` is the only way to publish. It builds the packages, then runs `bun publish` in `packages/engine`, `packages/react` and `packages/cli`, in that order. `bun publish` turns the `workspace:` ranges into real versions; `npm publish` would ship them as they are. Bump the version in all three `package.json` files first, as they share one.
 
 ## License
 

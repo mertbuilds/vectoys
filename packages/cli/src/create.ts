@@ -13,7 +13,8 @@ export const BASE_TSCONFIG = "../../tsconfig.base.json";
 export function itemTsconfig(inRepo: boolean) {
   const include = ["src", "test"];
   if (inRepo) return { extends: BASE_TSCONFIG, compilerOptions: { jsx: "react-jsx" }, include };
-  return { compilerOptions: { ...compilerOptions, jsx: "react-jsx" }, include };
+  const { paths, rewriteRelativeImportExtensions, ...own } = compilerOptions;
+  return { compilerOptions: { ...own, jsx: "react-jsx" }, include };
 }
 
 /** Whether `folder` is under registry/ of a vectoys checkout, where its packages are the workspace's own. */

@@ -49,7 +49,11 @@ test("outside a vectoys checkout, create writes version ranges and a tsconfig of
     dependencies: { "@vinena/vectoys": `^${version}`, "@vinena/vectoys-react": `^${version}` },
     devDependencies: { "@types/bun": expect.any(String) },
   });
-  expect(readJson(join(folder, "tsconfig.json"))).toEqual({ compilerOptions: { ...compilerOptions, jsx: "react-jsx" }, include: ["src", "test"] });
+  const { paths, rewriteRelativeImportExtensions, ...own } = compilerOptions;
+  const tsconfig = readJson(join(folder, "tsconfig.json"));
+  expect(tsconfig).toEqual({ compilerOptions: { ...own, jsx: "react-jsx" }, include: ["src", "test"] });
+  expect(tsconfig).not.toHaveProperty("compilerOptions.paths");
+  expect(tsconfig).not.toHaveProperty("compilerOptions.rewriteRelativeImportExtensions");
 });
 
 test("under registry/ of a vectoys checkout, create keeps the workspace's packages and base tsconfig", () => {

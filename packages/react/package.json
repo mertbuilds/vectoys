@@ -30,7 +30,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@vinena/vectoys": "workspace:*"
+    "@vinena/vectoys": "workspace:^"
   },
   "peerDependencies": {
     "react": ">=19"
