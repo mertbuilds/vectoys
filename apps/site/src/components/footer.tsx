@@ -27,7 +27,7 @@ export function Footer() {
         )}
         <li>
           <a href="https://mertbuilds.com/?utm_source=vectoys.com&utm_medium=referral&utm_campaign=footer" target="_blank" rel="noreferrer">
-            Made by Mert Düzgün
+            A mertbuilds.com experiment
           </a>
         </li>
       </ul>
