@@ -17,7 +17,7 @@ import {
   type Rotation,
   type ScreenRect,
   type Solid,
-} from "@vectoys/engine";
+} from "@vinena/vectoys";
 
 // A gift box 100 mm square and 80 mm tall from 3 mm board, under a lid 106 mm
 // square and 24 mm deep. A ribbon 16 mm wide runs down every side and crosses

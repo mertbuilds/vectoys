@@ -1,5 +1,5 @@
-import { fixed, type Rotation } from "@vectoys/engine";
-import { Faces, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/react";
+import { fixed, type Rotation } from "@vinena/vectoys";
+import { Faces, Stage, useFrames, useReducedMotion, type Look } from "@vinena/vectoys-react";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { VALUES, resting, roll, rollAt, seen, type Value, type View } from "./geometry";
 

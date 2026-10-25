@@ -8,9 +8,9 @@ Status: early.
 
 ## Packages
 
-- `packages/engine` (`@vectoys/engine`): a perspective camera, 3D rotations and poses, 2D outline helpers and compact SVG path output. Zero runtime dependencies.
-- `packages/react` (`@vectoys/react`): `Stage`, `Faces` and `Screen`, the React pieces any item draws with, and the motion hooks `useSpring`, `useFrames` and `useReducedMotion`. MIT.
-- `packages/cli` (`vectoys`): the CLI that copies items into a project. MIT.
+- `packages/engine` (`@vinena/vectoys`): a perspective camera, 3D rotations and poses, 2D outline helpers and compact SVG path output. Zero runtime dependencies.
+- `packages/react` (`@vinena/vectoys-react`): `Stage`, `Faces` and `Screen`, the React pieces any item draws with, and the motion hooks `useSpring`, `useFrames` and `useReducedMotion`. MIT.
+- `packages/cli` (`@vinena/vectoys-cli`, command `vectoys`): the CLI that copies items into a project. MIT.
 - `packages/registry-build`: writes the registry JSON the site serves at `/r`.
 - `apps/site`: vectoys.com, the landing page and the gallery, which also serves the registry at `/r`.
 
@@ -22,7 +22,7 @@ Besides the camera, poses and paths, the engine has:
 - `slab({ outline })` and `plate({ outline })`: a part takes any flat outline in place of its rounded box, such as a triangle for an envelope's flap.
 - `rotateAxis(axis, degrees)`: a turn about any axis.
 - `slerp(from, to, share)`: the rotation a share of the way between two, turning the short way round.
-- `spring(state, target, seconds, { stiffness, damping })` and `settled(state, target)`: a value on a spring, stepped in small fixed steps so any frame rate gives the same path. `useSpring(target)` in `@vectoys/react` follows a target on it.
+- `spring(state, target, seconds, { stiffness, damping })` and `settled(state, target)`: a value on a spring, stepped in small fixed steps so any frame rate gives the same path. `useSpring(target)` in `@vinena/vectoys-react` follows a target on it.
 
 ## Registry
 
@@ -51,10 +51,10 @@ Toys:
 Items are copied into your project as source, so you can change them. The engine and the React pieces come as normal packages. Items need React 19 or later.
 
 ```sh
-npx vectoys add laptop
+npx @vinena/vectoys-cli add laptop
 ```
 
-This writes `vectoys.json`, copies the item to `src/components/vectoys/laptop/` (or `components/vectoys/` without a `src` folder), and installs `@vectoys/engine` and `@vectoys/react` with your package manager. `npx vectoys list` shows every item. The shadcn CLI works too:
+This writes `vectoys.json`, copies the item to `src/components/vectoys/laptop/` (or `components/vectoys/` without a `src` folder), and installs `@vinena/vectoys` and `@vinena/vectoys-react` with your package manager. `npx @vinena/vectoys-cli list` shows every item. The shadcn CLI works too:
 
 ```sh
 npx shadcn add https://vectoys.com/r/laptop.json
@@ -67,8 +67,8 @@ Items from other registries go by scope once the scope is in `vectoys.json`:
 ```
 
 ```sh
-npx vectoys add @acme/thing
-npx vectoys add https://acme.dev/r/thing.json
+npx @vinena/vectoys-cli add @acme/thing
+npx @vinena/vectoys-cli add https://acme.dev/r/thing.json
 ```
 
 ### Make a new item
@@ -76,15 +76,15 @@ npx vectoys add https://acme.dev/r/thing.json
 Start a new item, draw it with your own coding agent, and check it before you submit it:
 
 ```sh
-npx vectoys create spinning-top --dir registry
-npx vectoys check registry/spinning-top
-npx vectoys preview registry/spinning-top --open
-npx vectoys submit registry/spinning-top
+npx @vinena/vectoys-cli create spinning-top --dir registry
+npx @vinena/vectoys-cli check registry/spinning-top
+npx @vinena/vectoys-cli preview registry/spinning-top --open
+npx @vinena/vectoys-cli submit registry/spinning-top
 ```
 
-`npx vectoys skill` prints how a coding agent makes an item, so you can point your agent at it.
+`npx @vinena/vectoys-cli skill` prints how a coding agent makes an item, so you can point your agent at it.
 
-`create` writes `spinning-top/` (under `--dir`, else the current folder) with an `item.json`, a working component that draws a tilted, shaded slab, a `package.json`, a `tsconfig.json` and a test, as the items in `registry/` have. It does not write over a folder that is already there unless you pass `--overwrite`. Made in `registry/` of this repository, `bun install` links its packages. Made anywhere else, it asks for `@vectoys/engine` and `@vectoys/react` by version, which install from npm once vectoys launches, and writes a `tsconfig.json` of its own; `submit` turns both back into the form the items in `registry/` have.
+`create` writes `spinning-top/` (under `--dir`, else the current folder) with an `item.json`, a working component that draws a tilted, shaded slab, a `package.json`, a `tsconfig.json` and a test, as the items in `registry/` have. It does not write over a folder that is already there unless you pass `--overwrite`. Made in `registry/` of this repository, `bun install` links its packages. Made anywhere else, it asks for `@vinena/vectoys` and `@vinena/vectoys-react` from npm by version, and writes a `tsconfig.json` of its own; `submit` turns both back into the form the items in `registry/` have.
 
 `check` prints a pass or fail line for each check and exits with 1 if any fails. It checks that `item.json` has what the registry needs, that the files are under 64 KB together, that the component renders on the server twice to the same markup with no `NaN` or `Infinity` in it, that its root is `role="img"` with an `aria-label` or its controls are labelled, and that neither `item.json` nor the rendered text names a brand or a device maker. It loads the component with [bun](https://bun.sh), so `check` needs bun, and the item's packages installed.
 
@@ -132,13 +132,19 @@ Under a dark colour scheme the browser window, the keycap and the die fall back 
 ```sh
 bun install
 bun run typecheck
-bun test
+bun run test
 bun run dev
 ```
 
 `bun run dev` builds the registry and serves the site at https://vectoys.localhost through portless. In dev the site loads devknobs: ⇧K opens the panel, ⇧G grabs an element for an agent. It never ships in the production build.
 
+`bun run test` builds the packages first, since some CLI tests run items against the built `dist`.
+
 Pushing to main deploys vectoys.com through GitHub Actions.
+
+## Release
+
+`bun run release` is the only way to publish. It builds the packages, then runs `bun publish` in `packages/engine`, `packages/react` and `packages/cli`, in that order. `bun publish` turns the `workspace:` ranges into real versions; `npm publish` would ship them as they are. Bump the version in all three `package.json` files first, as they share one.
 
 ## License
 

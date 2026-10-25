@@ -71,7 +71,7 @@ test("add copies the items in with headers, and says what to install", async () 
     registries: {},
   });
   expect(stdout).toContain("Packages install with bun.");
-  expect(stdout).toContain("Install what the items need with: bun add @vectoys/engine @vectoys/react");
+  expect(stdout).toContain("Install what the items need with: bun add @vinena/vectoys @vinena/vectoys-react");
 
   for (const [name, component] of [["laptop", "laptop.tsx"], ["phone", "phone.tsx"], ["tablet", "tablet.tsx"]] as const) {
     const source = readFileSync(join(repo, "registry", name, "src", component), "utf8");
@@ -175,10 +175,11 @@ test("the copied items typecheck against the workspace packages", () => {
         strict: true,
         noEmit: true,
         skipLibCheck: true,
+        rewriteRelativeImportExtensions: true,
         types: [],
         paths: {
-          "@vectoys/engine": [join(repo, "packages/engine/src/index.ts")],
-          "@vectoys/react": [join(repo, "packages/react/src/index.ts")],
+          "@vinena/vectoys": [join(repo, "packages/engine/src/index.ts")],
+          "@vinena/vectoys-react": [join(repo, "packages/react/src/index.ts")],
           react: [join(types, "react")],
           "react/*": [join(types, "react/*")],
         },

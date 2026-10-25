@@ -1,5 +1,5 @@
-import { fixed, settled, spring, type Spring, type SpringOptions } from "@vectoys/engine";
-import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look } from "@vectoys/react";
+import { fixed, settled, spring, type Spring, type SpringOptions } from "@vinena/vectoys";
+import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look } from "@vinena/vectoys-react";
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { FACE, FACE_ROUND, seen, type View } from "./geometry";
 

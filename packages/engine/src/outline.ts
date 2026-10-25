@@ -1,4 +1,4 @@
-import type { Flat } from "./vector";
+import type { Flat } from "./vector.ts";
 
 /** A rectangle as (left, top, right, bottom). */
 export type Box = readonly [number, number, number, number];

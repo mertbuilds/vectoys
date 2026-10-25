@@ -1,4 +1,4 @@
-import { Faces, Screen, Stage, type Look } from "@vectoys/react";
+import { Faces, Screen, Stage, type Look } from "@vinena/vectoys-react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { DISPLAY, TURN, seen, type Turn, type View } from "./geometry";
 

@@ -1,4 +1,4 @@
-import { camera, draw, footprint, multiply, place, plate, poses, rotateX, slab, type Flat, type Part, type Pose, type ScreenRect } from "@vectoys/engine";
+import { camera, draw, footprint, multiply, place, plate, poses, rotateX, slab, type Flat, type Part, type Pose, type ScreenRect } from "@vinena/vectoys";
 
 // A C6 envelope, 162 by 114 mm, seen from its back: the flap folds down over
 // a pocket made of two side flaps and a bottom flap, and an A6 card, 148 by

@@ -8,9 +8,9 @@ export function llmsText(index: RegistryIndex): string {
   return [
     "# vectoys",
     "",
-    "> 3D devices and small toys for landing pages, drawn as plain SVG paths in React. They render on the server, stay sharp at any size and carry live HTML on their screens, with no WebGL, canvas or images. Items copy into a project as source with `npx vectoys add <name>`, or with the shadcn CLI from their JSON address.",
+    "> 3D devices and small toys for landing pages, drawn as plain SVG paths in React. They render on the server, stay sharp at any size and carry live HTML on their screens, with no WebGL, canvas or images. Items copy into a project as source with `npx @vinena/vectoys-cli add <name>`, or with the shadcn CLI from their JSON address.",
     "",
-    "To make a new item with a coding agent, run `npx vectoys skill` and follow it: `vectoys create`, `vectoys check`, `vectoys preview`, then `vectoys submit`.",
+    "To make a new item with a coding agent, run `npx @vinena/vectoys-cli skill` and follow it: `vectoys create`, `vectoys check`, `vectoys preview`, then `vectoys submit`.",
     "",
     "## Docs",
     "",

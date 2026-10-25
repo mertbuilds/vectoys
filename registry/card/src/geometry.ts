@@ -13,7 +13,7 @@ import {
   type Part,
   type Pose,
   type ScreenRect,
-} from "@vectoys/engine";
+} from "@vinena/vectoys";
 
 // A card the size of a playing card, 64 by 88 mm, cut from 2 mm board with
 // 4 mm corners and its edges rounded, so it shows a thin edge as it turns.

@@ -39,7 +39,7 @@ export function YourRegistry() {
         <figure className="file">
           <figcaption>Terminal</figcaption>
           <pre>
-            <span className="command-prompt">$ </span>npx vectoys add @acme/rocket
+            <span className="command-prompt">$ </span>npx @vinena/vectoys-cli add @acme/rocket
           </pre>
         </figure>
       </div>

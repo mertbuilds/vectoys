@@ -21,7 +21,7 @@ test("writes an index and one shadcn registry item per device", async () => {
     $schema: SCHEMA,
     name: "phone",
     type: "registry:component",
-    dependencies: ["@vectoys/engine", "@vectoys/react"],
+    dependencies: ["@vinena/vectoys", "@vinena/vectoys-react"],
     meta: { license: "MIT", source: "https://example.test/r/phone.json" },
   });
   expect(phone.files.map((file) => [file.path, file.target])).toEqual([

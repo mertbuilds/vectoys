@@ -1,4 +1,4 @@
-import { camera, draw, slab } from "@vectoys/engine";
+import { camera, draw, slab } from "@vinena/vectoys";
 
 // A plain rounded block, drawn by the engine in outline, for items whose
 // preview the site does not have yet.

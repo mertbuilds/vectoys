@@ -46,12 +46,12 @@ test("the package manager comes from the lockfile", () => {
 
 test("only packages the project does not list are installed", () => {
   fresh();
-  writeFileSync(join(dir, "package.json"), JSON.stringify({ dependencies: { "@vectoys/engine": "0.1.0" }, devDependencies: { left: "1" } }));
-  expect(missing(dir, ["@vectoys/engine", "@vectoys/react@0.1.0", "left@^2", "right"])).toEqual(["@vectoys/react@0.1.0", "right"]);
+  writeFileSync(join(dir, "package.json"), JSON.stringify({ dependencies: { "@vinena/vectoys": "0.1.0" }, devDependencies: { left: "1" } }));
+  expect(missing(dir, ["@vinena/vectoys", "@vinena/vectoys-react@0.1.0", "left@^2", "right"])).toEqual(["@vinena/vectoys-react@0.1.0", "right"]);
 });
 
 test("only plain package specs count as dependencies", () => {
-  for (const spec of ["react", "@vectoys/engine", "@vectoys/react@0.1.0", "left-pad@^1.3.0", "lodash.merge@~4", "x@latest"]) {
+  for (const spec of ["react", "@vinena/vectoys", "@vinena/vectoys-react@0.1.0", "left-pad@^1.3.0", "lodash.merge@~4", "x@latest"]) {
     expect(isPackageSpec(spec)).toBe(true);
   }
   for (const spec of ["--registry=http://evil.example", "--trust", "x & calc", "a;b", "$(id)", "", "@/x", "x@", "x@>=1 <2", 7, null]) {

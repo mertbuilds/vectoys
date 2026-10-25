@@ -17,7 +17,6 @@
         "@vectoys/browser": "workspace:*",
         "@vectoys/card": "workspace:*",
         "@vectoys/dice": "workspace:*",
-        "@vectoys/engine": "workspace:*",
         "@vectoys/envelope": "workspace:*",
         "@vectoys/floppy": "workspace:*",
         "@vectoys/gift": "workspace:*",
@@ -25,9 +24,10 @@
         "@vectoys/laptop": "workspace:*",
         "@vectoys/monitor": "workspace:*",
         "@vectoys/phone": "workspace:*",
-        "@vectoys/react": "workspace:*",
         "@vectoys/tablet": "workspace:*",
         "@vectoys/watch": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
         "react": "19.0.0",
         "react-dom": "19.0.0",
       },
@@ -40,8 +40,8 @@
       },
     },
     "packages/cli": {
-      "name": "vectoys",
-      "version": "0.0.0",
+      "name": "@vinena/vectoys-cli",
+      "version": "0.1.0",
       "bin": {
         "vectoys": "./dist/index.js",
       },
@@ -50,14 +50,14 @@
       },
     },
     "packages/engine": {
-      "name": "@vectoys/engine",
-      "version": "0.0.0",
+      "name": "@vinena/vectoys",
+      "version": "0.1.0",
     },
     "packages/react": {
-      "name": "@vectoys/react",
-      "version": "0.0.0",
+      "name": "@vinena/vectoys-react",
+      "version": "0.1.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
+        "@vinena/vectoys": "workspace:^",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -77,8 +77,8 @@
       "name": "@vectoys/browser",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -94,8 +94,8 @@
       "name": "@vectoys/card",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -111,8 +111,8 @@
       "name": "@vectoys/dice",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -128,8 +128,8 @@
       "name": "@vectoys/envelope",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -145,8 +145,8 @@
       "name": "@vectoys/floppy",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -162,8 +162,8 @@
       "name": "@vectoys/gift",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -179,8 +179,8 @@
       "name": "@vectoys/keycap",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -196,8 +196,8 @@
       "name": "@vectoys/laptop",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -213,8 +213,8 @@
       "name": "@vectoys/monitor",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -230,8 +230,8 @@
       "name": "@vectoys/phone",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -247,8 +247,8 @@
       "name": "@vectoys/tablet",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -264,8 +264,8 @@
       "name": "@vectoys/watch",
       "version": "0.0.0",
       "dependencies": {
-        "@vectoys/engine": "workspace:*",
-        "@vectoys/react": "workspace:*",
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
       },
       "devDependencies": {
         "@types/react": "19.0.0",
@@ -503,8 +503,6 @@
 
     "@vectoys/dice": ["@vectoys/dice@workspace:registry/dice"],
 
-    "@vectoys/engine": ["@vectoys/engine@workspace:packages/engine"],
-
     "@vectoys/envelope": ["@vectoys/envelope@workspace:registry/envelope"],
 
     "@vectoys/floppy": ["@vectoys/floppy@workspace:registry/floppy"],
@@ -519,13 +517,17 @@
 
     "@vectoys/phone": ["@vectoys/phone@workspace:registry/phone"],
 
-    "@vectoys/react": ["@vectoys/react@workspace:packages/react"],
-
     "@vectoys/registry-build": ["@vectoys/registry-build@workspace:packages/registry-build"],
 
     "@vectoys/tablet": ["@vectoys/tablet@workspace:registry/tablet"],
 
     "@vectoys/watch": ["@vectoys/watch@workspace:registry/watch"],
+
+    "@vinena/vectoys": ["@vinena/vectoys@workspace:packages/engine"],
+
+    "@vinena/vectoys-cli": ["@vinena/vectoys-cli@workspace:packages/cli"],
+
+    "@vinena/vectoys-react": ["@vinena/vectoys-react@workspace:packages/react"],
 
     "@vitejs/plugin-react": ["@vitejs/plugin-react@5.2.0", "", { "dependencies": { "@babel/core": "^7.29.0", "@babel/plugin-transform-react-jsx-self": "^7.27.1", "@babel/plugin-transform-react-jsx-source": "^7.27.1", "@rolldown/pluginutils": "1.0.0-rc.3", "@types/babel__core": "^7.20.5", "react-refresh": "^0.18.0" }, "peerDependencies": { "vite": "^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" } }, "sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw=="],
 
@@ -604,8 +606,6 @@
     "undici-types": ["undici-types@8.9.0", "", {}, "sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg=="],
 
     "update-browserslist-db": ["update-browserslist-db@1.3.4", "", { "dependencies": { "escalade": "^3.2.0", "picocolors": "^1.1.1" }, "peerDependencies": { "browserslist": ">= 4.21.0" }, "bin": { "update-browserslist-db": "cli.js" } }, "sha512-t8wonIOdQyOjtPd2VktlBu6QjTVTks6v8bSi7kd0r2Vll8TK1JYDZtRRdbmCHOAMphkZgrzK+L+vXK4pyZ8t4A=="],
-
-    "vectoys": ["vectoys@workspace:packages/cli"],
 
     "vectoys-site": ["vectoys-site@workspace:apps/site"],
 

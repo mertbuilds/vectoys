@@ -3,6 +3,6 @@
   "title": "Phone",
   "description": "A modern flagship phone drawn as SVG paths that turns any way, with side buttons, a camera bump on its back and live HTML on its display.",
   "files": ["src/geometry.ts", "src/phone.tsx"],
-  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "dependencies": ["@vinena/vectoys", "@vinena/vectoys-react"],
   "license": "MIT"
 }

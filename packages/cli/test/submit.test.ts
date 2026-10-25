@@ -54,7 +54,7 @@ function fake(existing?: string, open?: string) {
     }
     if (command === "git" && args[0] === "ls-remote" && open) return ok(`abc123\t${args[2]}\n`);
     if (command === "gh" && args[0] === "pr" && args[1] === "list") return ok(JSON.stringify(open ? [{ url: open }] : []));
-    if (command === "gh" && args[0] === "pr") return ok("https://github.com/mertbuilds/vectoys/pull/7\n");
+    if (command === "gh" && args[0] === "pr") return ok("https://github.com/vinenastudio/vectoys/pull/7\n");
     return ok();
   };
   return { runner, calls, committed };
@@ -66,9 +66,9 @@ test("submit opens a pull request that adds the item's files to the registry", a
   const { context: here, lines } = context();
   const { runner, calls, committed } = fake();
   const url = await submit(here, "plate", { registry: undefined, dryRun: false, submissionsOpen: true, run: runner });
-  expect(url).toBe("https://github.com/mertbuilds/vectoys/pull/7");
+  expect(url).toBe("https://github.com/vinenastudio/vectoys/pull/7");
   expect(calls[0]).toBe("gh api user --jq .login");
-  expect(calls[1]).toBe("gh repo fork mertbuilds/vectoys --clone=false");
+  expect(calls[1]).toBe("gh repo fork vinenastudio/vectoys --clone=false");
   expect(calls[2]).toBe("gh repo sync octo/vectoys --branch main");
   expect(calls[3]).toMatch(/^gh repo clone octo\/vectoys \S+ -- --depth 1$/);
   expect(calls.slice(4, 10)).toEqual([
@@ -77,9 +77,9 @@ test("submit opens a pull request that adds the item's files to the registry", a
     "git commit -m Add the plate item",
     "git ls-remote origin refs/heads/item/plate",
     "git push --force-with-lease=refs/heads/item/plate: --set-upstream origin item/plate",
-    "gh pr list --repo mertbuilds/vectoys --head octo:item/plate --state open --json url",
+    "gh pr list --repo vinenastudio/vectoys --head octo:item/plate --state open --json url",
   ]);
-  expect(calls[10]).toStartWith("gh pr create --repo mertbuilds/vectoys --base main --head octo:item/plate --title Add the plate item --body Adds `registry/plate`");
+  expect(calls[10]).toStartWith("gh pr create --repo vinenastudio/vectoys --base main --head octo:item/plate --title Add the plate item --body Adds `registry/plate`");
   expect(calls[10]).toContain("- pass: Plate renders on the server");
   expect(calls[10]).toContain("I agree to license it under the MIT license.");
   expect(calls).toHaveLength(11);
@@ -91,27 +91,27 @@ test("submit opens a pull request that adds the item's files to the registry", a
     "registry/plate/test/plate.test.tsx",
     "registry/plate/tsconfig.json",
   ]);
-  expect(lines.at(-1)).toBe("Opened https://github.com/mertbuilds/vectoys/pull/7");
+  expect(lines.at(-1)).toBe("Opened https://github.com/vinenastudio/vectoys/pull/7");
 }, 30_000);
 
 test("submit copies an item made outside the repository in the form registry/ items have", async () => {
   const { runner, committed } = fake();
   await submit(context().context, "plate", { registry: undefined, dryRun: false, submissionsOpen: true, run: runner });
   const pkg = JSON.parse(committed["registry/plate/package.json"] ?? "");
-  expect(pkg.dependencies).toEqual({ "@vectoys/engine": "workspace:*", "@vectoys/react": "workspace:*" });
+  expect(pkg.dependencies).toEqual({ "@vinena/vectoys": "workspace:*", "@vinena/vectoys-react": "workspace:*" });
   expect(pkg.devDependencies).toEqual({ "@types/react": "19.0.0", "@types/react-dom": "19.0.0", react: "19.0.0", "react-dom": "19.0.0" });
   expect(JSON.parse(committed["registry/plate/tsconfig.json"] ?? "")).toEqual(JSON.parse(readFileSync(join(repo, "registry/floppy/tsconfig.json"), "utf8")));
 }, 30_000);
 
 test("a second submit pushes the branch again and updates the pull request already open", async () => {
   const { context: here, lines } = context();
-  const { runner, calls } = fake(undefined, "https://github.com/mertbuilds/vectoys/pull/7");
-  expect(await submit(here, "plate", { registry: undefined, dryRun: false, submissionsOpen: true, run: runner })).toBe("https://github.com/mertbuilds/vectoys/pull/7");
+  const { runner, calls } = fake(undefined, "https://github.com/vinenastudio/vectoys/pull/7");
+  expect(await submit(here, "plate", { registry: undefined, dryRun: false, submissionsOpen: true, run: runner })).toBe("https://github.com/vinenastudio/vectoys/pull/7");
   expect(calls).toContain("gh repo sync octo/vectoys --branch main");
   expect(calls).toContain("git push --force-with-lease=refs/heads/item/plate:abc123 --set-upstream origin item/plate");
-  expect(calls.at(-1)).toBe("gh pr list --repo mertbuilds/vectoys --head octo:item/plate --state open --json url");
+  expect(calls.at(-1)).toBe("gh pr list --repo vinenastudio/vectoys --head octo:item/plate --state open --json url");
   expect(calls.some((call) => call.startsWith("gh pr create"))).toBe(false);
-  expect(lines.at(-1)).toBe("Updated https://github.com/mertbuilds/vectoys/pull/7");
+  expect(lines.at(-1)).toBe("Updated https://github.com/vinenastudio/vectoys/pull/7");
 }, 30_000);
 
 test("while submissions are closed, submit checks the item, says what it would do and calls no gh", async () => {

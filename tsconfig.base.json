@@ -9,8 +9,13 @@
     "exactOptionalPropertyTypes": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
+    "rewriteRelativeImportExtensions": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["bun"]
+    "types": ["bun"],
+    "paths": {
+      "@vinena/vectoys": ["./packages/engine/src/index.ts"],
+      "@vinena/vectoys-react": ["./packages/react/src/index.ts"]
+    }
   }
 }

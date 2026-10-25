@@ -1,5 +1,6 @@
 import { REPO, REPO_PUBLIC } from "../registry";
 import { GitHubMark, StarIcon } from "./icons";
+import { VinenaEndorsement } from "./vinena-endorsement";
 
 export function Footer() {
   return (
@@ -26,9 +27,7 @@ export function Footer() {
           </>
         )}
         <li>
-          <a href="https://mertbuilds.com/?utm_source=vectoys.com&utm_medium=referral&utm_campaign=footer" target="_blank" rel="noreferrer">
-            A mertbuilds.com experiment
-          </a>
+          <VinenaEndorsement />
         </li>
       </ul>
     </footer>

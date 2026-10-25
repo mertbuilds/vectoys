@@ -1,8 +1,17 @@
 {
-  "name": "vectoys",
-  "version": "0.0.0",
+  "name": "@vinena/vectoys-cli",
+  "version": "0.1.0",
   "description": "Copy vectoys devices and toys into your project.",
   "license": "MIT",
+  "homepage": "https://github.com/vinenastudio/vectoys#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinenastudio/vectoys.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/vinenastudio/vectoys/issues"
+  },
   "type": "module",
   "bin": {
     "vectoys": "./dist/index.js"
@@ -19,5 +28,8 @@
   },
   "devDependencies": {
     "@vectoys/registry-build": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

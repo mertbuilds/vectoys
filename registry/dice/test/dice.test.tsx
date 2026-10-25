@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { rotateX } from "@vectoys/engine";
+import { rotateX } from "@vinena/vectoys";
 import { renderToString } from "react-dom/server";
 import { Dice, ROLL_MS, VALUES, WOBBLE_MS, resting, roll, rollAt, seen, upFace } from "../src";
 

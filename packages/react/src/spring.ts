@@ -1,6 +1,6 @@
-import { settled, spring, type Spring, type SpringOptions } from "@vectoys/engine";
+import { settled, spring, type Spring, type SpringOptions } from "@vinena/vectoys";
 import { useEffect, useRef, useState } from "react";
-import { useFrames, useReducedMotion } from "./motion";
+import { useFrames, useReducedMotion } from "./motion.ts";
 
 /**
  * A number that springs to `target` whenever it changes, one frame at a

@@ -3,6 +3,6 @@
   "title": "Dice",
   "description": "A die with rounded edges and pips that rolls when clicked: it hops, tumbles, lands on a random or given face and settles with a wobble, its shadow following on the ground.",
   "files": ["src/geometry.ts", "src/dice.tsx"],
-  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "dependencies": ["@vinena/vectoys", "@vinena/vectoys-react"],
   "license": "MIT"
 }
