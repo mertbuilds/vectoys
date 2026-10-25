@@ -136,7 +136,7 @@ bun test
 bun run dev
 ```
 
-`bun run dev` builds the registry and serves the site at https://vectoys.localhost through portless.
+`bun run dev` builds the registry and serves the site at https://vectoys.localhost through portless. In dev the site loads devknobs: ⇧K opens the panel, ⇧G grabs an element for an agent. It never ships in the production build.
 
 Pushing to main deploys vectoys.com through GitHub Actions.
 
