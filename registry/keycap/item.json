@@ -3,6 +3,6 @@
   "title": "Keycap",
   "description": "A big mechanical keycap drawn as SVG paths that is a real button: a sculpted cap with a live label on its dished top, on a switch, that lifts on hover and travels down when pressed. A row of keys spells a word.",
   "files": ["src/geometry.ts", "src/keycap.tsx"],
-  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "dependencies": ["@vinena/vectoys", "@vinena/vectoys-react"],
   "license": "MIT"
 }

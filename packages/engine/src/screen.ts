@@ -1,5 +1,5 @@
-import type { Camera } from "./camera";
-import { place, rotate, type Flat, type Pose, type Solid } from "./vector";
+import type { Camera } from "./camera.ts";
+import { place, rotate, type Flat, type Pose, type Solid } from "./vector.ts";
 
 /** A rectangle in a part's plane at height `z`, from (x, y), `width` along x and `height` along y. */
 export type ScreenRect = { x: number; y: number; width: number; height: number; z?: number };

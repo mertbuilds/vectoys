@@ -1,5 +1,5 @@
-import { fixed } from "@vectoys/engine";
-import { Faces, Screen, Stage, useSpring, type Look } from "@vectoys/react";
+import { fixed } from "@vinena/vectoys";
+import { Faces, Screen, Stage, useSpring, type Look } from "@vinena/vectoys-react";
 import {
   memo,
   useId,

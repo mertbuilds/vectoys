@@ -1,4 +1,4 @@
-import { combine, dot, rotate, rotateX, rotateY, rotateZ, subtract, type Flat, type Rotation, type Solid } from "./vector";
+import { combine, dot, rotate, rotateX, rotateY, rotateZ, subtract, type Flat, type Rotation, type Solid } from "./vector.ts";
 
 /**
  * A scene `width` by `height`, in the units the SVG viewBox and the CSS use.

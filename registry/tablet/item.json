@@ -3,6 +3,6 @@
   "title": "Tablet",
   "description": "An 11 inch tablet drawn as SVG paths that turns any way, upright or on its side, with a uniform bezel, a camera bump on its back and live HTML on its display.",
   "files": ["src/geometry.ts", "src/tablet.tsx"],
-  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "dependencies": ["@vinena/vectoys", "@vinena/vectoys-react"],
   "license": "MIT"
 }

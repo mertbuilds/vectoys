@@ -1,5 +1,5 @@
 import { Phone, TURN } from "@vectoys/phone";
-import type { StyleWithVariables } from "@vectoys/react";
+import type { StyleWithVariables } from "@vinena/vectoys-react";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { clamp, useInFocus, useReducedMotion } from "../motion";
 

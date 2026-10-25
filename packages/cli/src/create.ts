@@ -59,7 +59,7 @@ export function scaffold(name: string, author?: string, inRepo = false): Record<
     title,
     description: `${title}: a tilted slab drawn as SVG paths. Say what it is and what it does.`,
     files: ["src/geometry.ts", `src/${name}.tsx`],
-    dependencies: ["@vectoys/engine", "@vectoys/react"],
+    dependencies: ["@vinena/vectoys", "@vinena/vectoys-react"],
     license: "MIT",
     ...(author ? { author } : {}),
   };
@@ -75,7 +75,7 @@ export function scaffold(name: string, author?: string, inRepo = false): Record<
     sideEffects: false,
     exports: { ".": "./src/index.ts" },
     scripts: { typecheck: "tsc --noEmit", test: "bun test" },
-    dependencies: { "@vectoys/engine": vectoys, "@vectoys/react": vectoys },
+    dependencies: { "@vinena/vectoys": vectoys, "@vinena/vectoys-react": vectoys },
     peerDependencies: { react: ">=19" },
     devDependencies: {
       ...(inRepo ? {} : { "@types/bun": devDependencies["@types/bun"] }),
@@ -93,7 +93,7 @@ export function scaffold(name: string, author?: string, inRepo = false): Record<
     ".gitignore": "preview.html\n",
     "package.json": json(pkg),
     "tsconfig.json": json(tsconfig),
-    "src/geometry.ts": `import { camera, draw, plate, rotateX, slab, type Part, type Pose } from "@vectoys/engine";
+    "src/geometry.ts": `import { camera, draw, plate, rotateX, slab, type Part, type Pose } from "@vinena/vectoys";
 
 // A slab 60 by 40 scene units and 4 deep, with a plate on its face. In the
 // slab's own plane x runs across from its middle, y down from its middle and
@@ -130,7 +130,7 @@ export function seen(yaw: number = TILT.yaw, pitch: number = TILT.pitch) {
 
 export type View = ReturnType<typeof seen>;
 `,
-    [`src/${name}.tsx`]: `import { Faces, Stage, type Look, type StyleWithVariables } from "@vectoys/react";
+    [`src/${name}.tsx`]: `import { Faces, Stage, type Look, type StyleWithVariables } from "@vinena/vectoys-react";
 import { useMemo, type CSSProperties } from "react";
 import { TILT, seen } from "./geometry";
 

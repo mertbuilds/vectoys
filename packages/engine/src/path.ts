@@ -1,4 +1,4 @@
-import type { Flat } from "./vector";
+import type { Flat } from "./vector.ts";
 
 /**
  * A computed number cut to 4 decimals, and -0 to 0, so markup reads the same

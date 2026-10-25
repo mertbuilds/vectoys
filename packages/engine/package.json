@@ -1,16 +1,35 @@
 {
-  "name": "@vectoys/engine",
-  "version": "0.0.0",
+  "name": "@vinena/vectoys",
+  "version": "0.1.0",
   "description": "Perspective camera, 3D poses and SVG outline helpers for device mockups.",
   "license": "MIT",
+  "homepage": "https://github.com/vinenastudio/vectoys#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinenastudio/vectoys.git",
+    "directory": "packages/engine"
+  },
+  "bugs": {
+    "url": "https://github.com/vinenastudio/vectoys/issues"
+  },
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
-  "files": ["src"],
+  "files": ["dist"],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run build",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

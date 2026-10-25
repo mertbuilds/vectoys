@@ -3,6 +3,6 @@
   "title": "Watch",
   "description": "A smartwatch drawn as SVG paths that turns any way, with round edges, a crown, a side button, a bent band and live HTML on its display.",
   "files": ["src/geometry.ts", "src/watch.tsx"],
-  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "dependencies": ["@vinena/vectoys", "@vinena/vectoys-react"],
   "license": "MIT"
 }

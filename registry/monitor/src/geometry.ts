@@ -10,7 +10,7 @@ import {
   type Part,
   type Pose,
   type ScreenRect,
-} from "@vectoys/engine";
+} from "@vinena/vectoys";
 
 // A 27 inch 16:9 monitor: a panel 612 by 349.5 mm and 16 mm thick, its
 // corners rounded by 6 mm and its edges by 2 mm, with a display 600 by

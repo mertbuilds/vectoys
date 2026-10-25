@@ -14,6 +14,6 @@ test("llms.txt links every item in registry/, the skill and the index", () => {
   expect(text).toStartWith("# vectoys\n\n> ");
   expect(text).toContain("(https://vectoys.com/skill.md)");
   expect(text).toContain("(https://vectoys.com/r/index.json)");
-  expect(text).toContain("(https://github.com/mertbuilds/vectoys)");
+  expect(text).toContain("(https://github.com/vinenastudio/vectoys)");
   for (const item of items) expect(text).toContain(`- [${item.title}](https://vectoys.com/r/${item.name}.json): ${item.description}`);
 });

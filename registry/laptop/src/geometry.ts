@@ -16,7 +16,7 @@ import {
   type Pose,
   type ScreenRect,
   type Solid,
-} from "@vectoys/engine";
+} from "@vinena/vectoys";
 
 // A 14 inch laptop: 312.6 mm wide, 221.2 mm deep and 15.5 mm thick, of
 // which the lid is about 4.5 mm. Sizes are hundredths of the scene's width,

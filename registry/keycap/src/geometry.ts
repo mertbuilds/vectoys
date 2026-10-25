@@ -1,4 +1,4 @@
-import { IDENTITY, camera, draw, footprint, plate, slab, type Box, type Part, type ScreenRect } from "@vectoys/engine";
+import { IDENTITY, camera, draw, footprint, plate, slab, type Box, type Part, type ScreenRect } from "@vinena/vectoys";
 
 // A mechanical key on a short run of keyboard deck: a sculpted cap 18 mm
 // square at its foot and 12.8 mm across its dished top, 9 mm tall, on a

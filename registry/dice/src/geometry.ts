@@ -17,7 +17,7 @@ import {
   type Pose,
   type Rotation,
   type Solid,
-} from "@vectoys/engine";
+} from "@vinena/vectoys";
 
 // A standard 16 mm die with its edges and corners rounded by 2.5 mm, its pips
 // 2.9 mm across. Sizes are millimetres at SCALE scene units each, in a scene

@@ -29,7 +29,7 @@ test("create writes an item folder like the registry's own", () => {
     name: "spinning-top",
     title: "Spinning top",
     files: ["src/geometry.ts", "src/spinning-top.tsx"],
-    dependencies: ["@vectoys/engine", "@vectoys/react"],
+    dependencies: ["@vinena/vectoys", "@vinena/vectoys-react"],
     license: "MIT",
   });
   for (const file of ["package.json", "tsconfig.json", "src/index.ts", "test/spinning-top.test.tsx"]) expect(existsSync(join(folder, file))).toBe(true);
@@ -46,7 +46,7 @@ test("outside a vectoys checkout, create writes version ranges and a tsconfig of
   create(context().context, "standalone", undefined);
   const folder = join(work, "standalone");
   expect(readJson(join(folder, "package.json"))).toMatchObject({
-    dependencies: { "@vectoys/engine": `^${version}`, "@vectoys/react": `^${version}` },
+    dependencies: { "@vinena/vectoys": `^${version}`, "@vinena/vectoys-react": `^${version}` },
     devDependencies: { "@types/bun": expect.any(String) },
   });
   expect(readJson(join(folder, "tsconfig.json"))).toEqual({ compilerOptions: { ...compilerOptions, jsx: "react-jsx" }, include: ["src", "test"] });
@@ -59,7 +59,7 @@ test("under registry/ of a vectoys checkout, create keeps the workspace's packag
   create({ ...context().context, cwd: checkout }, "linked", "registry");
   const folder = join(checkout, "registry/linked");
   const pkg = readJson(join(folder, "package.json"));
-  expect(pkg).toMatchObject({ dependencies: { "@vectoys/engine": "workspace:*", "@vectoys/react": "workspace:*" } });
+  expect(pkg).toMatchObject({ dependencies: { "@vinena/vectoys": "workspace:*", "@vinena/vectoys-react": "workspace:*" } });
   expect(JSON.stringify(pkg)).not.toContain("@types/bun");
   expect(readJson(join(folder, "tsconfig.json"))).toEqual(readJson(join(repo, "registry/floppy/tsconfig.json")));
   expect(inVectoysRepo(join(checkout, "elsewhere/linked"))).toBe(false);

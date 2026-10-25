@@ -3,6 +3,6 @@
   "title": "Envelope",
   "description": "A newsletter envelope drawn as SVG paths: a real button opens it, the flap swings up on its fold and a letter with live content, such as a sign up form, rises out of the pocket. Open it from the page with a number from 0 to 1, or let it open itself on a click.",
   "files": ["src/geometry.ts", "src/envelope.tsx"],
-  "dependencies": ["@vectoys/engine", "@vectoys/react"],
+  "dependencies": ["@vinena/vectoys", "@vinena/vectoys-react"],
   "license": "MIT"
 }

@@ -13,8 +13,8 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@vectoys/engine": "workspace:*",
-    "@vectoys/react": "workspace:*"
+    "@vinena/vectoys": "workspace:*",
+    "@vinena/vectoys-react": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=19"

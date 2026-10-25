@@ -12,7 +12,7 @@ import {
   type Part,
   type Pose,
   type ScreenRect,
-} from "@vectoys/engine";
+} from "@vinena/vectoys";
 
 // A browser window 1280 by 800 CSS pixels, drawn as a thin card 12 pixels
 // thick with 12 pixel corners and edges rounded by 5. A bar 44 pixels tall

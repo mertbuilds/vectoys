@@ -1,4 +1,4 @@
-import type { Camera } from "@vectoys/engine";
+import type { Camera } from "@vinena/vectoys";
 import type { CSSProperties, ReactNode } from "react";
 
 /** Inline style that may also set CSS variables, such as `--vectoys-finish`. */

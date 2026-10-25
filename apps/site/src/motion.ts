@@ -13,7 +13,7 @@ export function useMedia(query: string): boolean {
   );
 }
 
-export { useReducedMotion } from "@vectoys/react";
+export { useReducedMotion } from "@vinena/vectoys-react";
 
 /**
  * True from the first time the element's middle comes up past `line` of the

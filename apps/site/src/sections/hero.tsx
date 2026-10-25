@@ -14,7 +14,7 @@ const OUTPUT = [
   "Packages install with npm.",
   `Wrote    ${FOLDER}/geometry.ts`,
   `Wrote    ${FOLDER}/laptop.tsx`,
-  "Running  npm install @vectoys/engine @vectoys/react",
+  "Running  npm install @vinena/vectoys @vinena/vectoys-react",
   "added 2 packages in 2s",
 ];
 

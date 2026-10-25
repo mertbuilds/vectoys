@@ -1,7 +1,7 @@
-import type { Camera } from "./camera";
-import { grow, hull, rounded, type Box } from "./outline";
-import { fixed, shape } from "./path";
-import { REST, compose, cross, dot, place, rotate, subtract, type Flat, type Pose, type Solid } from "./vector";
+import type { Camera } from "./camera.ts";
+import { grow, hull, rounded, type Box } from "./outline.ts";
+import { fixed, shape } from "./path.ts";
+import { REST, compose, cross, dot, place, rotate, subtract, type Flat, type Pose, type Solid } from "./vector.ts";
 
 type Common = {
   /** Names the part in what `draw` returns, so a renderer can style it. */

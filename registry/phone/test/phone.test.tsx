@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { screenQuad } from "@vectoys/engine";
+import { screenQuad } from "@vinena/vectoys";
 import { renderToString } from "react-dom/server";
 import { DISPLAY, Phone, seen, type Turn } from "../src";
 

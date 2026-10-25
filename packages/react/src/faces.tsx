@@ -1,4 +1,4 @@
-import type { Drawn, Silhouette } from "@vectoys/engine";
+import type { Drawn, Silhouette } from "@vinena/vectoys";
 import type { CSSProperties, SVGProps } from "react";
 
 /** How a path of one role is painted: any SVG path attributes but its data. */

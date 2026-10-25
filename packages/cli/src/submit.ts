@@ -12,7 +12,7 @@ import { fetchJson } from "./fetch";
 export const SUBMISSIONS_OPEN = false;
 
 /** The repository items and registries are submitted to. */
-export const UPSTREAM = "mertbuilds/vectoys";
+export const UPSTREAM = "vinenastudio/vectoys";
 
 export const CLOSED = "Submissions open when vectoys launches. Nothing was sent.";
 
@@ -113,7 +113,7 @@ export function inRepoForm(folder: string) {
     for (const field of ["dependencies", "devDependencies", "peerDependencies"]) {
       const deps = pkg[field];
       if (!isRecord(deps)) continue;
-      for (const name of Object.keys(deps)) if (name.startsWith("@vectoys/")) deps[name] = "workspace:*";
+      for (const name of Object.keys(deps)) if (name.startsWith("@vectoys/") || name === "@vinena/vectoys" || name.startsWith("@vinena/vectoys-")) deps[name] = "workspace:*";
       if (field === "devDependencies") delete deps["@types/bun"];
     }
     writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);

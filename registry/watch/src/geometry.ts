@@ -15,7 +15,7 @@ import {
   type Pose,
   type ScreenRect,
   type Solid,
-} from "@vectoys/engine";
+} from "@vinena/vectoys";
 
 // A smartwatch: a case 38 by 45 mm and 10.7 mm thick, its corners rounded
 // by 10.5 mm and its sides by 4 mm where they meet the front and the back.
