@@ -26,7 +26,7 @@ Besides the camera, poses and paths, the engine has:
 
 ## Registry
 
-Items to copy into a project, each described by its `item.json`. License of every item: to be decided.
+Items to copy into a project, each described by its `item.json`. Every item is MIT licensed.
 
 Devices:
 
@@ -140,4 +140,4 @@ bun run dev
 
 ## License
 
-MIT
+MIT, for the engine, the React pieces, the CLI and every item in `registry/`. See [LICENSE](LICENSE).

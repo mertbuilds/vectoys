@@ -4,5 +4,5 @@
   "description": "A floating browser window drawn as SVG paths that turns any way and stacks, with an address bar and live HTML on its page, in light or dark tones.",
   "files": ["src/geometry.ts", "src/browser.tsx"],
   "dependencies": ["@vectoys/engine", "@vectoys/react"],
-  "license": "TBD"
+  "license": "MIT"
 }

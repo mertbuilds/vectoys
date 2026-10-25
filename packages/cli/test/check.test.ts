@@ -58,11 +58,11 @@ test("brand names fail in item.json and in what renders", () => {
 
 test("a bad item.json fails before anything renders", () => {
   const { folder, edit } = item("bad");
-  edit("item.json", (text) => text.replace('"license": "TBD"', '"licence": "TBD"'));
+  edit("item.json", (text) => text.replace('"license": "MIT"', '"licence": "MIT"'));
   expect(failed(folder)).toEqual(['item.json needs a "license"']);
   writeFileSync(join(folder, "item.json"), "{ name: bad }");
   expect(failed(folder)[0]).toStartWith("item.json is not valid JSON");
-  writeFileSync(join(folder, "item.json"), JSON.stringify({ name: "bad", title: "Bad", description: "Bad", license: "TBD", files: ["src/gone.tsx"] }));
+  writeFileSync(join(folder, "item.json"), JSON.stringify({ name: "bad", title: "Bad", description: "Bad", license: "MIT", files: ["src/gone.tsx"] }));
   expect(failed(folder)).toEqual(['files lists "src/gone.tsx", which is not a file in the folder']);
 });
 

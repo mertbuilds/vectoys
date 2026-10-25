@@ -81,7 +81,7 @@ test("submit opens a pull request that adds the item's files to the registry", a
   ]);
   expect(calls[10]).toStartWith("gh pr create --repo mertbuilds/vectoys --base main --head octo:item/plate --title Add the plate item --body Adds `registry/plate`");
   expect(calls[10]).toContain("- pass: Plate renders on the server");
-  expect(calls[10]).toContain("I agree to license it under the vectoys items license.");
+  expect(calls[10]).toContain("I agree to license it under the MIT license.");
   expect(calls).toHaveLength(11);
   expect(Object.keys(committed).sort()).toEqual([
     "registry/plate/item.json",

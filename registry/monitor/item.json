@@ -4,5 +4,5 @@
   "description": "A 27 inch desktop monitor on a stand drawn as SVG paths that turns any way, its panel tilting on the stand, with a thin bezel and live HTML on its display.",
   "files": ["src/geometry.ts", "src/monitor.tsx"],
   "dependencies": ["@vectoys/engine", "@vectoys/react"],
-  "license": "TBD"
+  "license": "MIT"
 }

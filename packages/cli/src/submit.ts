@@ -151,7 +151,7 @@ function itemChange(context: Context, dir: string): Change {
     "## Author",
     "",
     "- [ ] I made this item myself, and it draws no maker's product.",
-    "- [ ] I agree to license it under the vectoys items license.",
+    "- [ ] I agree to license it under the MIT license.",
   ].join("\n");
   return {
     branch,

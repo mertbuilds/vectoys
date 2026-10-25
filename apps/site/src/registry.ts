@@ -9,7 +9,7 @@ export const INDEX_DATA = "registry-index";
 
 export const REPO = "https://github.com/mertbuilds/vectoys";
 
-/** Whether the repo is public. Until launch it is private, so the site shows no GitHub links. */
-export const REPO_PUBLIC = false;
+/** Whether the repo is public, so the site shows its GitHub links. */
+export const REPO_PUBLIC = true;
 
 export const addCommand = (name: string) => `npx vectoys add ${name}`;

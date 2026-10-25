@@ -30,7 +30,7 @@ test("create writes an item folder like the registry's own", () => {
     title: "Spinning top",
     files: ["src/geometry.ts", "src/spinning-top.tsx"],
     dependencies: ["@vectoys/engine", "@vectoys/react"],
-    license: "TBD",
+    license: "MIT",
   });
   for (const file of ["package.json", "tsconfig.json", "src/index.ts", "test/spinning-top.test.tsx"]) expect(existsSync(join(folder, file))).toBe(true);
   expect(readFileSync(join(folder, "src/spinning-top.tsx"), "utf8")).toContain("export function SpinningTop(");
