@@ -1144,6 +1144,22 @@ code.inline {
   color: var(--ink);
 }
 
+.footer-links .vinena-endorsement {
+  gap: 0.4em;
+  white-space: nowrap;
+  transition: none;
+}
+
+.footer-links .vinena-endorsement:hover {
+  color: var(--muted);
+}
+
+.vinena-wordmark {
+  height: 0.85em;
+  width: auto;
+  color: var(--ink);
+}
+
 .star path {
   fill: transparent;
   stroke: currentColor;
