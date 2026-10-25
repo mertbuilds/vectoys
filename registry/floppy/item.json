@@ -4,5 +4,5 @@
   "description": "A 3.5 inch floppy disk drawn as SVG paths that is a download link or a button: its metal shutter slides open and it turns towards the eye on hover, with live text on its label and a write-protect tab in its corner.",
   "files": ["src/geometry.ts", "src/floppy.tsx"],
   "dependencies": ["@vectoys/engine", "@vectoys/react"],
-  "license": "TBD"
+  "license": "MIT"
 }

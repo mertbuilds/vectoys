@@ -14,7 +14,7 @@ test("writes an index and one shadcn registry item per device", async () => {
   // Every folder under registry/ is an item, in name order.
   const folders = (await readdir(join(root, "registry"), { withFileTypes: true })).filter((entry) => entry.isDirectory());
   expect(index.items.map((item) => item.name)).toEqual(folders.map((entry) => entry.name).sort());
-  expect(index.items.find((item) => item.name === "phone")).toMatchObject({ name: "phone", title: "Phone", type: "registry:component", license: "TBD" });
+  expect(index.items.find((item) => item.name === "phone")).toMatchObject({ name: "phone", title: "Phone", type: "registry:component", license: "MIT" });
 
   const phone: RegistryItem = JSON.parse(await readFile(join(out, "phone.json"), "utf8"));
   expect(phone).toMatchObject({
@@ -22,7 +22,7 @@ test("writes an index and one shadcn registry item per device", async () => {
     name: "phone",
     type: "registry:component",
     dependencies: ["@vectoys/engine", "@vectoys/react"],
-    meta: { license: "TBD", source: "https://example.test/r/phone.json" },
+    meta: { license: "MIT", source: "https://example.test/r/phone.json" },
   });
   expect(phone.files.map((file) => [file.path, file.target])).toEqual([
     ["registry/phone/src/geometry.ts", "@components/vectoys/phone/geometry.ts"],
@@ -36,7 +36,7 @@ test("each copied file starts with a short header over the untouched source", as
   const source = await readFile(join(root, "registry/laptop/src/geometry.ts"), "utf8");
   const lines = geometry.content.split("\n");
   expect(lines[0]).toBe("// vectoys laptop, from https://example.test/r/laptop.json");
-  expect(lines[1]).toBe("// License: TBD. Credit: vectoys (https://vectoys.com)");
+  expect(lines[1]).toBe("// License: MIT. Credit: vectoys (https://vectoys.com)");
   expect(lines.slice(2).join("\n")).toBe(source);
 });
 

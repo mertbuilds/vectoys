@@ -60,7 +60,7 @@ export function scaffold(name: string, author?: string, inRepo = false): Record<
     description: `${title}: a tilted slab drawn as SVG paths. Say what it is and what it does.`,
     files: ["src/geometry.ts", `src/${name}.tsx`],
     dependencies: ["@vectoys/engine", "@vectoys/react"],
-    license: "TBD",
+    license: "MIT",
     ...(author ? { author } : {}),
   };
   // In the repository the workspace links the packages; elsewhere they come

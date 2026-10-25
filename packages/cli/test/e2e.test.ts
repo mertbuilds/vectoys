@@ -56,7 +56,7 @@ const target = (...path: string[]) => join(project, "src/components/vectoys", ..
 test("list shows the registry's items", async () => {
   const { stdout, code } = await run("list");
   expect(code).toBe(0);
-  expect(stdout).toMatch(/^laptop +Laptop \(license: TBD\)$/m);
+  expect(stdout).toMatch(/^laptop +Laptop \(license: MIT\)$/m);
   expect(stdout).toContain("phone");
   expect(stdout).toContain("tablet");
 });
@@ -76,7 +76,7 @@ test("add copies the items in with headers, and says what to install", async () 
   for (const [name, component] of [["laptop", "laptop.tsx"], ["phone", "phone.tsx"], ["tablet", "tablet.tsx"]] as const) {
     const source = readFileSync(join(repo, "registry", name, "src", component), "utf8");
     const copied = readFileSync(target(name, component), "utf8");
-    expect(copied).toStartWith(`// vectoys ${name}, from ${registry}/${name}.json\n// License: TBD. Credit: vectoys (https://vectoys.com)\n`);
+    expect(copied).toStartWith(`// vectoys ${name}, from ${registry}/${name}.json\n// License: MIT. Credit: vectoys (https://vectoys.com)\n`);
     expect(copied).toEndWith(source);
     expect(copied).toContain('from "./geometry";');
     expect(readFileSync(target(name, "geometry.ts"), "utf8")).toStartWith(`// vectoys ${name}, from`);

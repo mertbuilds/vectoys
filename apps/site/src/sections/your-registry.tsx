@@ -24,8 +24,7 @@ export function YourRegistry() {
           them. Put its address in your <code className="inline">vectoys.json</code> and its items install by scope.
         </p>
         <p className="note">
-          The engine, the React pieces and the CLI are MIT licensed. The items will get a license of their own before launch, free to use with
-          credit.
+          The engine, the React pieces, the CLI and the items are all MIT licensed.
         </p>
       </div>
       <div className="files">

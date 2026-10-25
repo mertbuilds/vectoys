@@ -4,5 +4,5 @@
   "description": "A 14 inch laptop seen from the front and a little above, drawn as SVG paths, with a lid that opens and closes and live HTML on its display.",
   "files": ["src/geometry.ts", "src/laptop.tsx"],
   "dependencies": ["@vectoys/engine", "@vectoys/react"],
-  "license": "TBD"
+  "license": "MIT"
 }
