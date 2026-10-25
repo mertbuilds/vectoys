@@ -7,15 +7,15 @@ export function Header() {
       <a href="/" className="wordmark">
         vectoys
       </a>
+      <nav className="site-nav" aria-label="Sections">
+        <a href="#gallery">Gallery</a>
+        <a href="#your-registry">Registry</a>
+      </nav>
       {REPO_PUBLIC && (
         <a href={REPO} target="_blank" rel="noreferrer" className="icon-button" aria-label="GitHub">
           <GitHubMark />
         </a>
       )}
-      <nav className="site-nav" aria-label="Sections">
-        <a href="#gallery">Gallery</a>
-        <a href="#your-registry">Registry</a>
-      </nav>
     </header>
   );
 }
