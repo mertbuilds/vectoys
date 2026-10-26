@@ -5,3 +5,4 @@ dist/
 apps/site/public/r/
 apps/site/public/llms.txt
 apps/site/public/skill.md
+.wrangler/
