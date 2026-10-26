@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
+import { startAnalytics } from "./analytics";
 import { App } from "./app";
 import { INDEX_DATA, type RegistryIndex } from "./registry";
 import "./style.css";
@@ -17,6 +18,8 @@ const app = (
 
 if (root.hasChildNodes()) hydrateRoot(root, app);
 else createRoot(root).render(app);
+
+startAnalytics();
 
 if (import.meta.env.DEV) {
   // Dev-only: @vinena/knobs emulates color scheme, motion, contrast, locale, geo and
