@@ -24,8 +24,8 @@ const linkTo = (host: string) => `https://${host}/?utm_source=vectoys.com&utm_me
 /**
  * A real capture of a product's hero, one clip per color scheme; the page's
  * scheme shows one of them. The shown clip loads once it comes near the
- * screen and plays while it is in view. With reduced motion it never plays,
- * so its poster, the loop's first frame, stays.
+ * screen, with its poster, and plays while it is in view. With reduced motion
+ * it never plays, so the poster, the loop's first frame, stays.
  */
 function Clip({ clip }: { clip: string }) {
   const box = useRef<HTMLDivElement>(null);
@@ -40,6 +40,7 @@ function Clip({ clip }: { clip: string }) {
       const shown = dark.matches ? "dark" : "light";
       for (const video of element.querySelectorAll("video")) {
         const mine = video.dataset.scheme === shown && !still.matches;
+        if (video.dataset.scheme === shown && near) video.poster = `/showcase/${clip}-${shown}.webp`;
         if (mine && near) video.preload = "auto";
         if (mine && seen) {
           video.muted = true;
@@ -73,7 +74,7 @@ function Clip({ clip }: { clip: string }) {
       dark.removeEventListener("change", update);
       still.removeEventListener("change", update);
     };
-  }, []);
+  }, [clip]);
   return (
     <div className="showcase-clip" ref={box} aria-hidden="true" data-replay-block="">
       {SCHEMES.map((scheme) => (
@@ -81,7 +82,6 @@ function Clip({ clip }: { clip: string }) {
           key={scheme}
           className={`showcase-video showcase-video-${scheme}`}
           data-scheme={scheme}
-          poster={`/showcase/${clip}-${scheme}.webp`}
           width={1280}
           height={800}
           muted

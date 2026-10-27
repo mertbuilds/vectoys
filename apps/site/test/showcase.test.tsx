@@ -6,6 +6,8 @@ import { Showcase } from "../src/sections/showcase";
 type Watcher = { callback: IntersectionObserverCallback; targets: Element[] };
 let watchers: Watcher[] = [];
 let reduced = false;
+let dark = false;
+let listeners: Record<string, (() => void)[]> = {};
 let host: HTMLDivElement;
 let root: Root;
 const realObserver = globalThis.IntersectionObserver;
@@ -22,6 +24,8 @@ function scroll(inView: boolean) {
 beforeEach(() => {
   watchers = [];
   reduced = false;
+  dark = false;
+  listeners = {};
   globalThis.IntersectionObserver = class {
     readonly watcher: Watcher;
     constructor(callback: IntersectionObserverCallback) {
@@ -34,8 +38,12 @@ beforeEach(() => {
     disconnect() {}
   } as unknown as typeof IntersectionObserver;
   globalThis.matchMedia = ((query: string) => ({
-    matches: query.includes("reduced-motion") ? reduced : false,
-    addEventListener() {},
+    get matches() {
+      return query.includes("reduced-motion") ? reduced : dark;
+    },
+    addEventListener(_type: string, listener: () => void) {
+      (listeners[query] ??= []).push(listener);
+    },
     removeEventListener() {},
   })) as unknown as typeof matchMedia;
   host = document.createElement("div");
@@ -67,9 +75,9 @@ describe("Showcase", () => {
     expect(links.map((link) => link.dataset.to)).toEqual(["caffeinagent.com", "waxmac.com"]);
   });
 
-  test("holds every clip unloaded, sized and silent until it comes near", () => {
+  test("holds every clip unloaded, sized, silent and without a poster until it comes near", () => {
     act(() => root.render(<Showcase />));
-    const videos = [...host.querySelectorAll("video")];
+    const videos = [...host.querySelectorAll<HTMLVideoElement>("video")];
     expect(videos).toHaveLength(4);
     for (const video of videos) {
       expect(video.getAttribute("preload")).toBe("none");
@@ -77,9 +85,14 @@ describe("Showcase", () => {
       expect(video.getAttribute("height")).toBe("800");
       expect(video.hasAttribute("loop")).toBe(true);
       expect(video.hasAttribute("playsinline")).toBe(true);
-      expect(video.getAttribute("poster")).toMatch(/^\/showcase\/(caffeinagent|wax)-(light|dark)\.webp$/);
+      expect(video.poster).toBeFalsy();
       expect(video.closest("[data-replay-block]")).not.toBeNull();
     }
+    scroll(true);
+    for (const video of host.querySelectorAll("video[data-scheme=light]")) {
+      expect((video as HTMLVideoElement).poster).toMatch(/^\/showcase\/(caffeinagent|wax)-light\.webp$/);
+    }
+    for (const video of host.querySelectorAll<HTMLVideoElement>("video[data-scheme=dark]")) expect(video.poster).toBeFalsy();
   });
 
   test("plays only the clip of the page's scheme while it is in view", () => {
@@ -107,5 +120,32 @@ describe("Showcase", () => {
     scroll(true);
     expect(play).not.toHaveBeenCalled();
     for (const video of host.querySelectorAll("video")) expect(video.getAttribute("preload")).toBe("none");
+    for (const video of host.querySelectorAll<HTMLVideoElement>("video[data-scheme=light]")) expect(video.poster).toMatch(/-light\.webp$/);
+  });
+
+  test("follows scheme and reduced motion changes while in view", () => {
+    const play = spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
+    const pause = spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    act(() => root.render(<Showcase />));
+    scroll(true);
+    const light = [...host.querySelectorAll<HTMLVideoElement>("video[data-scheme=light]")];
+    const darkVideos = [...host.querySelectorAll<HTMLVideoElement>("video[data-scheme=dark]")];
+
+    play.mockClear();
+    pause.mockClear();
+    dark = true;
+    act(() => listeners["(prefers-color-scheme: dark)"]?.forEach((listener) => listener()));
+    for (const video of light) expect(pause.mock.contexts).toContain(video);
+    for (const video of darkVideos) {
+      expect(video.preload).toBe("auto");
+      expect(play.mock.contexts).toContain(video);
+    }
+
+    play.mockClear();
+    pause.mockClear();
+    reduced = true;
+    act(() => listeners["(prefers-reduced-motion: reduce)"]?.forEach((listener) => listener()));
+    expect(play).not.toHaveBeenCalled();
+    for (const video of [...light, ...darkVideos]) expect(pause.mock.contexts).toContain(video);
   });
 });
