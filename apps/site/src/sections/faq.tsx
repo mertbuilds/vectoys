@@ -1,3 +1,5 @@
+import { useId, useState } from "react";
+
 const QUESTIONS = [
   {
     question: "Why not Three.js, Spline or a PNG mockup?",
@@ -24,20 +26,63 @@ const QUESTIONS = [
   },
 ];
 
+/** The questions as schema.org FAQPage data, so search engines read the answers as they are on the page. */
+const STRUCTURED = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: QUESTIONS.map(({ question, answer }) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: { "@type": "Answer", text: answer },
+  })),
+}).replace(/</g, "\\u003c");
+
+/** One question: a button in a heading opens its answer. The answer is in the HTML either way, and out of reach while closed. */
+function Question({ question, answer }: { question: string; answer: string }) {
+  const id = useId();
+  const [open, setOpen] = useState(false);
+  const questionId = `${id}-question`;
+  const answerId = `${id}-answer`;
+  return (
+    <div className="faq-item">
+      <h3>
+        <button
+          type="button"
+          id={questionId}
+          className="faq-button"
+          aria-expanded={open}
+          aria-controls={answerId}
+          data-track={open ? undefined : "faq_open"}
+          data-question={open ? undefined : question}
+          onClick={() => setOpen(!open)}
+        >
+          <span>{question}</span>
+          <svg className="faq-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </h3>
+      <div id={answerId} role="region" aria-labelledby={questionId} className="faq-answer" data-open={open} inert={!open}>
+        <div className="faq-clip">
+          <p>{answer}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Faq() {
   return (
     <section className="section" id="faq" aria-labelledby="faq-title">
       <div className="section-copy section-copy-wide">
         <h2 id="faq-title">Questions</h2>
       </div>
-      <dl className="faq">
+      <div className="faq">
         {QUESTIONS.map(({ question, answer }) => (
-          <div key={question}>
-            <dt>{question}</dt>
-            <dd>{answer}</dd>
-          </div>
+          <Question key={question} question={question} answer={answer} />
         ))}
-      </dl>
+      </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: STRUCTURED }} />
     </section>
   );
 }
