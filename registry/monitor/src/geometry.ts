@@ -122,7 +122,7 @@ function parts(tilt: number, side: Side): Part[] {
       order: side.above ? -2 : 2,
       pose: { position: [0, 0, FOOT_THICKNESS - MIDDLE], rotation: IDENTITY },
     }),
-    // Stood up, its own z out of its front towards the panel's back.
+    // Stood up, its own z out of its front toward the panel's back.
     slab({
       name: "neck",
       box: [-NECK_WIDTH / 2, 0, NECK_WIDTH / 2, NECK_TOP - FOOT_THICKNESS],
@@ -139,7 +139,7 @@ function parts(tilt: number, side: Side): Part[] {
 
 /**
  * How the monitor turns, in degrees: `yaw` about its up axis and `pitch`
- * towards or away from the eye, and `tilt` of the panel on its stand, its
+ * toward or away from the eye, and `tilt` of the panel on its stand, its
  * top going back for more.
  */
 export type Turn = { yaw?: number; pitch?: number; tilt?: number };

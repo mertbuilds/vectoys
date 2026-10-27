@@ -3,9 +3,9 @@ import { Faces, Screen, Stage, type Look, type StyleWithVariables } from "@vinen
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { DISPLAY, DISPLAY_ROUND, TURN, seen, type Turn, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a light tone so the watch
+// The page's colors, as CSS variables, each with a light tone so the watch
 // shows as meant before they are set. The finish is the case's, the band
-// colour the straps'.
+// color the straps'.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
 const SURFACE = "var(--vectoys-surface, #f5f5f5)";
 const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
@@ -13,7 +13,7 @@ const FINISH = `var(--vectoys-finish, ${SURFACE})`;
 const BAND = `var(--vectoys-band, color-mix(in srgb, ${SURFACE} 70%, ${HAIRLINE}))`;
 
 // The case in the finish, its crown and button a step darker, a black glass
-// front, a dark sensor on the back and the straps in the band colour.
+// front, a dark sensor on the back and the straps in the band color.
 const CASE = `color-mix(in srgb, ${FINISH} 88%, ${HAIRLINE})`;
 const CROWN = `color-mix(in srgb, ${FINISH} 70%, ${HAIRLINE})`;
 const SENSOR = `color-mix(in srgb, ${HAIRLINE} 25%, black)`;
@@ -76,9 +76,9 @@ const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]
 );
 
 type WatchProps = Turn & {
-  /** The case's colour; by default the page's `--vectoys-finish`, else its surface. */
+  /** The case's color; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
-  /** The band's colour; by default the page's `--vectoys-band`, else a shade under its surface. */
+  /** The band's color; by default the page's `--vectoys-band`, else a shade under its surface. */
   band?: string;
   /** The device's name for assistive technology. */
   label?: string;

@@ -3,7 +3,7 @@ import { Faces, Screen, Stage, useSpring, type Look } from "@vinena/vectoys-reac
 import { memo, useId, useMemo, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { FACE, LABEL, seen, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a tone so the disk shows as
+// The page's colors, as CSS variables, each with a tone so the disk shows as
 // meant before they are set. The plastic is the finish, dark by default as
 // the disks were; the label stays paper on a dark page too, as a real one does.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
@@ -130,14 +130,14 @@ export type FloppyProps = {
   onPress?: () => void;
   /** An accessible name in place of the label's text, such as "Download the press kit"; "Floppy disk" when there is no text. */
   label?: string;
-  /** The plastic's colour; by default the page's `--vectoys-finish`, else near black. */
+  /** The plastic's color; by default the page's `--vectoys-finish`, else near black. */
   finish?: string;
 };
 
 /**
  * A 3.5 inch floppy disk as a download button: with `href` a real link that
  * downloads the file, without one a real button. Under the pointer or the
- * keyboard's focus its shutter slides open and it turns a little towards
+ * keyboard's focus its shutter slides open and it turns a little toward
  * the eye; pressed, it dips back. Under reduced motion it changes without
  * the motion.
  */

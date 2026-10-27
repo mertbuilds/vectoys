@@ -1,0 +1,66 @@
+<!doctype html>
+<!--
+  The share image, public/og.png. Draw it again after a change with:
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
+    --window-size=1200,630 --virtual-time-budget=3000 --screenshot=apps/site/public/og.png apps/site/scripts/og-image.html
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500&display=swap" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: #0f1114;
+        color: #eceef2;
+        font-family: "Funnel Display", ui-sans-serif, system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      main {
+        box-sizing: border-box;
+        height: 100%;
+        padding: 80px 88px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-size: 60px;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+      .brand svg {
+        width: 84px;
+        height: 84px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 92px;
+        font-weight: 400;
+        line-height: 1.04;
+        letter-spacing: -0.03em;
+        max-width: 1000px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path fill="#e4eeff" d="M16 3l12 6.5L16 16 4 9.5z" />
+          <path fill="#8fbaff" d="M4 9.5L16 16v13L4 22.5z" />
+          <path fill="#4d95ff" d="M28 9.5L16 16v13l12-6.5z" />
+        </svg>
+        vectoys
+      </div>
+      <h1>3D toys for the web, drawn in plain SVG</h1>
+    </main>
+  </body>
+</html>

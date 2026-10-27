@@ -3,7 +3,7 @@ import { camera, rotateX, rotateZ, screenQuad, type Flat, type Pose } from "../s
 
 const ELEMENT = { width: 1280, height: 832 };
 const RECT = { x: -26.9, y: -35, width: 53.86, height: 35, z: 0.02 };
-// A lid stood up from the deck and turned towards the eye.
+// A lid stood up from the deck and turned toward the eye.
 const LID: Pose = { position: [0, -23.35, 0.15], rotation: rotateX(-75) };
 
 /** Where CSS puts an element's point under a matrix3d: the 4 by 4 multiply, then the w divide. */

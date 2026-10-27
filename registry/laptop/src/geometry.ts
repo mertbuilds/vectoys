@@ -34,7 +34,7 @@ export const LIFT = 0.15;
 export const ROUND = 2.1;
 const RIM = 0.25;
 // The lid turns about an axis 2.9 mm in from the base's back edge and 4.6 mm
-// under the shut lid's face, so open its chin drops behind the base towards
+// under the shut lid's face, so open its chin drops behind the base toward
 // the table. The hinge fills a cut 237.6 mm wide and 4.5 mm deep in the
 // base's back edge, between shoulders of 37.5 mm: an aluminium barrel 15 mm
 // long at each end and the dark cover between them.
@@ -111,7 +111,7 @@ const TOUCH_ID = KEYS[ROWS[0]!.length - 1]!;
 // The trackpad, 129.6 by 80.9 mm, 3 mm under the well.
 const TRACKPAD: Box = [-13.68, 5.07, 13.68, 22.17];
 
-// The speaker grilles' holes, a square grid centred in the deck beside the
+// The speaker grilles' holes, a square grid centered in the deck beside the
 // keyboard, 1.6 mm from its side edge and from the well and 4.5 mm short of
 // the well's ends. The machine has 15 holes across at 0.93 mm; down the deck,
 // which the eye sees foreshortened, they stand 2.3 mm apart so they are as far
@@ -293,7 +293,7 @@ export type View = ReturnType<typeof seen>;
  * Beside the words, on a wide page: the eye is near, so the deck comes
  * forward and spreads. The lid opens to 105 degrees. An eye sits
  * `perspective` away, level with `originY`; the laptop stands `back` behind
- * its focus at `anchorY` and turns towards it by `pitch` degrees, in a scene
+ * its focus at `anchorY` and turns toward it by `pitch` degrees, in a scene
  * 100 by `height`.
  */
 export const DESK = seen({ id: "desk", height: 70, perspective: 200, pitch: -15, back: 14, originY: 0.22 * 70, anchorY: 0.78 * 70 });

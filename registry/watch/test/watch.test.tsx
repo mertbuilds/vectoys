@@ -48,7 +48,7 @@ test("the crown shows from the right and hides behind the case from the left", (
 
 test("the straps bend back, behind the display", () => {
   const all = poses(seen({ yaw: 0, pitch: 0 }).scene);
-  // The model's y runs towards the eye, and the case's back is at -THICKNESS / 2.
+  // The model's y runs toward the eye, and the case's back is at -THICKNESS / 2.
   for (const tip of ["strap-top-5", "strap-bottom-5"]) expect(all.get(tip)!.position[1]).toBeLessThan(-THICKNESS / 2);
 });
 

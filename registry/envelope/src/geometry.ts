@@ -3,7 +3,7 @@ import { camera, draw, footprint, multiply, place, plate, poses, rotateX, slab, 
 // A C6 envelope, 162 by 114 mm, seen from its back: the flap folds down over
 // a pocket made of two side flaps and a bottom flap, and an A6 card, 148 by
 // 105 mm, waits inside. Paper is 0.3 mm thick. In the envelope's own plane x
-// runs across, y down from its middle and z out of its back towards the eye.
+// runs across, y down from its middle and z out of its back toward the eye.
 // Sizes are millimetres at SCALE scene units each.
 const SCALE = 0.5;
 const mm = (value: number) => value * SCALE;
@@ -125,7 +125,7 @@ function parts(pose: Pose, flap: number, rise: number): Part[] {
   ];
 }
 
-/** The envelope's pose moved `z` towards the eye and `y` down its plane. */
+/** The envelope's pose moved `z` toward the eye and `y` down its plane. */
 const shift = (pose: Pose, z: number, y = 0): Pose => ({ position: place(pose, [0, y, z]), rotation: pose.rotation });
 
 /**
@@ -142,7 +142,7 @@ export function seen(open = 0) {
   const eye = camera({ width: 100, height: 120, perspective: 300, anchorY: 80, ...EYE });
   const { flap, rise } = stages(open);
   const scene = parts(UPRIGHT, flap, rise);
-  // The shadow is the envelope's own, not the flap's while it stands out towards the eye.
+  // The shadow is the envelope's own, not the flap's while it stands out toward the eye.
   const body = scene.filter((part) => part.name !== "flap");
   const ground = (spread: number, ahead: number) => footprint(body, eye, { gap: mm(14), spread, ahead });
   const [contact, far] = [ground(mm(2), 0), ground(mm(10), mm(6))];

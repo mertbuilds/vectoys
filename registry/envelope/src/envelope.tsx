@@ -2,7 +2,7 @@ import { Faces, Screen, Stage, useSpring, type Look } from "@vinena/vectoys-reac
 import { memo, useId, useMemo, useState, type CSSProperties, type FocusEvent, type ReactNode } from "react";
 import { CARD, FRONT, seen, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a light tone so the
+// The page's colors, as CSS variables, each with a light tone so the
 // envelope shows as meant before they are set. The outside is the surface,
 // the lining inside the finish and the card the page's own background.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
@@ -83,7 +83,7 @@ export type EnvelopeProps = {
   onOpenChange?: (open: boolean) => void;
   /** The opener's accessible name. */
   label?: string;
-  /** The lining's colour; by default the page's `--vectoys-finish`. */
+  /** The lining's color; by default the page's `--vectoys-finish`. */
   finish?: string;
   /** Live content on the letter, such as a sign up form, laid out `LETTER_WIDTH` pixels across. */
   children?: ReactNode;

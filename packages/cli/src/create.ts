@@ -104,7 +104,7 @@ export const HEIGHT = 40;
 export const THICKNESS = 4;
 const INSET = 6;
 
-/** How the slab turns towards the eye at rest, in degrees. */
+/** How the slab turns toward the eye at rest, in degrees. */
 export const TILT = { yaw: -24, pitch: -16 } as const;
 
 function parts(pose: Pose): Part[] {
@@ -135,7 +135,7 @@ export type View = ReturnType<typeof seen>;
 import { useMemo, type CSSProperties } from "react";
 import { TILT, seen } from "./geometry";
 
-// The page's colours, as CSS variables, each with a tone so the item shows as
+// The page's colors, as CSS variables, each with a tone so the item shows as
 // meant before they are set.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
 const SURFACE = "var(--vectoys-surface, #f5f5f5)";
@@ -159,17 +159,17 @@ const OUTLINE: Look = {
 export type ${component}Props = {
   /** What the item shows, for assistive technology. */
   label?: string;
-  /** The slab's colour; by default the page's \`--vectoys-finish\`. */
+  /** The slab's color; by default the page's \`--vectoys-finish\`. */
   finish?: string;
   /** How far it turns about its up axis, in degrees. */
   yaw?: number;
-  /** How far it tips towards or away from the eye, in degrees. */
+  /** How far it tips toward or away from the eye, in degrees. */
   pitch?: number;
   className?: string;
   style?: CSSProperties;
 };
 
-/** ${title}: a slab tilted towards the eye, drawn the same on the server and the client. */
+/** ${title}: a slab tilted toward the eye, drawn the same on the server and the client. */
 export function ${component}({ label = ${JSON.stringify(title)}, finish, yaw = TILT.yaw, pitch = TILT.pitch, className, style }: ${component}Props) {
   const view = useMemo(() => seen(yaw, pitch), [yaw, pitch]);
   const body = view.drawn.hulls.find((hull) => hull.part === "body");

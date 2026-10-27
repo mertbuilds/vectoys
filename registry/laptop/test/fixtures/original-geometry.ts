@@ -10,7 +10,7 @@ export const BEZEL = 1.07;
 export const CHIN = 4.15;
 // The lid stands LIFT above the deck. An eye sits `perspective` away, level
 // with `origin`; the laptop stands `back` behind its focus at `anchor` and
-// turns towards it by `camera` degrees, in a scene 100 by `height`. The
+// turns toward it by `camera` degrees, in a scene 100 by `height`. The
 // scene's CSS (hero-scene.tsx and the glass in laptop.tsx) uses the same
 // numbers.
 export const LIFT = 0.15;
@@ -19,7 +19,7 @@ type Eye = { id: string; height: number; perspective: number; camera: number; ba
 export const ROUND = 2.1;
 const RIM = 0.25;
 // The lid turns about an axis 2.9 mm in from the base's back edge and 4.6 mm
-// under the shut lid's face, so open its chin drops behind the base towards
+// under the shut lid's face, so open its chin drops behind the base toward
 // the table. The hinge fills a cut 237.6 mm wide and 4.5 mm deep in the
 // base's back edge, between shoulders of 37.5 mm: an aluminium barrel 15 mm
 // long at each end and the dark cover between them.
@@ -51,8 +51,8 @@ function seen({ id, height, perspective: PERSPECTIVE, camera: CAMERA, back: BACK
 
   /**
    * A point of the laptop, x across from its middle, y from the middle of the
-   * deck towards the front and z up from the deck, where the CSS transforms put
-   * it in the scene: x right, y down, z towards the eye.
+   * deck toward the front and z up from the deck, where the CSS transforms put
+   * it in the scene: x right, y down, z toward the eye.
    */
   function scene([x, y, z]: Solid): Solid {
     return [50 + x, ANCHOR - z * CAMERA_COS - y * CAMERA_SIN, -z * CAMERA_SIN + y * CAMERA_COS - BACK];
@@ -223,7 +223,7 @@ function seen({ id, height, perspective: PERSPECTIVE, camera: CAMERA, back: BACK
   // The trackpad, 129.6 by 80.9 mm, 3 mm under the well.
   const TRACKPAD: Box = [-13.68, 5.07, 13.68, 22.17];
 
-  // The speaker grilles' holes, a square grid centred in the deck beside the
+  // The speaker grilles' holes, a square grid centered in the deck beside the
   // keyboard, 1.6 mm from its side edge and from the well and 4.5 mm short of
   // the well's ends. The machine has 15 holes across at 0.93 mm; down the deck,
   // which the eye sees foreshortened, they stand 2.3 mm apart so they are as far

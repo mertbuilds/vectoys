@@ -3,7 +3,7 @@ import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look, type Styl
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { SURPRISE, seen, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a tone so the gift shows as
+// The page's colors, as CSS variables, each with a tone so the gift shows as
 // meant before they are set: a box in the finish tied with a ribbon in the
 // accent, and a surprise card in the surface.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
@@ -113,9 +113,9 @@ type GiftProps = {
   defaultOpen?: boolean;
   /** Called with the state the gift asks to be in. */
   onOpenChange?: (open: boolean) => void;
-  /** The box's colour; by default the page's `--vectoys-finish`. */
+  /** The box's color; by default the page's `--vectoys-finish`. */
   finish?: string;
-  /** The ribbon's colour; by default the page's `--vectoys-accent`. */
+  /** The ribbon's color; by default the page's `--vectoys-accent`. */
   ribbon?: string;
   /** The button's name for assistive technology. */
   label?: string;
@@ -140,7 +140,7 @@ export function Gift({ children, open, defaultOpen = false, onOpenChange, finish
   const hovered = useRef(false);
   const [state, setState] = useState({ open: progress.current, peek: 0 });
 
-  /** Runs the lid towards open or shut at an even pace, and its peek on a spring. */
+  /** Runs the lid toward open or shut at an even pace, and its peek on a spring. */
   const run = () => {
     const to = isOpen ? 1 : 0;
     const lift = hovered.current && !isOpen ? 1 : 0;

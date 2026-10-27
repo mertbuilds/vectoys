@@ -47,7 +47,7 @@ export const DISPLAY: ScreenRect = {
 /** The display's corner radius, inside the glass's. */
 export const DISPLAY_ROUND = ROUND - EDGE - BEZEL;
 
-// The side buttons stand 0.6 mm proud and 2.6 mm wide, centred on the flat of
+// The side buttons stand 0.6 mm proud and 2.6 mm wide, centered on the flat of
 // the side, each given as (mm down from the top, mm long): an action button
 // and the volume pair on the left, the power button on the right.
 const PROUD = mm(0.6);
@@ -161,7 +161,7 @@ function parts(pose: Pose, facing: (point: Solid, normal: Solid) => boolean): Pa
 }
 
 /**
- * How the phone turns, in degrees: `yaw` about its up axis, `pitch` towards
+ * How the phone turns, in degrees: `yaw` about its up axis, `pitch` toward
  * or away from the eye and `roll` round in its own plane, clockwise.
  */
 export type Turn = { yaw?: number; pitch?: number; roll?: number };

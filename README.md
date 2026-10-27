@@ -41,8 +41,8 @@ Toys:
 
 - `registry/keycap`: a keycap that is a real button, with a live label on its dished top; it lifts on hover and travels down when pressed, and `KeycapRow` spells a word.
 - `registry/envelope`: a newsletter envelope that opens on a click, its flap swinging up and a letter with live content rising out.
-- `registry/floppy`: a floppy disk that is a download link or a button; its shutter slides open and it turns towards the eye on hover.
-- `registry/card`: a flip card with live HTML on both faces that flips on a click or a hover and leans towards the pointer.
+- `registry/floppy`: a floppy disk that is a download link or a button; its shutter slides open and it turns toward the eye on hover.
+- `registry/card`: a flip card with live HTML on both faces that flips on a click or a hover and leans toward the pointer.
 - `registry/dice`: a die that rolls when clicked, tumbles and lands on a random or given face.
 - `registry/gift`: a gift box whose lid pops off on a click, with live HTML such as a coupon code rising out.
 
@@ -98,23 +98,23 @@ Serve one JSON file per item at `<base>/<name>.json`, in the [shadcn registry-it
 
 ## Shading
 
-`draw` tells how much light falls on each face: every face it returns has a `normal` and a `shade` from the light's ambient share up to 1. The light is held still with the eye, not with the model, so as a device spins its sides brighten and darken as they turn. Pass `draw(scene, camera, { light: { direction, ambient } })` to move it; `direction` points towards the light in the scene's axes (x right, y down, z towards the eye).
+`draw` tells how much light falls on each face: every face it returns has a `normal` and a `shade` from the light's ambient share up to 1. The light is held still with the eye, not with the model, so as a device spins its sides brighten and darken as they turn. Pass `draw(scene, camera, { light: { direction, ambient } })` to move it; `direction` points toward the light in the scene's axes (x right, y down, z toward the eye).
 
-`<Faces shading />` uses it: each face's fill is mixed a few steps darker in less light, and the few faces turned right at the light are lifted a little. Only fills that are colours are shaded, never `none` or a `url(...)` paint. Devices and toys drawn with `shading` are shaded. The page tunes it with CSS variables:
+`<Faces shading />` uses it: each face's fill is mixed a few steps darker in less light, and the few faces turned right at the light are lifted a little. Only fills that are colors are shaded, never `none` or a `url(...)` paint. Devices and toys drawn with `shading` are shaded. The page tunes it with CSS variables:
 
 - `--vectoys-shade-strength`: how dark the faces in least light get, `0.5` by default, `0` for none.
-- `--vectoys-shade-color`: the colour mixed in, `black` by default.
-- `--vectoys-highlight-strength`: how far faces towards the light are lifted, `0.25` by default.
-- `--vectoys-highlight`: the colour they are lifted towards, `white` by default.
+- `--vectoys-shade-color`: the color mixed in, `black` by default.
+- `--vectoys-highlight-strength`: how far faces toward the light are lifted, `0.25` by default.
+- `--vectoys-highlight`: the color they are lifted toward, `white` by default.
 
-## Colours
+## Colors
 
-Every item reads its colours from CSS variables, so a page themes them all at once. Each falls back to a light tone when unset.
+Every item reads its colors from CSS variables, so a page themes them all at once. Each falls back to a light tone when unset.
 
 - `--vectoys-surface`: the main surface of a body or a part, `#f5f5f5`.
 - `--vectoys-hairline`: the outlines and the darker edges, `#8a8a8a`.
 - `--vectoys-shadow`: the shadow on the ground, `rgba(0, 0, 0, 0.08)`.
-- `--vectoys-finish`: the colour of a body: the back and stand of a device, a keycap, a die, the card's back. By default the surface; the envelope's lining a shade under it, the floppy disk `#2c2c2e`, the gift box `#e5484d`.
+- `--vectoys-finish`: the color of a body: the back and stand of a device, a keycap, a die, the card's back. By default the surface; the envelope's lining a shade under it, the floppy disk `#2c2c2e`, the gift box `#e5484d`.
 - `--vectoys-accent`: the gift box's ribbon and bow, `#f5c84c`.
 - `--vectoys-band`: the watch's band, a shade under the surface.
 - `--vectoys-ink`: a keycap's label, the die's pips and the browser's address, `#1d1d1c`.
@@ -125,7 +125,7 @@ Every item reads its colours from CSS variables, so a page themes them all at on
 - `--vectoys-focus`: the focus ring of the card, the die and the gift box, `currentColor`.
 - `--vectoys-focus-width`: how thick that ring is, `1px`.
 
-Under a dark colour scheme the browser window, the keycap and the die fall back to dark tones instead: `--vectoys-surface` `#262626`, `--vectoys-hairline` `#5a5a5a`, `--vectoys-ink` `#ededed`, `--vectoys-shadow` `rgba(0, 0, 0, 0.4)`, and for the browser `--vectoys-bg` `#161616`. The browser also takes `theme="dark"`. The shading variables are below.
+Under a dark color scheme the browser window, the keycap and the die fall back to dark tones instead: `--vectoys-surface` `#262626`, `--vectoys-hairline` `#5a5a5a`, `--vectoys-ink` `#ededed`, `--vectoys-shadow` `rgba(0, 0, 0, 0.4)`, and for the browser `--vectoys-bg` `#161616`. The browser also takes `theme="dark"`. The shading variables are below.
 
 ## Develop
 

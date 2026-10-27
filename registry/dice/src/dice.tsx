@@ -3,8 +3,8 @@ import { Faces, Stage, useFrames, useReducedMotion, type Look } from "@vinena/ve
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import { VALUES, resting, roll, rollAt, seen, type Value, type View } from "./geometry";
 
-// The page's colours, as CSS variables. Each falls back to a tone for light
-// and one for dark, picked by the page's colour scheme, so the die reads on
+// The page's colors, as CSS variables. Each falls back to a tone for light
+// and one for dark, picked by the page's color scheme, so the die reads on
 // a dark page with nothing set: a die in the finish, else the surface, with
 // pips in the ink.
 const HAIRLINE = "var(--vectoys-hairline, light-dark(#8a8a8a, #5a5a5a))";
@@ -91,7 +91,7 @@ type DiceProps = {
   value?: Value;
   /** Called with the face on top once a roll has landed. */
   onRoll?: (value: Value) => void;
-  /** The die's colour; by default the page's `--vectoys-finish`, else its surface. */
+  /** The die's color; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
   /** The button's name for assistive technology. */
   label?: string;

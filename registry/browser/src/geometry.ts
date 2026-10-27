@@ -119,7 +119,7 @@ function parts(pose: Pose): Part[] {
 }
 
 /**
- * How the window turns, in degrees: `yaw` about its up axis, `pitch` towards
+ * How the window turns, in degrees: `yaw` about its up axis, `pitch` toward
  * or away from the eye and `roll` round in its own plane, clockwise.
  */
 export type Turn = { yaw?: number; pitch?: number; roll?: number };

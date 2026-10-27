@@ -75,7 +75,7 @@ const loop = (side: 1 | -1): Part =>
     edge: LOOP_THICK / 2,
     step: STEP,
     order: 4,
-    // Stood up, its thickness towards the eye, leaning out 25 degrees, its
+    // Stood up, its thickness toward the eye, leaning out 25 degrees, its
     // low inner end just on the lid.
     pose: { position: [side * LOOP[0] * 0.45, -LOOP_THICK / 2, LOOP[1] / 2 + mm(7)], rotation: combine(rotateY(-side * 25), rotateX(90)) },
   });
@@ -134,7 +134,7 @@ const easeOutBack = (t: number) => 1 + 2.4 * (t - 1) ** 3 + 1.4 * (t - 1) ** 2;
 
 /**
  * The lid `open` of the way off, from 0 (on the box) to 1: it pops straight
- * up, then tips its back up so its top and bow turn towards the eye, and
+ * up, then tips its back up so its top and bow turn toward the eye, and
  * drifts back and to the right, out of the way of what comes out. `peek`
  * lifts it a little, as a hover does. Its top faces the eye all the way,
  * so the ribbon and the bow on it always draw over the lid.

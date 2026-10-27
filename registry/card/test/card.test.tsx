@@ -51,7 +51,7 @@ test("flipping and tilting change the drawing", () => {
   expect(seen({ yaw: 9 }).drawn.faces.map((face) => face.d).join()).not.toBe(rest);
 });
 
-test("a face seen straight on keeps the page's colour, unshaded", () => {
+test("a face seen straight on keeps the page's color, unshaded", () => {
   const front = seen().drawn.faces.find((face) => face.role === "top")!;
   expect(front.shade).toBeGreaterThan(0.875);
   expect(front.shade).toBeLessThanOrEqual(0.95);
