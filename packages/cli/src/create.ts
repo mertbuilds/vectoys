@@ -135,7 +135,7 @@ export type View = ReturnType<typeof seen>;
 import { useMemo, type CSSProperties } from "react";
 import { TILT, seen } from "./geometry";
 
-// The page's colours, as CSS variables, each with a tone so the item shows as
+// The page's colors, as CSS variables, each with a tone so the item shows as
 // meant before they are set.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
 const SURFACE = "var(--vectoys-surface, #f5f5f5)";
@@ -159,7 +159,7 @@ const OUTLINE: Look = {
 export type ${component}Props = {
   /** What the item shows, for assistive technology. */
   label?: string;
-  /** The slab's colour; by default the page's \`--vectoys-finish\`. */
+  /** The slab's color; by default the page's \`--vectoys-finish\`. */
   finish?: string;
   /** How far it turns about its up axis, in degrees. */
   yaw?: number;

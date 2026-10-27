@@ -197,7 +197,7 @@ export type Drawn = { d: string; role: string; part: string; facing: boolean; no
  */
 export type Light = { readonly direction: Solid; readonly ambient: number };
 
-/** From above, a little to the left and mostly from the eye, so faces seen straight on stay near their own colour. */
+/** From above, a little to the left and mostly from the eye, so faces seen straight on stay near their own color. */
 export const LIGHT: Light = { direction: [-0.3, -0.5, 0.8], ambient: 0.4 };
 
 /** How much of `light` falls on a face turned along `normal` in the scene's axes: Lambert's law over an ambient floor. */
@@ -220,15 +220,15 @@ const mean = (points: readonly Solid[]): Solid => {
  *
  * Depth is the distance from the eye in the camera's view space, which,
  * unlike view z alone, agrees with `facesEye` toward the edges of a wide
- * perspective. Parts draw by `order`, then from the farthest centre to the
+ * perspective. Parts draw by `order`, then from the farthest center to the
  * nearest; a part's faces draw by the same rule, ties in the order the part
  * gives them.
  *
  * That is right for convex parts that do not pass through each other and
- * whose centres sort as they overlap: inside one convex part the faces that
- * face the eye never cover each other, and a plate's centre is nearer the eye
+ * whose centers sort as they overlap: inside one convex part the faces that
+ * face the eye never cover each other, and a plate's center is nearer the eye
  * than its parent's whenever the plate faces it. Parts that interlock, or a
- * part that reaches past another's centre (a lid swinging over its base),
+ * part that reaches past another's center (a lid swinging over its base),
  * need `order`. Pass `cull: false` to keep the faces turned away, marked by
  * `facing`. Each face's `shade` is how much `light` falls on it.
  */

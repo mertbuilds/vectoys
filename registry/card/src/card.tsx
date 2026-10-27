@@ -3,7 +3,7 @@ import { Faces, Screen, Stage, useFrames, useReducedMotion, type Look } from "@v
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { FACE, FACE_ROUND, seen, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a light tone so the card
+// The page's colors, as CSS variables, each with a light tone so the card
 // shows as meant before they are set. The back is in the finish.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
 const SURFACE = "var(--vectoys-surface, #f5f5f5)";

@@ -223,7 +223,7 @@ function seen({ id, height, perspective: PERSPECTIVE, camera: CAMERA, back: BACK
   // The trackpad, 129.6 by 80.9 mm, 3 mm under the well.
   const TRACKPAD: Box = [-13.68, 5.07, 13.68, 22.17];
 
-  // The speaker grilles' holes, a square grid centred in the deck beside the
+  // The speaker grilles' holes, a square grid centered in the deck beside the
   // keyboard, 1.6 mm from its side edge and from the well and 4.5 mm short of
   // the well's ends. The machine has 15 holes across at 0.93 mm; down the deck,
   // which the eye sees foreshortened, they stand 2.3 mm apart so they are as far

@@ -35,7 +35,7 @@ Poses and joints. A `Pose` is `{ position: [x, y, z], rotation }`. Build rotatio
 
 Camera. `camera({ width, height, perspective, yaw, pitch, roll, anchorX, anchorY, back, originX, originY })`. `perspective` about 280 to 400 for a scene 100 wide. `yaw` turns the model about its up axis and `pitch` tips it to or from the eye. A device at rest usually sits near `yaw: -24, pitch: -16`.
 
-Drawing. `draw(scene, eye)` returns `{ faces, hulls }`: the faces that face the eye, far to near, and each part's silhouette. Parts sort by `order` first, then by depth. Leave `order` out unless two parts draw in the wrong order: parts that interlock, or one that swings past another's centre (a lid over its base). Then give the part in front a higher `order`.
+Drawing. `draw(scene, eye)` returns `{ faces, hulls }`: the faces that face the eye, far to near, and each part's silhouette. Parts sort by `order` first, then by depth. Leave `order` out unless two parts draw in the wrong order: parts that interlock, or one that swings past another's center (a lid over its base). Then give the part in front a higher `order`.
 
 `footprint(scene, eye, { gap, spread, ahead })` is the shadow on the ground under the model. Draw it first, blurred if you like. `poses(scene)` maps each part's name to its pose in the scene, for laying a screen on a child part.
 
@@ -45,13 +45,13 @@ Keep `seen(...)` in `geometry.ts`: one pure function from the item's state (open
 
 `<Faces faces hulls styles shading />` draws what `draw` returned. `styles` maps a role to SVG path props: `top`, `side`, `bottom`, a plate's `role`, or `"part.role"` for one part only (`"body.top"`, `"knot.side"`). Write fills as `style: { fill }`.
 
-Take colours from the page's CSS variables, each with a fallback so the item shows before the page sets them:
+Take colors from the page's CSS variables, each with a fallback so the item shows before the page sets them:
 
 - `--vectoys-finish`: the main material. Expose a `finish` prop that sets it.
 - `--vectoys-surface`, `--vectoys-hairline`, `--vectoys-shadow`, `--vectoys-accent`, `--vectoys-ink`, `--vectoys-bg`. Add an item variable such as `--vectoys-paper` only when none of these fits.
 - `--vectoys-focus` and `--vectoys-focus-width` for focus rings.
 
-Mix tones with `color-mix(in srgb, ...)` instead of new colours. `shading` darkens faces turned from the light and lifts the few turned right at it. The page tunes it with `--vectoys-shade-strength` (0.5), `--vectoys-shade-color`, `--vectoys-highlight-strength` (0.25) and `--vectoys-highlight`. Draw a hairline outline over the main body's hull with `vectorEffect: "non-scaling-stroke"`. Check the item on a dark page too.
+Mix tones with `color-mix(in srgb, ...)` instead of new colors. `shading` darkens faces turned from the light and lifts the few turned right at it. The page tunes it with `--vectoys-shade-strength` (0.5), `--vectoys-shade-color`, `--vectoys-highlight-strength` (0.25) and `--vectoys-highlight`. Draw a hairline outline over the main body's hull with `vectorEffect: "non-scaling-stroke"`. Check the item on a dark page too.
 
 ## Live HTML on a face
 

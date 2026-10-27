@@ -12,8 +12,8 @@ import {
 } from "react";
 import { HOVER, LABEL, LABEL_ROUND, TRAVEL, seen, type View } from "./geometry";
 
-// The page's colours, as CSS variables. Each falls back to a tone for light
-// and one for dark, picked by the page's colour scheme, so the key reads on
+// The page's colors, as CSS variables. Each falls back to a tone for light
+// and one for dark, picked by the page's color scheme, so the key reads on
 // a dark page with nothing set. The cap is in the finish, the label in the
 // ink.
 const HAIRLINE = "var(--vectoys-hairline, light-dark(#8a8a8a, #5a5a5a))";
@@ -146,7 +146,7 @@ export type KeycapProps = Omit<ComponentProps<"button">, "children"> & {
   children?: ReactNode;
   /** Called when the key is pressed, by pointer, touch or keyboard. */
   onPress?: () => void;
-  /** The cap's colour; by default the page's `--vectoys-finish`, else its surface. */
+  /** The cap's color; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
 };
 

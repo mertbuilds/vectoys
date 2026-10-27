@@ -3,8 +3,8 @@ import { Faces, Screen, Stage, type Look } from "@vinena/vectoys-react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { ADDRESS, ADDRESS_VIEWPORT, PAGE, PAGE_ROUND, TURN, seen, type Place, type Turn, type View } from "./geometry";
 
-// The page's colours, as CSS variables. Each falls back to a tone for light
-// and one for dark, picked by the colour scheme the window is in, so it
+// The page's colors, as CSS variables. Each falls back to a tone for light
+// and one for dark, picked by the color scheme the window is in, so it
 // follows a page that sets `color-scheme: light dark` with nothing else set.
 const BG = "var(--vectoys-bg, light-dark(#ffffff, #161616))";
 const SURFACE = "var(--vectoys-surface, light-dark(#f5f5f5, #262626))";
@@ -83,7 +83,7 @@ type BrowserProps = Turn &
   Place & {
     /** The address shown in the bar. */
     url?: string;
-    /** Light or dark tones for what the page's variables leave unset; by default the page's colour scheme. */
+    /** Light or dark tones for what the page's variables leave unset; by default the page's color scheme. */
     theme?: "light" | "dark";
     /** The shadow on the ground under the window; a stack wants it under the back window only. */
     shadow?: boolean;

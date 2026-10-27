@@ -3,7 +3,7 @@ import { Screen, Stage } from "@vinena/vectoys-react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { BEZEL, DESK, GLASS, HOLE, ROUND, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with the light tone of the site
+// The page's colors, as CSS variables, each with the light tone of the site
 // this laptop was first drawn for, so it shows as meant before they are set.
 const BG = "var(--vectoys-bg, #ffffff)";
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";

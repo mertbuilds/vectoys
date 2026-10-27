@@ -2,7 +2,7 @@ import { Faces, Screen, Stage, type Look } from "@vinena/vectoys-react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { DISPLAY, TURN, seen, type Turn, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a light tone so the
+// The page's colors, as CSS variables, each with a light tone so the
 // monitor shows as meant before they are set. The finish is the panel's back
 // and the stand's.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
@@ -60,7 +60,7 @@ const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]
 );
 
 type MonitorProps = Turn & {
-  /** The colour of the back and the stand; by default the page's `--vectoys-finish`, else its surface. */
+  /** The color of the back and the stand; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
   /** The device's name for assistive technology. */
   label?: string;

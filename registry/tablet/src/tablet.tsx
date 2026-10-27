@@ -3,7 +3,7 @@ import { Faces, Screen, Stage, type Look } from "@vinena/vectoys-react";
 import { memo, useId, useMemo, type CSSProperties, type ReactNode } from "react";
 import { DISPLAY_ROUND, TURN, seen, type Orientation, type Turn, type View } from "./geometry";
 
-// The page's colours, as CSS variables, each with a light tone so the tablet
+// The page's colors, as CSS variables, each with a light tone so the tablet
 // shows as meant before they are set. The finish is the back's and the bump's.
 const HAIRLINE = "var(--vectoys-hairline, #8a8a8a)";
 const SURFACE = "var(--vectoys-surface, #f5f5f5)";
@@ -76,7 +76,7 @@ const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]
 type TabletProps = Turn & {
   /** Upright, or on its side; the content lays out level either way. */
   orientation?: Orientation;
-  /** The back's colour; by default the page's `--vectoys-finish`, else its surface. */
+  /** The back's color; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
   /** The device's name for assistive technology. */
   label?: string;

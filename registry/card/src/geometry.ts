@@ -58,7 +58,7 @@ function bodyPose({ flip = 0, yaw = 0, pitch = 0 }: Turn): Pose {
 const BACK: Pose = { position: [0, 0, -THICKNESS], rotation: rotateY(180) };
 
 // A light a little more from the eye than the engine's, so a face seen
-// straight on or tilted a little keeps the page's colour, and only the edge
+// straight on or tilted a little keeps the page's color, and only the edge
 // and a face turned well away darken.
 const LIGHT: Light = { direction: [-0.25, -0.4, 0.9], ambient: 0.4 };
 

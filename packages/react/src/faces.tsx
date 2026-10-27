@@ -17,7 +17,7 @@ type FacesProps = {
   /**
    * Darken each face's fill by how little light falls on it, as `draw`'s
    * `shade` tells, and lift the few faces turned right at the light, so
-   * round edges read round. Only looks whose fill is a colour are shaded,
+   * round edges read round. Only looks whose fill is a color are shaded,
    * not `none` or a `url(...)` paint.
    * The page tunes it with `--vectoys-shade-strength` (0.5 by default, 0 for
    * none), `--vectoys-shade-color` (black), `--vectoys-highlight-strength`
@@ -28,14 +28,14 @@ type FacesProps = {
 
 // Shades are cut to a few steps, so faces in about the same light still join
 // into one path, and a round edge falls off in visible but gentle bands.
-// Faces seen straight on stay at step 0, their own colour; the few nearly
+// Faces seen straight on stay at step 0, their own color; the few nearly
 // facing the light take step -1, the highlight, which on a dark finish is
 // what shows the edges round at all.
 const STEPS = 8;
 const HIGHLIGHT = 0.95;
 const level = (shade: number) => (shade > HIGHLIGHT ? -1 : Math.floor((1 - shade) * STEPS));
 
-/** The colour a step mixes in, and how much of it. */
+/** The color a step mixes in, and how much of it. */
 const mix = (step: number) =>
   step < 0
     ? "var(--vectoys-highlight, white) calc(var(--vectoys-highlight-strength, 0.25) * 100%)"
@@ -47,10 +47,10 @@ const name = (step: number) => `--vectoys-step${step}`;
 const SHADED = [-1, ...Array.from({ length: STEPS }, (_, index) => index + 1)];
 const MIXES = Object.fromEntries(SHADED.map((step) => [name(step), mix(step)])) as CSSProperties;
 
-/** Whether a fill is a colour `color-mix` can take, and not `none` or a paint server. */
+/** Whether a fill is a color `color-mix` can take, and not `none` or a paint server. */
 const mixable = (fill: unknown): fill is string => typeof fill === "string" && fill !== "none" && !fill.startsWith("url(");
 
-/** A look's fill mixed by its shade step, or the look as it is when its fill is not a colour. */
+/** A look's fill mixed by its shade step, or the look as it is when its fill is not a color. */
 function shaded(look: Look | undefined, step: number): Look | undefined {
   const fill = look?.style?.fill ?? look?.fill;
   if (!look || step === 0 || !mixable(fill)) return look;
@@ -95,7 +95,7 @@ function baseStep(faces: readonly Drawn[], role: string) {
 /**
  * Faces as `draw` sorted them. Each part first fills its hull in its base
  * look, so the hairline gaps antialiasing leaves between side quads show the
- * part's own colour and never the page behind. The base look is the side's,
+ * part's own color and never the page behind. The base look is the side's,
  * or for a part without sides drawn, its first face's. A run of faces in one
  * look draws as one path: a round edge's many quads are then a single
  * element, and no seams show between them. Shaded, a part's faces join by
