@@ -164,8 +164,28 @@ pre {
   transition: color 150ms var(--ease);
 }
 
-.site-nav a:hover {
+/* Header items never underline: hover and keyboard focus change color, fill or opacity, and focus also draws a ring. */
+.site-nav a:hover,
+.site-nav a:focus-visible {
   color: var(--ink);
+}
+
+.site-header .wordmark {
+  transition: opacity 150ms var(--ease);
+}
+
+.site-header .wordmark:hover {
+  opacity: 0.7;
+}
+
+.site-header a:hover,
+.site-header a:focus-visible {
+  text-decoration: none;
+}
+
+.site-header a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 /* Buttons and commands */
@@ -282,7 +302,8 @@ code.inline {
   transition: background-color 150ms var(--ease);
 }
 
-.github-button:hover {
+.github-button:hover,
+.github-button:focus-visible {
   background: var(--well);
 }
 
