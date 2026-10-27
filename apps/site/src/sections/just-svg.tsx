@@ -131,6 +131,7 @@ export function JustSvg() {
       <div className="xray-wrap">
         <div
           className="xray-frame grab"
+          data-replay-block=""
           ref={frame}
           onPointerDown={down}
           onPointerMove={move}
