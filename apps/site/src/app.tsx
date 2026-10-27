@@ -5,20 +5,32 @@ import { Faq } from "./sections/faq";
 import { Hero } from "./sections/hero";
 import { JustSvg } from "./sections/just-svg";
 import { MakeYourOwn } from "./sections/make-your-own";
+import { Toys } from "./sections/toys";
 import { Uses } from "./sections/uses";
 
-export function App({ index }: { index: RegistryIndex | null }) {
+/** The site's pages, by path. */
+export type Page = "home" | "toys";
+
+export const pageFor = (pathname: string): Page => (pathname.replace(/\/+$/, "") === "/toys" ? "toys" : "home");
+
+export function App({ index, page }: { index: RegistryIndex | null; page: Page }) {
   return (
     <>
       <Header />
       <main>
-        <Hero />
-        <div className="sections">
-          <JustSvg />
-          <Uses index={index} />
-          <MakeYourOwn />
-          <Faq />
-        </div>
+        {page === "toys" ? (
+          <Toys index={index} />
+        ) : (
+          <>
+            <Hero />
+            <div className="sections">
+              <JustSvg />
+              <Uses index={index} />
+              <MakeYourOwn />
+              <Faq />
+            </div>
+          </>
+        )}
       </main>
       <Footer />
     </>

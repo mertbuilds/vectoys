@@ -3,9 +3,11 @@ import { Gift } from "@vectoys/gift";
 import { KeycapRow } from "@vectoys/keycap";
 import { Phone } from "@vectoys/phone";
 import { Watch } from "@vectoys/watch";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { CopyCommand } from "../components/copy-command";
+import { LazyPreview } from "../components/lazy-preview";
 import { addCommand, type RegistryIndex } from "../registry";
+import { useItems } from "../use-items";
 
 /** A calm screen for the previews. */
 const Wallpaper = () => <div className="wallpaper" />;
@@ -66,43 +68,9 @@ const USES: Use[] = [
   },
 ];
 
-/** A preview drawn only once it comes near the screen, so the page's HTML stays small. */
-function LazyPreview({ children }: { children: () => ReactNode }) {
-  const well = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
-  useEffect(() => {
-    const element = well.current;
-    if (!element || shown) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) setShown(true);
-      },
-      { rootMargin: "400px 0px" },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [shown]);
-  return (
-    <div className="use-preview" ref={well}>
-      {shown && children()}
-    </div>
-  );
-}
-
-/** The real uses, then every item the registry lists, read from `/r/index.json` unless the page came with it. */
+/** The real uses, a link to every toy, then the registry line with every item the registry lists. */
 export function Uses({ index }: { index: RegistryIndex | null }) {
-  const [items, setItems] = useState(index?.items ?? null);
-  useEffect(() => {
-    if (items) return;
-    let current = true;
-    fetch("/r/index.json")
-      .then((response) => response.json())
-      .then((loaded: RegistryIndex) => current && setItems(loaded.items))
-      .catch(() => current && setItems([]));
-    return () => {
-      current = false;
-    };
-  }, [items]);
+  const items = useItems(index);
 
   return (
     <section className="section" id="gallery" aria-labelledby="gallery-title">
@@ -113,7 +81,7 @@ export function Uses({ index }: { index: RegistryIndex | null }) {
       <ul className="uses">
         {USES.map((use) => (
           <li key={use.title} className="use">
-            <LazyPreview>{use.preview}</LazyPreview>
+            <LazyPreview className="use-preview">{use.preview}</LazyPreview>
             <div className="use-text">
               <h3>{use.title}</h3>
               <p>{use.body}</p>
@@ -122,6 +90,9 @@ export function Uses({ index }: { index: RegistryIndex | null }) {
           </li>
         ))}
       </ul>
+      <a href="/toys" className="button-filled">
+        Show all toys
+      </a>
       <div className="registry" id="registry">
         <p>
           {items && items.length > 0

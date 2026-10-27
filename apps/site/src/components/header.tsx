@@ -8,8 +8,8 @@ export function Header() {
         vectoys
       </a>
       <nav className="site-nav" aria-label="Sections">
-        <a href="#gallery">Gallery</a>
-        <a href="#registry">Registry</a>
+        <a href="/toys">Gallery</a>
+        <a href="/#registry">Registry</a>
       </nav>
       {REPO_PUBLIC && (
         <a href={REPO} target="_blank" rel="noreferrer" className="github-button">

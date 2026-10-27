@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import { startAnalytics } from "./analytics";
-import { App } from "./app";
+import { App, pageFor } from "./app";
 import { INDEX_DATA, type RegistryIndex } from "./registry";
 import "./style.css";
 
@@ -12,7 +12,7 @@ const data = document.getElementById(INDEX_DATA)?.textContent;
 const index: RegistryIndex | null = data ? JSON.parse(data) : null;
 const app = (
   <StrictMode>
-    <App index={index} />
+    <App index={index} page={pageFor(location.pathname)} />
   </StrictMode>
 );
 
