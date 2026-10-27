@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
+import { OPENPANEL_OPTIONS } from "../src/analytics";
 import { isLiveHost } from "../src/lib/live-host";
 import { proxyOpenPanel } from "../src/lib/op-proxy";
 import worker, { type Env } from "../worker";
@@ -90,5 +91,21 @@ describe("worker", () => {
     expect(answer.status).toBe(405);
     expect(sent).not.toHaveBeenCalled();
     expect(bindings.calls).toEqual([]);
+  });
+});
+
+describe("OPENPANEL_OPTIONS", () => {
+  test("records a light replay: 2% of loads, a snapshot a minute, 50 events a send, inputs masked, animations blocked", () => {
+    expect(OPENPANEL_OPTIONS.apiUrl).toBe("/api/op");
+    expect(OPENPANEL_OPTIONS.trackAttributes).toBe(true);
+    expect(OPENPANEL_OPTIONS.sessionReplay).toEqual({
+      enabled: true,
+      sampleRate: 0.02,
+      flushIntervalMs: 60_000,
+      maxEventsPerChunk: 50,
+      maskAllInputs: true,
+      maskAllText: false,
+      blockSelector: "[data-replay-block]",
+    });
   });
 });

@@ -8,6 +8,9 @@ export function VinenaEndorsement() {
       target="_blank"
       rel="noreferrer"
       className="vinena-endorsement"
+      data-track="outbound_click"
+      data-to="vinena.studio"
+      data-placement="footer"
     >
       Crafted at
       <svg viewBox="-3.1 0 537.6 100" role="img" aria-label="Vinena" className="vinena-wordmark">
