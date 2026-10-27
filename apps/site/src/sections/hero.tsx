@@ -131,7 +131,7 @@ function CoffeeSite({ scroll, selected, lineRef }: { scroll: number; selected: n
   );
 }
 
-/** The loop's clock. It runs while `running`, and holds where it is otherwise. */
+/** The loop's clock. It runs while `running`, and holds where it is otherwise. `reset` moves it to a time. */
 function useLoopClock(running: boolean) {
   const [t, setT] = useState(STILL);
   const clock = useRef(STILL);
@@ -151,8 +151,33 @@ function useLoopClock(running: boolean) {
     id = requestAnimationFrame(step);
     return () => cancelAnimationFrame(id);
   }, [running]);
-  return t;
+  const reset = (time: number) => {
+    clock.current = time;
+    setT(time);
+  };
+  return [t, reset] as const;
 }
+
+/** The phone as a hand or a key left it: its turn, and the site on its glass. */
+type Hand = { yaw: number; pitch: number; scroll: number; selected: number };
+
+const REST: Hand = { yaw: QUARTER, pitch: TURN.pitch, scroll: SCROLL, selected: 1 };
+// The same turn per pixel and pitch limits as the phone in It's just SVG, so the view never breaks.
+const YAW_PER_PIXEL = 0.5;
+const PITCH_PER_PIXEL = 0.3;
+const PITCH = [-45, 25] as const;
+const KEY_YAW = 15;
+const KEY_PITCH = 5;
+// A drag starts once the pointer has moved this far, so a click or a tap on the glass stays a click.
+const DRAG_FROM = 6;
+// After a drag the spin slows by this share every 16 milliseconds, and stops below this many degrees per millisecond.
+const FRICTION = 0.92;
+const SPIN_STOP = 0.01;
+const SETTLE_MS = 900;
+// How long the phone rests after the last arrow key before it eases back.
+const KEY_REST_MS = 1500;
+
+type Drag = { id: number; touch: boolean; x: number; y: number; base: Hand; active: boolean; lastYaw: number; lastTime: number; speed: number };
 
 /** Whether the element is on screen at all, kept up to date. */
 function useOnScreen(ref: React.RefObject<Element | null>) {
@@ -176,7 +201,14 @@ function HeroPhone() {
   const [pointer, setPointer] = useState(false);
   const [line, setLine] = useState<Line | null>(null);
   const [held, setHeld] = useState(false);
-  const t = useLoopClock(inFocus && onScreen && !reduced && !held);
+  const [hand, setHand] = useState<Hand | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [t, resetClock] = useLoopClock(inFocus && onScreen && !reduced && !held && !hand);
+  const drag = useRef<Drag | null>(null);
+  const settling = useRef<() => void>(() => {});
+  const shown = useRef<Hand>(REST);
+
+  useEffect(() => () => settling.current(), []);
 
   // A pointer on the phone holds the loop once the glass faces the eye, so the visitor can select the text.
   useEffect(() => {
@@ -200,16 +232,140 @@ function HeroPhone() {
     void document.fonts?.ready.then(measure);
   }, []);
 
-  const { yaw, pitch } = poseAt(t);
-  const scroll = scrollAt(t);
-  const cursor = line && !held ? cursorAt(t, line, scroll) : null;
+  const pose = poseAt(t);
+  const now: Hand = hand ?? { yaw: pose.yaw, pitch: pose.pitch, scroll: scrollAt(t), selected: selectedAt(t) };
+  shown.current = now;
+  const cursor = line && !held && !hand ? cursorAt(t, line, now.scroll) : null;
+
+  /**
+   * After a hand lets go: the spin runs on and slows, then the phone eases back
+   * to the three-quarter view and the loop goes on from there. With reduced
+   * motion it stays where it was left.
+   */
+  const settle = (from: Hand, speed: number) => {
+    settling.current();
+    if (reduced) return;
+    let id = 0;
+    let last = performance.now();
+    let spin = speed;
+    let current = from;
+    let easeFrom: Hand | null = null;
+    let easeStart = 0;
+    const step = (time: number) => {
+      const elapsed = Math.min(time - last, LONGEST_FRAME);
+      last = time;
+      if (!easeFrom && Math.abs(spin) > SPIN_STOP) {
+        current = { ...current, yaw: current.yaw + spin * elapsed };
+        spin *= FRICTION ** (elapsed / 16);
+        setHand(current);
+      } else {
+        if (!easeFrom) {
+          // The nearest way round to the rest pose, however many turns the hand gave it.
+          easeFrom = { ...current, yaw: current.yaw - 360 * Math.round((current.yaw - REST.yaw) / 360) };
+          easeStart = time;
+        }
+        const share = span(time, easeStart, easeStart + SETTLE_MS);
+        setHand({
+          yaw: mix(easeFrom.yaw, REST.yaw, share),
+          pitch: mix(easeFrom.pitch, REST.pitch, share),
+          scroll: mix(easeFrom.scroll, REST.scroll, share),
+          selected: mix(easeFrom.selected, REST.selected, share),
+        });
+        if (share >= 1) {
+          settling.current = () => {};
+          resetClock(STILL);
+          setHand(null);
+          return;
+        }
+      }
+      id = requestAnimationFrame(step);
+    };
+    id = requestAnimationFrame(step);
+    settling.current = () => cancelAnimationFrame(id);
+  };
+
+  const down = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    const target = event.target as Element;
+    const glass = target.closest(".ms-viewport") !== null;
+    const touch = event.pointerType === "touch";
+    // A mouse or pen on the glass selects text and clicks; only the device's own drawing starts a drag.
+    if (!(target instanceof SVGPathElement) && !(touch && glass)) return;
+    if (!touch) event.preventDefault();
+    drag.current = { id: event.pointerId, touch, x: event.clientX, y: event.clientY, base: shown.current, active: false, lastYaw: shown.current.yaw, lastTime: event.timeStamp, speed: 0 };
+  };
+
+  const move = (event: React.PointerEvent<HTMLDivElement>) => {
+    const current = drag.current;
+    if (!current || current.id !== event.pointerId) return;
+    const dx = event.clientX - current.x;
+    const dy = event.clientY - current.y;
+    if (!current.active) {
+      if (Math.hypot(dx, dy) < DRAG_FROM) return;
+      current.active = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      settling.current();
+      setDragging(true);
+    }
+    // Touch turns the phone left and right only, so an upward swipe still scrolls the page.
+    const yaw = current.base.yaw + dx * YAW_PER_PIXEL;
+    const pitch = current.touch ? current.base.pitch : clamp(current.base.pitch - dy * PITCH_PER_PIXEL, ...PITCH);
+    const elapsed = event.timeStamp - current.lastTime;
+    if (elapsed > 0) current.speed = (yaw - current.lastYaw) / elapsed;
+    current.lastYaw = yaw;
+    current.lastTime = event.timeStamp;
+    setHand({ ...current.base, yaw, pitch });
+  };
+
+  const up = (event: React.PointerEvent<HTMLDivElement>) => {
+    const current = drag.current;
+    if (!current || current.id !== event.pointerId) return;
+    drag.current = null;
+    if (!current.active) return;
+    setDragging(false);
+    // A pointer that stopped before it let go gives no spin.
+    const still = event.timeStamp - current.lastTime > 80;
+    settle(shown.current, still ? 0 : current.speed);
+  };
+
+  const key = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const turns: Record<string, [number, number]> = {
+      ArrowLeft: [-KEY_YAW, 0],
+      ArrowRight: [KEY_YAW, 0],
+      ArrowUp: [0, KEY_PITCH],
+      ArrowDown: [0, -KEY_PITCH],
+    };
+    const turn = turns[event.key];
+    if (!turn) return;
+    event.preventDefault();
+    settling.current();
+    const from = shown.current;
+    const next = { ...from, yaw: from.yaw + turn[0], pitch: clamp(from.pitch + turn[1], ...PITCH) };
+    setHand(next);
+    if (reduced) return;
+    const timer = setTimeout(() => settle(next, 0), KEY_REST_MS);
+    settling.current = () => clearTimeout(timer);
+  };
 
   return (
     <div ref={stage} className="hero-stage">
-      <div className="hero-phone" data-replay-block="" onPointerEnter={() => setPointer(true)} onPointerLeave={() => setPointer(false)}>
-        <Phone yaw={yaw} pitch={pitch} label="A phone with a coffee shop's site on its screen">
+      <div
+        className={`hero-phone${dragging ? " hero-phone-dragging" : ""}`}
+        data-replay-block=""
+        role="group"
+        aria-label="3D phone, use arrow keys to turn it"
+        tabIndex={0}
+        onKeyDown={key}
+        onPointerEnter={() => setPointer(true)}
+        onPointerLeave={() => setPointer(false)}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+      >
+        <Phone yaw={now.yaw} pitch={now.pitch} label="A phone with a coffee shop's site on its screen">
           <div className="ms-viewport">
-            <CoffeeSite scroll={scroll} selected={selectedAt(t)} lineRef={lineRef} />
+            <CoffeeSite scroll={now.scroll} selected={now.selected} lineRef={lineRef} />
             {cursor && cursor.opacity > 0 && (
               <div
                 className="ms-cursor"

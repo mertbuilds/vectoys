@@ -364,6 +364,31 @@ code.inline {
   translate: -50% -40%;
 }
 
+/* The phone turns under a drag: grab on its drawing, text selection on its glass. Touch scrolls the page up and down. */
+.hero-phone {
+  touch-action: pan-y;
+}
+
+.hero-phone svg path {
+  cursor: grab;
+}
+
+.hero-phone-dragging,
+.hero-phone-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.hero-phone:focus-visible {
+  outline: none;
+}
+
+/* The focus ring traces the phone's own outline, since its box is much larger than the phone. */
+.hero-phone:focus-visible svg > path:last-child {
+  stroke: var(--accent) !important;
+  stroke-width: 3px !important;
+}
+
 @media (max-width: 719px) {
   .hero .command code {
     font-size: 12.5px;
@@ -397,6 +422,18 @@ code.inline {
     top: 0;
     width: 720px;
     translate: -50% -14%;
+  }
+}
+
+/* At the narrowest widths the copy takes most of the screen, so the phone gives up height and the hero still fits. */
+@media (max-width: 359px) {
+  .hero-copy {
+    gap: 16px;
+    padding-top: 20px;
+  }
+
+  .hero-stage {
+    min-height: 120px;
   }
 }
 
