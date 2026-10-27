@@ -15,6 +15,7 @@ export function llmsText(index: RegistryIndex): string {
     "## Docs",
     "",
     `- [Agent skill](${site}/skill.md): how a coding agent makes, checks, previews and submits a new item`,
+    `- [All toys](${site}/toys): every item, live, with its install command and its source`,
     `- [Registry index](${site}/r/index.json): every item, in the shadcn registry format`,
     `- [Source and README](${REPO}): the engine, the React pieces, the CLI and the items`,
     "",

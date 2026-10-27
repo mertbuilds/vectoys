@@ -1,24 +1,38 @@
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 import type { RegistryIndex } from "./registry";
-import { Gallery } from "./sections/gallery";
+import { Faq } from "./sections/faq";
 import { Hero } from "./sections/hero";
 import { JustSvg } from "./sections/just-svg";
-import { LiveScreen } from "./sections/live-screen";
 import { MakeYourOwn } from "./sections/make-your-own";
-import { YourRegistry } from "./sections/your-registry";
+import { Showcase } from "./sections/showcase";
+import { Toys } from "./sections/toys";
+import { Uses } from "./sections/uses";
 
-export function App({ index }: { index: RegistryIndex | null }) {
+/** The site's pages, by path. */
+export type Page = "home" | "toys";
+
+export const pageFor = (pathname: string): Page => (pathname.replace(/\/+$/, "") === "/toys" ? "toys" : "home");
+
+export function App({ index, page }: { index: RegistryIndex | null; page: Page }) {
   return (
     <>
       <Header />
       <main>
-        <Hero />
-        <JustSvg />
-        <LiveScreen />
-        <Gallery index={index} />
-        <MakeYourOwn />
-        <YourRegistry />
+        {page === "toys" ? (
+          <Toys index={index} />
+        ) : (
+          <>
+            <Hero />
+            <div className="sections">
+              <JustSvg />
+              <Uses index={index} />
+              <Showcase />
+              <MakeYourOwn />
+              <Faq />
+            </div>
+          </>
+        )}
       </main>
       <Footer />
     </>
