@@ -28,6 +28,20 @@ export const OPENPANEL_OPTIONS: OpenPanelOptions = {
   },
 };
 
+/** What `track` sends through: the loaded OpenPanel, or nothing yet. */
+type Tracker = { track: (name: string, properties?: Record<string, unknown>) => unknown };
+let tracker: Tracker | null = null;
+
+/** Swaps the tracker; tests use it to see what `track` sends. */
+export function setTracker(next: Tracker | null): void {
+  tracker = next;
+}
+
+/** Sends an event once OpenPanel has loaded; before that, and off the live site, it does nothing. */
+export function track(name: string, properties?: Record<string, unknown>): void {
+  void tracker?.track(name, properties);
+}
+
 /**
  * Loads OpenPanel through the same-origin proxy (`/api/op`), on the live site
  * only: nothing loads in dev, a local build or a preview.
@@ -36,7 +50,7 @@ export function startAnalytics(): void {
   if (!isLiveHost(window.location.hostname)) return;
   void import("@openpanel/web")
     .then(({ OpenPanel }) => {
-      new OpenPanel(OPENPANEL_OPTIONS);
+      tracker = new OpenPanel(OPENPANEL_OPTIONS);
     })
     .catch((error: unknown) => console.warn("@openpanel/web failed to load", error));
 }

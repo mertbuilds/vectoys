@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { track } from "../analytics";
 
 const QUESTIONS = [
   {
@@ -52,9 +53,10 @@ function Question({ question, answer }: { question: string; answer: string }) {
           className="faq-button"
           aria-expanded={open}
           aria-controls={answerId}
-          data-track={open ? undefined : "faq_open"}
-          data-question={open ? undefined : question}
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            if (!open) track("faq_open", { question });
+            setOpen(!open);
+          }}
         >
           <span>{question}</span>
           <svg className="faq-chevron" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">

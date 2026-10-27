@@ -291,7 +291,11 @@ function HeroPhone() {
     const touch = event.pointerType === "touch";
     // A mouse or pen on the glass selects text and clicks; only the device's own drawing starts a drag.
     if (!(target instanceof SVGPathElement) && !(touch && glass)) return;
-    if (!touch) event.preventDefault();
+    if (!touch) {
+      event.preventDefault();
+      // Holds the pointer so a release outside the stage still ends the drag.
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
     drag.current = { id: event.pointerId, touch, x: event.clientX, y: event.clientY, base: shown.current, active: false, lastYaw: shown.current.yaw, lastTime: event.timeStamp, speed: 0 };
   };
 
@@ -301,6 +305,10 @@ function HeroPhone() {
     const dx = event.clientX - current.x;
     const dy = event.clientY - current.y;
     if (!current.active) {
+      if (event.buttons === 0) {
+        drag.current = null;
+        return;
+      }
       if (Math.hypot(dx, dy) < DRAG_FROM) return;
       current.active = true;
       event.currentTarget.setPointerCapture(event.pointerId);
