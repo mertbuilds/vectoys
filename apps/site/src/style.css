@@ -305,11 +305,13 @@ code.inline {
   overflow: hidden;
 }
 
+/* The hero fills the first screen under the 68 pixel header, and never gets so short that its copy clips. */
 .hero-inner {
+  --hero-height: max(600px, calc(100dvh - 68px));
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  min-height: 720px;
+  min-height: var(--hero-height);
 }
 
 .hero-copy {
@@ -351,14 +353,14 @@ code.inline {
 .hero-stage {
   position: relative;
   align-self: stretch;
-  min-height: 720px;
 }
 
+/* The phone grows with the band's height, so a tall screen does not leave it small. */
 .hero-phone {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 1180px;
+  width: clamp(980px, 1.6 * var(--hero-height), 1500px);
   translate: -50% -40%;
 }
 
@@ -368,10 +370,12 @@ code.inline {
   }
 }
 
-@media (max-width: 899px) {
+/* Narrow and upright screens stack the copy over the phone; a short landscape window keeps the two columns. */
+@media (max-width: 899px) and (max-aspect-ratio: 4/3) {
   .hero-inner {
-    grid-template-columns: 1fr;
-    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .hero-copy {
@@ -383,18 +387,22 @@ code.inline {
   }
 
   .hero-stage {
-    min-height: 470px;
-    margin: -24px -16px 0;
+    flex: 1;
+    min-height: 340px;
+    margin: 0 -16px;
   }
 
+  /* Anchored to the stage's top, so the band's bottom edge cuts the phone wherever it ends. */
   .hero-phone {
+    top: 0;
     width: 720px;
+    translate: -50% -14%;
   }
 }
 
-@media (min-width: 600px) and (max-width: 899px) {
+@media (min-width: 600px) and (max-width: 899px) and (max-aspect-ratio: 4/3) {
   .hero-stage {
-    min-height: 600px;
+    min-height: 420px;
   }
 
   .hero-phone {
