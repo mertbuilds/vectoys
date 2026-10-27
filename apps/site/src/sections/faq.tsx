@@ -74,7 +74,7 @@ function Question({ question, answer }: { question: string; answer: string }) {
 export function Faq() {
   return (
     <section className="section" id="faq" aria-labelledby="faq-title">
-      <div className="section-copy section-copy-wide">
+      <div className="section-copy section-copy-wide faq-head">
         <h2 id="faq-title">Questions</h2>
       </div>
       <div className="faq">

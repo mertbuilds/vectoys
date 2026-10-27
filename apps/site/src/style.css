@@ -1184,8 +1184,14 @@ code.inline {
 
 /* Questions: one per row, each answer opens under its question. */
 
+.faq-head {
+  margin-inline: auto;
+  text-align: center;
+}
+
 .faq {
-  max-width: 760px;
+  max-width: 720px;
+  margin-inline: auto;
 }
 
 .faq-item + .faq-item {
