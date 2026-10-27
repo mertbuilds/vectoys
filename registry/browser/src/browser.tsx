@@ -12,7 +12,7 @@ const HAIRLINE = "var(--vectoys-hairline, light-dark(#8a8a8a, #5a5a5a))";
 const INK = "var(--vectoys-ink, light-dark(#1d1d1c, #ededed))";
 const SHADOW = "var(--vectoys-shadow, light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4)))";
 
-// The bar in the surface, the edges and the back a step towards the
+// The bar in the surface, the edges and the back a step toward the
 // hairline, the pill a step darker than the bar and the dots a quiet grey.
 const FRAME = `color-mix(in srgb, ${SURFACE} 78%, ${HAIRLINE})`;
 const BACK = `color-mix(in srgb, ${SURFACE} 90%, ${HAIRLINE})`;

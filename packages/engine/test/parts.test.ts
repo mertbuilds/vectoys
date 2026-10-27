@@ -29,7 +29,7 @@ const cube = (pose: Pose = { position: [0, 0, 0.5], rotation: rotateZ(0) }) =>
   slab({ name: "cube", box: [-0.5, -0.5, 0.5, 0.5], thickness: 1, pose });
 
 const FRONT = camera({ height: 60, perspective: 300 });
-// Above, and turned so the cube's +x side comes round towards the eye.
+// Above, and turned so the cube's +x side comes round toward the eye.
 const CORNER = camera({ height: 60, perspective: 300, yaw: -30, pitch: -20 });
 
 /** The faces `draw` kept, as the part's own faces, in the order drawn. */
@@ -147,7 +147,7 @@ test("a footprint is the parts seen from above, grown and laid under the lowest 
   expect(footprint([part], camera({ height: 60, perspective: 300, pitch: 20 })).facing).toBe(false);
 });
 
-test("a face turned towards the light gets all of it, one turned away only the ambient share", () => {
+test("a face turned toward the light gets all of it, one turned away only the ambient share", () => {
   const light = { direction: [0, -2, 0], ambient: 0.3 } as const;
   expect(lit([0, -1, 0], light)).toBe(1);
   expect(lit([0, 1, 0], light)).toBe(0.3);
@@ -178,7 +178,7 @@ test("draw keeps what it returned before shading, and lights by LIGHT unless tol
     expect(face.shade).toBeGreaterThanOrEqual(LIGHT.ambient);
     expect(face.shade).toBeLessThanOrEqual(1);
   }
-  // The top faces up, towards the light from above, so it is the brightest.
+  // The top faces up, toward the light from above, so it is the brightest.
   const top = plain.faces.find((face) => round(face.normal).join() === "0,0,1")!;
   expect(Math.max(...plain.faces.map((face) => face.shade))).toBe(top.shade);
 });

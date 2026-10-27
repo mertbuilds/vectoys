@@ -34,7 +34,7 @@ export const LIFT = 0.15;
 export const ROUND = 2.1;
 const RIM = 0.25;
 // The lid turns about an axis 2.9 mm in from the base's back edge and 4.6 mm
-// under the shut lid's face, so open its chin drops behind the base towards
+// under the shut lid's face, so open its chin drops behind the base toward
 // the table. The hinge fills a cut 237.6 mm wide and 4.5 mm deep in the
 // base's back edge, between shoulders of 37.5 mm: an aluminium barrel 15 mm
 // long at each end and the dark cover between them.
@@ -293,7 +293,7 @@ export type View = ReturnType<typeof seen>;
  * Beside the words, on a wide page: the eye is near, so the deck comes
  * forward and spreads. The lid opens to 105 degrees. An eye sits
  * `perspective` away, level with `originY`; the laptop stands `back` behind
- * its focus at `anchorY` and turns towards it by `pitch` degrees, in a scene
+ * its focus at `anchorY` and turns toward it by `pitch` degrees, in a scene
  * 100 by `height`.
  */
 export const DESK = seen({ id: "desk", height: 70, perspective: 200, pitch: -15, back: 14, originY: 0.22 * 70, anchorY: 0.78 * 70 });

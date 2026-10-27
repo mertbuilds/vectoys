@@ -137,7 +137,7 @@ export type FloppyProps = {
 /**
  * A 3.5 inch floppy disk as a download button: with `href` a real link that
  * downloads the file, without one a real button. Under the pointer or the
- * keyboard's focus its shutter slides open and it turns a little towards
+ * keyboard's focus its shutter slides open and it turns a little toward
  * the eye; pressed, it dips back. Under reduced motion it changes without
  * the motion.
  */

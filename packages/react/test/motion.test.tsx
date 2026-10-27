@@ -11,7 +11,7 @@ afterEach(() => {
   cleanup = [];
 });
 
-test("a spring moves towards a new target over frames, overshoots a little and comes to rest on it", async () => {
+test("a spring moves toward a new target over frames, overshoots a little and comes to rest on it", async () => {
   const frames = fakeFrames();
   cleanup.push(frames.restore);
   const { host, rerender, unmount } = await mount(<Value target={0} />);

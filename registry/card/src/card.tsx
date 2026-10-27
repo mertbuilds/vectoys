@@ -37,7 +37,7 @@ const FACE_STYLE: CSSProperties = {
   containerType: "inline-size",
 };
 
-// How far the card tilts towards a pointer at its edge, in degrees, and the
+// How far the card tilts toward a pointer at its edge, in degrees, and the
 // springs it flips and tilts on: the flip a little loose so it lands with a
 // small bounce, the tilt quick and soft.
 const TILT = 9;
@@ -105,7 +105,7 @@ type CardProps = {
   defaultFlipped?: boolean;
   /** Called with the side the card asks to show. */
   onFlipChange?: (flipped: boolean) => void;
-  /** Leans towards a pointer over it; on by default. */
+  /** Leans toward a pointer over it; on by default. */
   tilt?: boolean;
   /** The flip button's name for assistive technology. */
   label?: string;
@@ -122,7 +122,7 @@ function inside(event: PointerEvent<HTMLElement> | MouseEvent<HTMLElement>) {
 
 /**
  * A card with live content on both faces that flips over on a click, a tap,
- * a key or a pointer resting on it, and leans a little towards the pointer.
+ * a key or a pointer resting on it, and leans a little toward the pointer.
  * The back's content is hidden while the front shows, and the other way round.
  */
 export function Card({
@@ -153,7 +153,7 @@ export function Card({
   const pointer = useRef("mouse");
   const button = useRef<HTMLButtonElement>(null);
 
-  /** Moves the card towards its target: on springs, or at once for reduced motion. */
+  /** Moves the card toward its target: on springs, or at once for reduced motion. */
   const settle = () => {
     if (reduced) {
       springs.current = { flip: { value: target.current.flip, velocity: 0 }, yaw: { value: 0, velocity: 0 }, pitch: { value: 0, velocity: 0 } };

@@ -20,7 +20,7 @@ vectoys draws 3D objects as plain SVG paths. An item is a small React component 
 
 Units are scene units. The camera's `width` (100 by default) and `height` are the SVG viewBox. Pick a scale such as `const mm = (v: number) => v * 0.4` and write real sizes.
 
-Axes. A part's own plane is x right, y down, z out of its top face. The model is x across, y towards the front, z up. A part lying flat faces up. Stand it upright towards the eye with `rotation: rotateX(-90)`.
+Axes. A part's own plane is x right, y down, z out of its top face. The model is x across, y toward the front, z up. A part lying flat faces up. Stand it upright toward the eye with `rotation: rotateX(-90)`.
 
 Parts (`@vinena/vectoys`):
 
@@ -89,7 +89,7 @@ The same props must give the same markup on the server and the client, every tim
 
 ## Example
 
-A badge that lifts towards the mouse and shows live HTML on its face. It passes all 8 checks.
+A badge that lifts toward the mouse and shows live HTML on its face. It passes all 8 checks.
 
 `src/geometry.ts`:
 
@@ -136,7 +136,7 @@ const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
 const fill = (color: string): Look => ({ style: { fill: color } });
 const STYLES: Record<string, Look> = { top: fill(FINISH), side: fill(FINISH), bottom: fill(FINISH), face: fill(SURFACE) };
 
-/** A badge that lifts and turns towards a mouse over it, with live HTML on its face. */
+/** A badge that lifts and turns toward a mouse over it, with live HTML on its face. */
 export function Badge({ children, label = "Badge" }: { children?: ReactNode; label?: string }) {
   const [over, setOver] = useState(false);
   // Springs to its target each frame; under reduced motion it jumps there.

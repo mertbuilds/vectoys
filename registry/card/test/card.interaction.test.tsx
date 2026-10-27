@@ -5,7 +5,7 @@ import { Card } from "../src";
 const frames = fakeFrames();
 afterAll(frames.restore);
 
-test("a click flips the card over and back, and only the face towards the eye shows", async () => {
+test("a click flips the card over and back, and only the face toward the eye shows", async () => {
   const onFlipChange = mock((flipped: boolean) => flipped);
   const { host, unmount } = await mount(<Card front={<p>front</p>} back={<p>back</p>} onFlipChange={onFlipChange} />);
   const button = host.querySelector("button");

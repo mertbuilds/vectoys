@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import { settled, spring } from "../src";
 
-test("a spring moves towards its target and settles there", () => {
+test("a spring moves toward its target and settles there", () => {
   let state = { value: 0, velocity: 0 };
   state = spring(state, 4, 0.05);
   expect(state.value).toBeGreaterThan(0);

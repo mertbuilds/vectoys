@@ -40,7 +40,7 @@ test("at yaw 180 the display faces away and the neck draws over the panel's back
 test("tilt turns the panel's top back about the stand", () => {
   const top = (tilt: number) => {
     const { glass } = seen({ yaw: 0, pitch: 0, tilt });
-    // The middle of the glass's top edge, in the model's y: towards the front is more.
+    // The middle of the glass's top edge, in the model's y: toward the front is more.
     return place(glass, [0, DISPLAY.y, 0])[1];
   };
   expect(top(20)).toBeLessThan(top(0));

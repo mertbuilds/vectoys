@@ -140,7 +140,7 @@ export function Gift({ children, open, defaultOpen = false, onOpenChange, finish
   const hovered = useRef(false);
   const [state, setState] = useState({ open: progress.current, peek: 0 });
 
-  /** Runs the lid towards open or shut at an even pace, and its peek on a spring. */
+  /** Runs the lid toward open or shut at an even pace, and its peek on a spring. */
   const run = () => {
     const to = isOpen ? 1 : 0;
     const lift = hovered.current && !isOpen ? 1 : 0;

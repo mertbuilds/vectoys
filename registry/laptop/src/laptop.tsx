@@ -13,7 +13,7 @@ const SHADOW = "var(--vectoys-shadow, rgba(0, 0, 0, 0.08))";
 
 // Anodised aluminium in close tones, lit from above: the tops are the page's
 // surface, the sides a step darker under the page's shadow, the rim round the
-// glass a step towards the border, and the shut lid an even tone. The glass,
+// glass a step toward the border, and the shut lid an even tone. The glass,
 // the hinge cover and the keyboard are near black, as on the machine, and the
 // hinge's barrels a darker aluminium in the shade of the lid.
 const SURFACE: CSSProperties = { fill: SURFACE_TONE };

@@ -5,7 +5,7 @@ import { combine, dot, rotate, rotateX, rotateY, rotateZ, subtract, type Flat, t
  * An eye sits `perspective` in front of it, level with the vanishing point
  * (`originX`, `originY`), as CSS `perspective` and `perspective-origin` put
  * it. The model stands `back` behind the scene at (`anchorX`, `anchorY`) and
- * turns by `yaw` about its up axis, `pitch` towards or away from the eye and
+ * turns by `yaw` about its up axis, `pitch` toward or away from the eye and
  * `roll` about the line of sight, all in degrees.
  */
 export type CameraOptions = {
@@ -30,8 +30,8 @@ export type Camera = Required<CameraOptions> & {
   facesEye: (point: Solid, normal: Solid) => boolean;
 };
 
-// The model's axes: x across, y towards the front and z up. The scene's
-// axes, as CSS has them: x right, y down and z towards the eye. Standing
+// The model's axes: x across, y toward the front and z up. The scene's
+// axes, as CSS has them: x right, y down and z toward the eye. Standing
 // upright the model's front faces the eye, which is CSS `rotateX(90deg)`.
 const UPRIGHT = rotateX(90);
 

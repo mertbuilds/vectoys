@@ -120,7 +120,7 @@ export const PRESS = mm(5);
 
 /**
  * The disk as the eye sees it, `hover` from 0 to 1 sliding the shutter open
- * and turning it towards the eye, and `press` from 0 to 1 pushing it back:
+ * and turning it toward the eye, and `press` from 0 to 1 pushing it back:
  * the parts drawn, the body's pose and the shadow under it.
  */
 export function seen(hover = 0, press = 0) {

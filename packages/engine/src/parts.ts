@@ -115,7 +115,7 @@ function profile(thickness: number, edge: number, bevel: "round" | "chamfer"): F
 const outlineOf = ({ box, radii = [0, 0], step, outline }: Part) => distinct(outline ?? rounded(box, radii, [], [], step));
 
 /**
- * An outline drawn in towards its middle by `inset` on every side. Scaling
+ * An outline drawn in toward its middle by `inset` on every side. Scaling
  * rather than offsetting keeps a corner round however far in it goes.
  */
 function shrink(outline: readonly Flat[], inset: number): Flat[] {
@@ -188,8 +188,8 @@ export const poses = (scene: Scene) => new Map(placed(scene).map(({ part, pose }
 export type Drawn = { d: string; role: string; part: string; facing: boolean; normal: Solid; shade: number };
 
 /**
- * A light held still with the eye: `direction` points towards it in the
- * scene's axes (x right, y down, z towards the eye), and `ambient` is the
+ * A light held still with the eye: `direction` points toward it in the
+ * scene's axes (x right, y down, z toward the eye), and `ambient` is the
  * share of light every face gets, even one turned away from it.
  *
  * It turns with the eye and not with the model, so as a device spins its
@@ -219,7 +219,7 @@ const mean = (points: readonly Solid[]): Solid => {
  * and each part's silhouette in the same order.
  *
  * Depth is the distance from the eye in the camera's view space, which,
- * unlike view z alone, agrees with `facesEye` towards the edges of a wide
+ * unlike view z alone, agrees with `facesEye` toward the edges of a wide
  * perspective. Parts draw by `order`, then from the farthest centre to the
  * nearest; a part's faces draw by the same rule, ties in the order the part
  * gives them.
@@ -268,7 +268,7 @@ export function draw(scene: Scene, camera: Camera, { cull = true, light = LIGHT 
 /**
  * A scene's shadow on the ground, for a device that floats over the page:
  * every part as seen from straight above, grown by `spread`, laid `gap` under
- * the lowest point, moved `ahead` towards the front and drawn by the camera.
+ * the lowest point, moved `ahead` toward the front and drawn by the camera.
  * The model's z is up whatever the parts' poses, so the shadow follows a
  * turning device the way light from overhead would. `facing` is false when
  * the eye is under the ground, where the shadow cannot be seen.

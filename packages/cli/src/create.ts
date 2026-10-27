@@ -104,7 +104,7 @@ export const HEIGHT = 40;
 export const THICKNESS = 4;
 const INSET = 6;
 
-/** How the slab turns towards the eye at rest, in degrees. */
+/** How the slab turns toward the eye at rest, in degrees. */
 export const TILT = { yaw: -24, pitch: -16 } as const;
 
 function parts(pose: Pose): Part[] {
@@ -163,13 +163,13 @@ export type ${component}Props = {
   finish?: string;
   /** How far it turns about its up axis, in degrees. */
   yaw?: number;
-  /** How far it tips towards or away from the eye, in degrees. */
+  /** How far it tips toward or away from the eye, in degrees. */
   pitch?: number;
   className?: string;
   style?: CSSProperties;
 };
 
-/** ${title}: a slab tilted towards the eye, drawn the same on the server and the client. */
+/** ${title}: a slab tilted toward the eye, drawn the same on the server and the client. */
 export function ${component}({ label = ${JSON.stringify(title)}, finish, yaw = TILT.yaw, pitch = TILT.pitch, className, style }: ${component}Props) {
   const view = useMemo(() => seen(yaw, pitch), [yaw, pitch]);
   const body = view.drawn.hulls.find((hull) => hull.part === "body");

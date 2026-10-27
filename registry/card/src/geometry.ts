@@ -38,12 +38,12 @@ export const FACE_ROUND = ROUND - EDGE;
 /**
  * How the card stands, in degrees: `flip` about its own upright axis, 0 for
  * the front and 180 for the back, and `yaw` and `pitch` the small tilt
- * towards a pointer.
+ * toward a pointer.
  */
 export type Turn = { flip?: number; yaw?: number; pitch?: number };
 
 /**
- * Upright, the card's own z turns to the model's y, towards the eye, and its
+ * Upright, the card's own z turns to the model's y, toward the eye, and its
  * y, down the card, to the model's -z. It flips about its own y first, then
  * tilts in the model, so a tilt stays the same way round on either face. Its
  * middle, half way through its thickness, is the model's origin.
