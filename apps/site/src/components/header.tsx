@@ -9,11 +9,14 @@ export function Header() {
       </a>
       <nav className="site-nav" aria-label="Sections">
         <a href="/toys">Gallery</a>
-        <a href="/#registry">Registry</a>
+        <a href="/#registry" className="nav-registry">
+          Registry
+        </a>
+        <a href="/#showcase">Showcase</a>
       </nav>
       {REPO_PUBLIC && (
         <a href={REPO} target="_blank" rel="noreferrer" className="github-button">
-          <GitHubMark /> GitHub
+          <GitHubMark /> <span className="github-label">GitHub</span>
         </a>
       )}
     </header>

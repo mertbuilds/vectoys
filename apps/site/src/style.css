@@ -113,6 +113,13 @@ pre {
   display: block;
 }
 
+/* Header anchors glide to their section unless the visitor asks for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Page frame */
 
 .site-header,
@@ -305,6 +312,26 @@ code.inline {
 .github-button:hover,
 .github-button:focus-visible {
   background: var(--well);
+}
+
+/* On phones the header keeps Gallery and Showcase, and GitHub shows only its mark. */
+@media (max-width: 479px) {
+  .nav-registry {
+    display: none;
+  }
+
+  .github-button {
+    padding: 0 9px;
+  }
+
+  .github-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 /* At the narrowest widths the header keeps the wordmark and GitHub. */
