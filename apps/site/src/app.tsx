@@ -5,6 +5,7 @@ import { Faq } from "./sections/faq";
 import { Hero } from "./sections/hero";
 import { JustSvg } from "./sections/just-svg";
 import { MakeYourOwn } from "./sections/make-your-own";
+import { Showcase } from "./sections/showcase";
 import { Toys } from "./sections/toys";
 import { Uses } from "./sections/uses";
 
@@ -26,6 +27,7 @@ export function App({ index, page }: { index: RegistryIndex | null; page: Page }
             <div className="sections">
               <JustSvg />
               <Uses index={index} />
+              <Showcase />
               <MakeYourOwn />
               <Faq />
             </div>

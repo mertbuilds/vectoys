@@ -25,3 +25,9 @@ export const CheckIcon = () => (
     <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+export const ArrowUpRightIcon = () => (
+  <svg viewBox="0 0 24 24" width={18} height={18} aria-hidden="true" className="icon arrow-up-right">
+    <path d="M7.5 16.5l9-9M9 7.5h7.5V15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
