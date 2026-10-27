@@ -1469,12 +1469,12 @@ code.inline {
 .footer-links .vinena-endorsement {
   gap: 0.4em;
   white-space: nowrap;
+  transition: color 300ms ease;
 }
 
 .vinena-wordmark {
   height: 0.85em;
   width: auto;
-  color: var(--ink);
 }
 
 .star path {
