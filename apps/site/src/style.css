@@ -276,7 +276,8 @@ code.inline {
   border-radius: 10px;
   font-size: 15px;
   color: var(--ink);
-  background: var(--card);
+  /* The page color, so it stays a filled button on the hero band, like the install command. */
+  background: var(--page);
   text-decoration: none;
   transition: background-color 150ms var(--ease);
 }
@@ -298,7 +299,15 @@ code.inline {
 
 /* Hero: a full-width band, the phone very large and cut off at its bottom */
 
+/* The band starts under the 68 pixel header, so header and hero are one surface with no seam. */
+.site-header {
+  position: relative;
+  z-index: 3;
+}
+
 .hero {
+  margin-top: -68px;
+  padding-top: 68px;
   background:
     radial-gradient(50% 60% at 72% 45%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
     var(--card);
