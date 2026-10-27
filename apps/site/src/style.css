@@ -1031,18 +1031,31 @@ code.inline {
   transition: color 150ms var(--ease);
 }
 
-.footer-links a:hover {
+/* Footer links have no underline: hover and keyboard focus show them in ink, and focus also draws a ring. */
+.footer-links a:hover,
+.footer-links a:focus-visible,
+.site-footer .wordmark:focus-visible {
   color: var(--ink);
+}
+
+.footer-links a:focus-visible,
+.site-footer .wordmark:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.site-footer .wordmark {
+  transition: opacity 150ms var(--ease);
+}
+
+.site-footer .wordmark:hover {
+  opacity: 0.7;
 }
 
 .footer-links .vinena-endorsement {
   gap: 0.4em;
   white-space: nowrap;
-  transition: none;
-}
-
-.footer-links .vinena-endorsement:hover {
-  color: var(--muted);
 }
 
 .vinena-wordmark {
