@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>vectoys</title>
+    <title>vectoys: open source SVG 3D engine for device mockups</title>
     <meta name="description" content="An open source SVG 3D engine for device mockups and small 3D toys on landing pages. Plain SVG paths, live HTML on the screens, no WebGL." />
     <meta name="color-scheme" content="light dark" />
     <link rel="canonical" href="https://vectoys.com/" />
@@ -27,6 +27,37 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500&family=Funnel+Sans:wght@400;500&family=Martian+Mono:wdth,wght@75..112.5,400&display=swap"
     />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://vinena.studio/#organization",
+            "name": "Vinena Studio",
+            "url": "https://vinena.studio"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://vectoys.com/#website",
+            "name": "vectoys",
+            "url": "https://vectoys.com/",
+            "publisher": { "@id": "https://vinena.studio/#organization" }
+          },
+          {
+            "@type": "SoftwareSourceCode",
+            "@id": "https://vectoys.com/#software",
+            "name": "vectoys",
+            "description": "An open source SVG 3D engine for device mockups and small 3D toys on landing pages. Plain SVG paths, live HTML on the screens, no WebGL.",
+            "url": "https://vectoys.com/",
+            "codeRepository": "https://github.com/vinenastudio/vectoys",
+            "programmingLanguage": "TypeScript",
+            "license": "https://opensource.org/licenses/MIT",
+            "publisher": { "@id": "https://vinena.studio/#organization" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
