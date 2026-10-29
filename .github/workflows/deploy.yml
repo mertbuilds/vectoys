@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -25,6 +24,16 @@ jobs:
           packageManager: bun
           workingDirectory: apps/site
           preCommands: bun run build
+
+  # Its own job, so the deploy job never holds an id-token.
+  indexing:
+    needs: site
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
       - name: Google sign-in for Search Console (keyless)
         id: gauth
         if: ${{ vars.GCP_WIF_PROVIDER != '' && vars.GCP_SA_EMAIL != '' }}
