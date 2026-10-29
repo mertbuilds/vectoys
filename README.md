@@ -140,7 +140,7 @@ bun run dev
 
 `bun run test` builds the packages first, since some CLI tests run items against the built `dist`.
 
-Pushing to main deploys vectoys.com through GitHub Actions.
+Pushing to main deploys vectoys.com through GitHub Actions. The deploy then notifies IndexNow and Search Console of changed sitemap URLs through vinenastudio/deploy-indexing, so the IndexNow key file `apps/site/public/78542e187dcb354c241595d0ddb65792.txt` must stay.
 
 ## Release
 
