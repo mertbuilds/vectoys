@@ -68,8 +68,15 @@ describe("HeroPhone", () => {
 
   test("a touch on the glass stops the loop from changing the list", () => {
     act(() => {
-      host.querySelector(".todo-glass")?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, isPrimary: true }));
+      host.querySelector(".todo-glass")?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, isPrimary: true, pointerType: "touch" }));
     });
+    run(8000);
+    expect(demoBox()).toBe("false");
+    expect(host.querySelector(".todo-left")?.getAttribute("aria-live")).toBe("polite");
+  });
+
+  test("focus inside the glass stops the loop from changing the list", () => {
+    act(() => host.querySelector<HTMLInputElement>(".todo-glass .todo-input")?.focus());
     run(8000);
     expect(demoBox()).toBe("false");
     expect(host.querySelector(".todo-left")?.getAttribute("aria-live")).toBe("polite");

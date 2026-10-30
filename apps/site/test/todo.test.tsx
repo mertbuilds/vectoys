@@ -1,9 +1,12 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { act, useReducer } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { MAX_LENGTH, START, TodoApp, shownFor, todosReducer } from "../src/sections/todo";
 
+const roots: Root[] = [];
+
 afterEach(() => {
+  act(() => roots.splice(0).forEach((root) => root.unmount()));
   document.body.innerHTML = "";
 });
 
@@ -46,6 +49,7 @@ function mount(props: { reduced?: boolean; live?: boolean } = {}) {
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
+  roots.push(root);
   act(() => root.render(<Harness {...props} />));
   return { host, root };
 }
@@ -71,6 +75,7 @@ describe("TodoApp", () => {
     const host = document.createElement("div");
     document.body.append(host);
     const root = createRoot(host);
+    roots.push(root);
     act(() => root.render(<Harness />));
     const texts = () => [...host.querySelectorAll(".todo-text")].map((element) => element.textContent);
     const left = () => host.querySelector(".todo-left")?.textContent;

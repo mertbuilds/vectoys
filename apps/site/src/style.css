@@ -548,7 +548,7 @@ code.inline {
 .todo-left {
   margin-top: 4px;
   font-size: 16px;
-  color: #6c717c;
+  color: #626772;
   font-variant-numeric: tabular-nums;
 }
 
@@ -578,7 +578,7 @@ code.inline {
 }
 
 .todo-input::placeholder {
-  color: #9a9fa9;
+  color: #6c717c;
 }
 
 .todo-input:focus-visible {
@@ -661,7 +661,7 @@ code.inline {
 
 .todo-count {
   font-size: 13px;
-  color: #8a8f99;
+  color: #626772;
   font-variant-numeric: tabular-nums;
 }
 
@@ -797,7 +797,7 @@ code.inline {
 }
 
 .todo-row-done .todo-text {
-  color: #9a9fa9;
+  color: #6c717c;
 }
 
 .todo-row-done .todo-text span {
@@ -808,7 +808,7 @@ code.inline {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  color: #9a9fa9;
+  color: #868b95;
   background: none;
   transition-property: background-color, color;
   transition-duration: 150ms;
@@ -828,7 +828,7 @@ code.inline {
 
 .todo-empty {
   padding-top: 48px;
-  color: #8a8f99;
+  color: #626772;
   text-align: center;
 }
 
