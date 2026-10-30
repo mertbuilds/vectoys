@@ -421,12 +421,12 @@ code.inline {
   translate: -50% -40%;
 }
 
-/* The phone turns under a drag: grab on its drawing, text selection on its glass. Touch scrolls the page up and down. */
+/* The phone turns under a drag: grab on its drawing, the app on its glass. Touch scrolls the page up and down. */
 .hero-phone {
   touch-action: pan-y;
 }
 
-.hero-phone svg path {
+.hero-phone > div > svg path {
   cursor: grab;
 }
 
@@ -441,7 +441,7 @@ code.inline {
 }
 
 /* The focus ring traces the phone's own outline, since its box is much larger than the phone. */
-.hero-phone:focus-visible svg > path:last-child {
+.hero-phone:focus-visible > div > svg > path:last-child {
   stroke: var(--accent) !important;
   stroke-width: 3px !important;
 }
@@ -504,119 +504,341 @@ code.inline {
   }
 }
 
-/* The coffee shop's site on the hero phone's glass, laid out 393 pixels across. */
+/* The to-do app on the hero phone's glass, laid out 393 pixels across. It stays light, as a phone app does under a dark page. */
 
-.ms-viewport {
+.todo-glass {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #fbf7f2;
+  background: #f2f3f6;
 }
 
-.ms {
-  padding: 66px 24px 40px;
-  color: #2a1d14;
+.todo-glass:focus {
+  outline: none;
+}
+
+.todo-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: 64px;
+  color: #16181d;
   font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
   font-size: 17px;
-  line-height: 1.5;
+  line-height: 1.35;
   text-align: left;
 }
 
-.ms ::selection,
-.ms-selected {
+/* The glass is drawn smaller than it lays out, so its focus rings are drawn twice as wide to read the same. */
+.todo-app :focus-visible {
+  outline-width: 2px;
+}
+
+.todo-head {
+  padding: 0 22px 18px;
+}
+
+.todo-title {
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.todo-left {
+  margin-top: 4px;
+  font-size: 16px;
+  color: #6c717c;
+  font-variant-numeric: tabular-nums;
+}
+
+.todo-add {
+  display: flex;
+  gap: 4px;
+  margin: 0 16px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16, 18, 24, 0.06), 0 4px 14px rgba(16, 18, 24, 0.05);
+}
+
+.todo-add:has(.todo-input:focus-visible) {
+  outline: 2px solid var(--muted);
+  outline-offset: 2px;
+}
+
+.todo-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+  border: 0;
+  color: inherit;
+  background: none;
+  font: inherit;
+}
+
+.todo-input::placeholder {
+  color: #9a9fa9;
+}
+
+.todo-input:focus-visible {
+  outline: none;
+}
+
+.todo-add-button,
+.todo-check,
+.todo-delete {
+  display: grid;
+  place-items: center;
+  flex: none;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Concentric with the field round it: its radius is the field's less the 4 pixel gap between them. */
+.todo-add-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   color: #ffffff;
   background: #1f6fff;
+  transition: background-color 150ms var(--ease);
 }
 
-.ms-nav {
+.todo-add-button:hover {
+  background: #1a5fdc;
+}
+
+.todo-glass svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.todo-add-button svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.2;
+}
+
+.todo-filters {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 34px;
-  font-size: 16px;
+  margin: 14px 16px 12px;
+  padding: 3px;
+  border-radius: 12px;
+  background: #e4e6eb;
 }
 
-.ms-logo,
-.ms-h1,
-.ms-h2 {
-  font-family: Georgia, "Times New Roman", serif;
-}
-
-.ms-logo {
-  font-size: 21px;
-}
-
-.ms-menu {
-  color: #7a6656;
-}
-
-.ms-h1 {
-  margin-bottom: 16px;
-  font-size: 38px;
-  line-height: 1.08;
-  letter-spacing: -0.01em;
-}
-
-.ms-h2 {
-  margin: 30px 0 10px;
-  font-size: 26px;
-}
-
-.ms-p {
-  margin-bottom: 14px;
-  color: #5b4738;
-}
-
-.ms-line {
-  color: #2a1d14;
-  font-size: 18px;
-}
-
-.ms-button {
-  display: inline-block;
-  margin: 8px 0 26px;
-  padding: 12px 20px;
-  border-radius: 999px;
-  color: #fbf7f2;
-  background: #2a1d14;
-  font-size: 16px;
-}
-
-.ms-photo {
+.todo-filter {
+  flex: 1;
   display: flex;
-  align-items: flex-end;
-  height: 230px;
-  padding: 16px;
-  border-radius: 18px;
-  color: #fff7ee;
+  justify-content: center;
+  align-items: baseline;
+  gap: 6px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  color: #4a4f59;
+  background: none;
+  font: inherit;
   font-size: 15px;
-  background:
-    radial-gradient(60% 50% at 30% 30%, rgba(255, 214, 160, 0.55), transparent 70%),
-    linear-gradient(150deg, #8a5a3a 0%, #4a2c1a 60%, #2a170c 100%);
+  line-height: 34px;
+  cursor: pointer;
+  transition-property: background-color, box-shadow, color;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease);
 }
 
-.ms-list {
-  display: grid;
-  gap: 8px;
-  margin-top: 10px;
+.todo-filter[aria-pressed="true"] {
+  color: #16181d;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(16, 18, 24, 0.12);
 }
 
-.ms-list span {
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: #f1e9df;
+.todo-count {
+  font-size: 13px;
+  color: #8a8f99;
+  font-variant-numeric: tabular-nums;
 }
 
-.ms-cursor {
+/* Only the list scrolls, inside the glass, so a longer or shorter list never moves the phone or the page. */
+.todo-scroll {
+  flex: 1;
+  min-height: 0;
+  padding: 4px 16px 40px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.todo-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A row swipes left to delete; up and down stays a scroll. */
+.todo-row {
+  position: relative;
+  height: 58px;
+  margin-bottom: 8px;
+  touch-action: pan-y;
+  user-select: none;
+  transition-property: height, margin-bottom;
+  transition-duration: 180ms;
+  transition-delay: 160ms;
+  transition-timing-function: var(--ease);
+}
+
+.todo-under,
+.todo-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+}
+
+.todo-under {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 20px;
+  color: #ffffff;
+  background: #e5484d;
+  font-size: 15px;
+  opacity: 0;
+}
+
+.todo-row-open .todo-under {
+  opacity: 1;
+}
+
+.todo-body {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px 0 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(16, 18, 24, 0.06), 0 4px 14px rgba(16, 18, 24, 0.04);
+  transition: transform 320ms cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.todo-row-swiping .todo-body {
+  transition: none;
+}
+
+.todo-row-leaving {
+  height: 0;
+  margin-bottom: 0;
+}
+
+.todo-row-leaving .todo-body {
+  transform: translateX(-110%);
+  transition: transform 180ms var(--ease);
+}
+
+.todo-check {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: none;
+}
+
+/* The ring fills while the check mark strokes in, slow at first so the fill leads. */
+.todo-check::before {
+  content: "";
+  grid-area: 1 / 1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px #c3c7cf;
+  transition-property: background-color, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease);
+}
+
+.todo-check svg {
+  grid-area: 1 / 1;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.4;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 120ms var(--ease);
+}
+
+.todo-check[aria-checked="true"]::before {
+  background-color: #1f6fff;
+  box-shadow: inset 0 0 0 1.5px #1f6fff;
+}
+
+.todo-check[aria-checked="true"] svg {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 280ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.todo-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: color 240ms var(--ease);
+}
+
+/* The strike line draws across the text from the left, and draws back when unchecked. */
+.todo-text span {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 56% / 0 1.5px;
+  transition: background-size 260ms var(--ease);
+}
+
+.todo-row-done .todo-text {
+  color: #9a9fa9;
+}
+
+.todo-row-done .todo-text span {
+  background-size: 100% 1.5px;
+}
+
+.todo-delete {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #9a9fa9;
+  background: none;
+  transition-property: background-color, color;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease);
+}
+
+.todo-delete:hover {
+  color: #16181d;
+  background: #f0f1f4;
+}
+
+.todo-delete svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+.todo-empty {
+  padding-top: 48px;
+  color: #8a8f99;
+  text-align: center;
+}
+
+.todo-cursor {
   position: absolute;
   left: 0;
   top: 0;
+  transform-origin: 6px 4px;
   pointer-events: none;
   filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
-}
-
-.ms-cursor svg {
-  display: block;
 }
 
 /* Sections */
