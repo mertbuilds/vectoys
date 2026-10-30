@@ -23,6 +23,7 @@ function withHead(html: string, swaps: [string, string][]) {
   }, html);
 }
 
+const HOME_TITLE = "vectoys: open source SVG 3D engine for device mockups";
 const TOYS_TITLE = "All toys: SVG 3D devices and toys for React | vectoys";
 const TOYS_DESCRIPTION = `All ${index.items.length} vectoys devices and toys, live in the browser, each with its install command, its source and its shadcn registry address.`;
 
@@ -32,11 +33,11 @@ const pages: { page: Page; file: string; head: [string, string][] }[] = [
     page: "toys",
     file: join(dist, "toys.html"),
     head: [
-      ["<title>vectoys: open source SVG 3D engine for device mockups</title>", `<title>${TOYS_TITLE}</title>`],
+      [`<title>${HOME_TITLE}</title>`, `<title>${TOYS_TITLE}</title>`],
       ['href="https://vectoys.com/"', 'href="https://vectoys.com/toys"'],
       ['content="https://vectoys.com/"', 'content="https://vectoys.com/toys"'],
-      ['property="og:title" content="vectoys"', `property="og:title" content="${TOYS_TITLE}"`],
-      ['name="twitter:title" content="vectoys"', `name="twitter:title" content="${TOYS_TITLE}"`],
+      [`property="og:title" content="${HOME_TITLE}"`, `property="og:title" content="${TOYS_TITLE}"`],
+      [`name="twitter:title" content="${HOME_TITLE}"`, `name="twitter:title" content="${TOYS_TITLE}"`],
       [/<meta name="description" content="[^"]*"/.exec(template)?.[0] ?? "", `<meta name="description" content="${TOYS_DESCRIPTION}"`],
       [/<meta property="og:description" content="[^"]*"/.exec(template)?.[0] ?? "", `<meta property="og:description" content="${TOYS_DESCRIPTION}"`],
       [/<meta name="twitter:description" content="[^"]*"/.exec(template)?.[0] ?? "", `<meta name="twitter:description" content="${TOYS_DESCRIPTION}"`],
