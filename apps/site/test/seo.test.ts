@@ -13,6 +13,8 @@ test("the home head has a 50 to 60 character title, a 120 to 160 character descr
   expect(description.length).toBeGreaterThanOrEqual(120);
   expect(description.length).toBeLessThanOrEqual(160);
   expect(html).toContain('<link rel="canonical" href="https://vectoys.com/" />');
+  expect(html).toContain(`<meta property="og:title" content="${title}" />`);
+  expect(html).toContain(`<meta name="twitter:title" content="${title}" />`);
 });
 
 test("og:image comes before its size, type and alt, with no share tag twice", () => {
