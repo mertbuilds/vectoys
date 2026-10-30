@@ -51,10 +51,16 @@ const SWIPE_DELETE = 0.4;
 // How long a row takes to slide out and close its gap, as in the stylesheet.
 const LEAVE_MS = 340;
 
-/** Moves focus off a row that is about to go, to the same control on a row beside it, or else to the new to-do field. */
+/** The nearest row from `from` on, in one direction, that is not on its way out. */
+function staying(from: Element | null, step: (row: Element) => Element | null) {
+  for (let row = from; row; row = step(row)) if (!row.classList.contains("todo-row-leaving")) return row;
+  return null;
+}
+
+/** Moves focus off a row that is about to go, to the same control on the nearest row that stays, or else to the new to-do field. */
 function handOffFocus(row: HTMLElement, selector: string) {
   if (!row.contains(document.activeElement)) return;
-  const beside = (row.nextElementSibling ?? row.previousElementSibling)?.querySelector<HTMLElement>(selector);
+  const beside = (staying(row.nextElementSibling, (next) => next.nextElementSibling) ?? staying(row.previousElementSibling, (previous) => previous.previousElementSibling))?.querySelector<HTMLElement>(selector);
   (beside ?? row.closest(".todo-app")?.querySelector<HTMLElement>(".todo-input"))?.focus();
 }
 
@@ -95,7 +101,8 @@ function TodoRow({ todo, filter, reduced, dispatch }: { todo: Todo; filter: Filt
   };
 
   const down = (event: PointerEvent<HTMLLIElement>) => {
-    if (event.button !== 0 || leaving) return;
+    // One finger swipes a row at a time; a second one while it swipes is ignored.
+    if (event.button !== 0 || !event.isPrimary || swipe.current?.active || leaving) return;
     const element = event.currentTarget;
     // The glass is drawn smaller than it lays out, so a pointer's pixels on screen are fewer than the row's own.
     const scale = element.getBoundingClientRect().width / element.offsetWidth || 1;
@@ -164,9 +171,11 @@ function TodoRow({ todo, filter, reduced, dispatch }: { todo: Todo; filter: Filt
 /**
  * A small to-do app laid out 393 pixels across, for the phone's glass. Its
  * list lives in the caller, so the hero's loop can tap the same boxes a
- * visitor taps; the filter and the field being typed are its own.
+ * visitor taps; the filter and the field being typed are its own. `live`
+ * reads the count aloud as it changes; the caller turns it off while its own
+ * loop changes the list.
  */
-export function TodoApp({ todos, dispatch, reduced }: { todos: Todos; dispatch: Dispatch<TodoAction>; reduced: boolean }) {
+export function TodoApp({ todos, dispatch, reduced, live = true }: { todos: Todos; dispatch: Dispatch<TodoAction>; reduced: boolean; live?: boolean }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [draft, setDraft] = useState("");
   const input = useRef<HTMLInputElement>(null);
@@ -189,7 +198,7 @@ export function TodoApp({ todos, dispatch, reduced }: { todos: Todos; dispatch: 
     <div className="todo-app">
       <div className="todo-head">
         <p className="todo-title">Today</p>
-        <p className="todo-left" aria-live="polite">
+        <p className="todo-left" aria-live={live ? "polite" : "off"}>
           {left === 0 ? "Nothing left" : `${left} left`}
         </p>
       </div>

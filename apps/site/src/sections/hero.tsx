@@ -59,7 +59,7 @@ function poseAt(t: number) {
 const facing = (t: number) => t >= 2100 && t < 10600;
 
 /** Whether the clock went past `mark` on its way from `from` to `to`, round the end of the loop too. */
-const passed = (from: number, to: number, mark: number) => (from <= to ? from < mark && mark <= to : from < mark || mark <= to);
+export const passed = (from: number, to: number, mark: number) => (from <= to ? from < mark && mark <= to : from < mark || mark <= to);
 
 /** Where the box to tap sits on the glass, in the glass's own pixels. */
 type Point = { x: number; y: number };
@@ -363,8 +363,8 @@ function HeroPhone() {
       >
         <Phone yaw={now.yaw} pitch={now.pitch} label="A phone with a working to-do app on its screen">
           {/* Focusable itself, so a click on the glass between controls keeps focus in the app. */}
-          <div ref={glass} className="todo-glass" tabIndex={-1} onPointerDown={() => setDemo(false)} onKeyDown={() => setDemo(false)} onFocus={focusIn} onBlur={focusOut}>
-            <TodoApp todos={todos} dispatch={dispatch} reduced={reduced} />
+          <div ref={glass} className="todo-glass" tabIndex={-1} onPointerDown={() => setDemo(false)} onFocus={focusIn} onBlur={focusOut}>
+            <TodoApp todos={todos} dispatch={dispatch} reduced={reduced} live={!demo} />
             {cursor && cursor.opacity > 0 && (
               <div className="todo-cursor" aria-hidden="true" style={{ transform: `translate(${cursor.x - 6}px, ${cursor.y - 4}px) scale(${1 - 0.14 * cursor.press})`, opacity: cursor.opacity }}>
                 <Arrow />

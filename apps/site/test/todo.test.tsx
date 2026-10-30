@@ -37,9 +37,33 @@ describe("todosReducer", () => {
   });
 });
 
-function Harness() {
+function Harness({ reduced = true, live = true }: { reduced?: boolean; live?: boolean }) {
   const [todos, dispatch] = useReducer(todosReducer, START);
-  return <TodoApp todos={todos} dispatch={dispatch} reduced />;
+  return <TodoApp todos={todos} dispatch={dispatch} reduced={reduced} live={live} />;
+}
+
+function mount(props: { reduced?: boolean; live?: boolean } = {}) {
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  act(() => root.render(<Harness {...props} />));
+  return { host, root };
+}
+
+const ids = (host: HTMLElement) => [...host.querySelectorAll("li")].map((row) => Number(row.getAttribute("data-todo")));
+
+/** A row 300 pixels wide, with pointer capture, as a browser lays it out. */
+function swipeRow(host: HTMLElement, id: number) {
+  const row = host.querySelector<HTMLLIElement>(`[data-todo="${id}"]`);
+  if (!row) throw new Error("no row");
+  Object.defineProperty(row, "offsetWidth", { value: 300 });
+  row.setPointerCapture = () => {};
+  const fire = (type: string, pointerId: number, x: number, init: PointerEventInit = {}) =>
+    act(() => {
+      row.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId, clientX: x, clientY: 10, button: 0, buttons: type === "pointerup" ? 0 : 1, isPrimary: true, ...init }));
+    });
+  const body = () => row.querySelector<HTMLElement>(".todo-body")?.style.transform ?? "";
+  return { row, fire, body };
 }
 
 describe("TodoApp", () => {
@@ -81,6 +105,74 @@ describe("TodoApp", () => {
     expect(texts()).toEqual(["Book the dentist for Thursday", "Send the invoice to Studio North"]);
     act(() => host.querySelectorAll<HTMLButtonElement>(".todo-check").forEach((button) => button.click()));
     expect(host.querySelector(".todo-empty")?.textContent).toBe("All done");
+    act(() => root.unmount());
+  });
+
+  test("reads the count aloud only when live", () => {
+    const quiet = mount({ live: false });
+    expect(quiet.host.querySelector(".todo-left")?.getAttribute("aria-live")).toBe("off");
+    act(() => quiet.root.unmount());
+    const live = mount();
+    expect(live.host.querySelector(".todo-left")?.getAttribute("aria-live")).toBe("polite");
+    act(() => live.root.unmount());
+  });
+
+  test("a swipe past 40% of the row deletes it", () => {
+    const { host, root } = mount();
+    const { fire } = swipeRow(host, 2);
+    fire("pointerdown", 1, 300);
+    fire("pointermove", 1, 250);
+    fire("pointermove", 1, 160);
+    fire("pointerup", 1, 160);
+    expect(ids(host)).toEqual([1, 3, 4]);
+    act(() => root.unmount());
+  });
+
+  test("a short swipe or a cancelled one springs back", () => {
+    const { host, root } = mount();
+    const { row, fire, body } = swipeRow(host, 2);
+    fire("pointerdown", 1, 300);
+    fire("pointermove", 1, 220);
+    expect(body()).toBe("translateX(-80px)");
+    fire("pointerup", 1, 220);
+    expect(body()).toBe("");
+    expect(row.classList.contains("todo-row-open")).toBe(false);
+
+    fire("pointerdown", 1, 300);
+    fire("pointermove", 1, 100);
+    fire("pointercancel", 1, 100);
+    expect(body()).toBe("");
+    expect(ids(host)).toEqual([1, 2, 3, 4]);
+    act(() => root.unmount());
+  });
+
+  test("a second pointer during a swipe does not leave the row stuck open", () => {
+    const { host, root } = mount();
+    const { row, fire, body } = swipeRow(host, 2);
+    fire("pointerdown", 1, 300);
+    fire("pointermove", 1, 250);
+    fire("pointerdown", 2, 100);
+    fire("pointerup", 2, 100);
+    fire("pointerdown", 3, 100, { isPrimary: false });
+    fire("pointerup", 3, 100);
+    fire("pointerup", 1, 250);
+    expect(body()).toBe("");
+    expect(row.classList.contains("todo-row-open")).toBe(false);
+    expect(row.classList.contains("todo-row-swiping")).toBe(false);
+    act(() => root.unmount());
+  });
+
+  test("two fast deletes hand focus to a row that stays", async () => {
+    const { host, root } = mount({ reduced: false });
+    const remove = (id: number) => host.querySelector<HTMLButtonElement>(`[data-todo="${id}"] .todo-delete`);
+    remove(4)?.focus();
+    act(() => remove(4)?.click());
+    expect(document.activeElement).toBe(remove(3));
+    act(() => remove(3)?.click());
+    expect(document.activeElement).toBe(remove(2));
+    await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+    expect(ids(host)).toEqual([1, 2]);
+    expect(document.activeElement).toBe(remove(2));
     act(() => root.unmount());
   });
 });
