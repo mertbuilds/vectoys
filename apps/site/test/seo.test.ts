@@ -15,6 +15,15 @@ test("the home head has a 50 to 60 character title, a 120 to 160 character descr
   expect(html).toContain('<link rel="canonical" href="https://vectoys.com/" />');
 });
 
+test("og:image comes before its size, type and alt, with no share tag twice", () => {
+  const keys = [...html.matchAll(/<meta (?:property|name)="((?:og|twitter):[^"]+)"/g)].map((match) => match[1]);
+  expect(new Set(keys).size).toBe(keys.length);
+  const image = keys.indexOf("og:image");
+  expect(image).toBeGreaterThan(-1);
+  for (const key of ["og:image:width", "og:image:height", "og:image:type", "og:image:alt"]) expect(keys.indexOf(key)).toBeGreaterThan(image);
+  expect(html).toContain('<meta property="og:image:type" content="image/png" />');
+});
+
 test("the JSON-LD graph names the publisher, the website and the source code", () => {
   const json = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "";
   const graph: { "@type": string; [key: string]: unknown }[] = JSON.parse(json)["@graph"];
