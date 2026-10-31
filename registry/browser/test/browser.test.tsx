@@ -57,3 +57,14 @@ test("the shadow is left out when the eye is under the ground or when asked", ()
   expect(seen({ pitch: 40 }).shadow).toBeNull();
   expect(renderToString(<Browser shadow={false} />)).not.toContain("feGaussianBlur");
 });
+
+test("the page clips live HTML to its rounded bottom corners", () => {
+  const html = renderToString(<Browser url="vectoys.com"><p>live</p></Browser>);
+  const styles = [...html.matchAll(/style="([^"]*border-radius[^"]*container-type:inline-size[^"]*)"/g)].map((match) => match[1] ?? "");
+  expect(styles).toHaveLength(1);
+  for (const style of styles) {
+    const radius = style.match(/border-radius:([^;]+)/)?.[1];
+    expect(radius).toBeDefined();
+    expect(style).toContain(`clip-path:inset(0 round ${radius})`);
+  }
+});

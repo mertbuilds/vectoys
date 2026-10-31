@@ -43,3 +43,18 @@ test("on its side the content lays out level and wider than tall", () => {
   expect(right - left).toBeGreaterThan(bottom - top);
   expect(renderToString(<Tablet orientation="landscape" />)).toContain("height:834px");
 });
+
+test.each(ORIENTATIONS)("%s: the display clips live HTML to its rounded corners", (orientation) => {
+  const html = renderToString(
+    <Tablet orientation={orientation}>
+      <p>live</p>
+    </Tablet>,
+  );
+  const styles = [...html.matchAll(/style="([^"]*border-radius[^"]*container-type:inline-size[^"]*)"/g)].map((match) => match[1] ?? "");
+  expect(styles).toHaveLength(1);
+  for (const style of styles) {
+    const radius = style.match(/border-radius:([^;]+)/)?.[1];
+    expect(radius).toBeDefined();
+    expect(style).toContain(`clip-path:inset(0 round ${radius})`);
+  }
+});

@@ -31,9 +31,11 @@ export const VIEWPORT = 320;
 
 // The face's corners follow the card's, as shares of the face so they hold
 // at any size the content lays out at.
+const FACE_RADIUS = `${fixed((FACE_ROUND / FACE.width) * 100)}% / ${fixed((FACE_ROUND / FACE.height) * 100)}%`;
 const FACE_STYLE: CSSProperties = {
   overflow: "hidden",
-  borderRadius: `${fixed((FACE_ROUND / FACE.width) * 100)}% / ${fixed((FACE_ROUND / FACE.height) * 100)}%`,
+  borderRadius: FACE_RADIUS,
+  clipPath: `inset(0 round ${FACE_RADIUS})`,
   containerType: "inline-size",
 };
 

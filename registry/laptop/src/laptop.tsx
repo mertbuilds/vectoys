@@ -107,6 +107,7 @@ const GLASS_STYLE: CSSProperties = {
   overflow: "hidden",
   background: "#0d0d0d",
   borderRadius: `${ACROSS} ${ACROSS} 0 0 / ${DOWN} ${DOWN} 0 0`,
+  clipPath: `inset(0 round ${ACROSS} ${ACROSS} 0 0 / ${DOWN} ${DOWN} 0 0)`,
   containerType: "inline-size",
 };
 const FILL: CSSProperties = { position: "absolute", inset: 0 };

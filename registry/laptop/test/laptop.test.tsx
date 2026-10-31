@@ -68,3 +68,14 @@ test("seen from the front, the open lid's glass is a plain rectangle at the glas
   expect(columns).toHaveLength(16);
   for (const at of [1, 2, 3, 4, 6, 7]) expect(columns[at]).toBeCloseTo(0, 6);
 });
+
+test("the glass clips live HTML to its rounded top corners", () => {
+  const html = renderToString(<Laptop><p>live</p></Laptop>);
+  const styles = [...html.matchAll(/style="([^"]*border-radius[^"]*container-type:inline-size[^"]*)"/g)].map((match) => match[1] ?? "");
+  expect(styles).toHaveLength(1);
+  for (const style of styles) {
+    const radius = style.match(/border-radius:([^;]+)/)?.[1];
+    expect(radius).toBeDefined();
+    expect(style).toContain(`clip-path:inset(0 round ${radius})`);
+  }
+});

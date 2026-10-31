@@ -54,7 +54,8 @@ const FILL: CSSProperties = { position: "absolute", inset: 0 };
 /** The display's look, its corners following the glass's as shares of the display so they hold at any size. */
 function displayStyle({ width, height }: { width: number; height: number }): CSSProperties {
   const share = (length: number) => `${fixed((DISPLAY_ROUND / length) * 100)}%`;
-  return { overflow: "hidden", background: GLASS, borderRadius: `${share(width)} / ${share(height)}`, containerType: "inline-size" };
+  const radius = `${share(width)} / ${share(height)}`;
+  return { overflow: "hidden", background: GLASS, borderRadius: radius, clipPath: `inset(0 round ${radius})`, containerType: "inline-size" };
 }
 
 /** The soft shadow under the tablet, under names of its own so any number of tablets share a page. */
