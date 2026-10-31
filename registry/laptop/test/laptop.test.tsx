@@ -56,13 +56,13 @@ test("seen from the front, the server draws the laptop the same twice", () => {
 
 test("seen from the front, the open lid's glass is a plain rectangle at the glass's aspect", () => {
   const quad = screenQuad(FRONT.camera, FRONT.lidWorld(0), GLASS, { width: GLASS.width, height: GLASS.height });
-  const [[left, top], [right, topRight], [rightBottom, bottom], [leftBottom, bottomLeft]] = quad.corners;
+  const [topLeft, topRight, bottomRight, bottomLeft] = quad.corners;
   expect(quad.facing).toBe(true);
-  expect(topRight).toBeCloseTo(top, 6);
-  expect(bottomLeft).toBeCloseTo(bottom, 6);
-  expect(rightBottom).toBeCloseTo(right, 6);
-  expect(leftBottom).toBeCloseTo(left, 6);
-  expect((right - left) / (bottom - top)).toBeCloseTo(GLASS.width / GLASS.height, 3);
+  expect(topRight[1]).toBeCloseTo(topLeft[1], 6);
+  expect(bottomLeft[1]).toBeCloseTo(bottomRight[1], 6);
+  expect(bottomRight[0]).toBeCloseTo(topRight[0], 6);
+  expect(bottomLeft[0]).toBeCloseTo(topLeft[0], 6);
+  expect((topRight[0] - topLeft[0]) / (bottomRight[1] - topLeft[1])).toBeCloseTo(GLASS.width / GLASS.height, 3);
   // A scale and a move, with nothing in the matrix's perspective or skew terms.
   const columns = (quad.matrix ?? "").slice("matrix3d(".length, -1).split(",").map(Number);
   expect(columns).toHaveLength(16);
