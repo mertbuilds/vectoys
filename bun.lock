@@ -21,6 +21,7 @@
         "@vectoys/envelope": "workspace:*",
         "@vectoys/floppy": "workspace:*",
         "@vectoys/gift": "workspace:*",
+        "@vectoys/keyboard": "workspace:*",
         "@vectoys/keycap": "workspace:*",
         "@vectoys/laptop": "workspace:*",
         "@vectoys/monitor": "workspace:*",
@@ -161,6 +162,23 @@
     },
     "registry/gift": {
       "name": "@vectoys/gift",
+      "version": "0.0.0",
+      "dependencies": {
+        "@vinena/vectoys": "workspace:*",
+        "@vinena/vectoys-react": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/react": "19.0.0",
+        "@types/react-dom": "19.0.0",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+      },
+      "peerDependencies": {
+        "react": ">=19",
+      },
+    },
+    "registry/keyboard": {
+      "name": "@vectoys/keyboard",
       "version": "0.0.0",
       "dependencies": {
         "@vinena/vectoys": "workspace:*",
@@ -519,6 +537,8 @@
     "@vectoys/floppy": ["@vectoys/floppy@workspace:registry/floppy"],
 
     "@vectoys/gift": ["@vectoys/gift@workspace:registry/gift"],
+
+    "@vectoys/keyboard": ["@vectoys/keyboard@workspace:registry/keyboard"],
 
     "@vectoys/keycap": ["@vectoys/keycap@workspace:registry/keycap"],
 

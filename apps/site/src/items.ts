@@ -5,6 +5,7 @@ import { DicePreview } from "./previews/dice";
 import { EnvelopePreview } from "./previews/envelope";
 import { FloppyPreview } from "./previews/floppy";
 import { GiftPreview } from "./previews/gift";
+import { KeyboardPreview } from "./previews/keyboard";
 import { KeycapPreview } from "./previews/keycap";
 import { LaptopPreview } from "./previews/laptop";
 import { MonitorPreview } from "./previews/monitor";
@@ -24,6 +25,7 @@ export const PREVIEWS: Readonly<Record<string, ComponentType>> = {
   envelope: EnvelopePreview,
   floppy: FloppyPreview,
   gift: GiftPreview,
+  keyboard: KeyboardPreview,
   keycap: KeycapPreview,
   laptop: LaptopPreview,
   monitor: MonitorPreview,

@@ -1,9 +1,14 @@
 import { fixed } from "@vinena/vectoys";
 import { Faces, Screen, Stage, useSpring, type Look } from "@vinena/vectoys-react";
 import {
+  createContext,
   memo,
+  useCallback,
+  useContext,
+  useEffect,
   useId,
   useMemo,
+  useRef,
   useState,
   type ComponentProps,
   type CSSProperties,
@@ -11,6 +16,7 @@ import {
   type ReactNode,
 } from "react";
 import { HOVER, LABEL, LABEL_ROUND, TRAVEL, seen, type View } from "./geometry";
+import { clicks, type Clicks } from "./sound";
 
 // The page's colors, as CSS variables. Each falls back to a tone for light
 // and one for dark, picked by the page's color scheme, so the key reads on
@@ -21,6 +27,8 @@ const SURFACE = "var(--vectoys-surface, light-dark(#f5f5f5, #262626))";
 const SHADOW = "var(--vectoys-shadow, light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.4)))";
 const FINISH = `var(--vectoys-finish, ${SURFACE})`;
 const INK = "var(--vectoys-ink, light-dark(#1d1d1c, #ededed))";
+const FOCUS = "var(--vectoys-focus, currentColor)";
+const FOCUS_WIDTH = "var(--vectoys-focus-width, 1px)";
 
 // The cap's sides a step under its top and the dish a touch deeper, a dark
 // switch housing, on a deck a step under the surface.
@@ -91,6 +99,84 @@ const Shadow = ({ id, shadow }: { id: string; shadow: View["shadow"] }) => (
   </>
 );
 
+const SOUND = "vectoys-keycap-sound";
+const SHEET = `.${SOUND}{outline:none}.${SOUND}:focus-visible{outline:${FOCUS_WIDTH} solid ${FOCUS};outline-offset:2px}`;
+const TOGGLE: CSSProperties = {
+  appearance: "none",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  margin: "8px 0 0 auto",
+  padding: "6px 10px",
+  border: 0,
+  borderRadius: 999,
+  background: `color-mix(in srgb, ${HAIRLINE} 14%, transparent)`,
+  color: INK,
+  font: "inherit",
+  fontSize: 13,
+  lineHeight: 1,
+  cursor: "pointer",
+  touchAction: "manipulation",
+};
+const COLUMN: CSSProperties = { display: "flex", flexDirection: "column" };
+
+/** A speaker, with waves when the sound is on and a cross when it is off. */
+const Speaker = ({ on }: { on: boolean }) => (
+  <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style={{ fill: "none", stroke: "currentColor", strokeWidth: 1.4, strokeLinecap: "round", strokeLinejoin: "round" }}>
+    <path d="M2 6h2.5L8 3v10L4.5 10H2z" />
+    <path d={on ? "M10.5 5.5a3.5 3.5 0 0 1 0 5M12.5 3.5a6.5 6.5 0 0 1 0 9" : "M11 6l4 4M15 6l-4 4"} />
+  </svg>
+);
+
+/** The switch that turns the clicks on and off, under the keys. */
+const SoundSwitch = ({ on, toggle }: { on: boolean; toggle: () => void }) => (
+  <>
+    <style>{SHEET}</style>
+    <button type="button" role="switch" aria-checked={on} className={SOUND} onClick={toggle} style={TOGGLE}>
+      <Speaker on={on} />
+      {on ? "Sound on" : "Sound off"}
+    </button>
+  </>
+);
+
+type SoundProps = {
+  /** Whether presses click, when the page keeps the state. */
+  sound?: boolean;
+  /** Whether presses click at first, when the key keeps its own state; false by default. */
+  defaultSound?: boolean;
+  /** Called with the new state when the sound switch is pressed. */
+  onSoundChange?: (sound: boolean) => void;
+  /** Shows a switch under the key that turns the sound on and off. */
+  soundToggle?: boolean;
+};
+
+/** Whether the clicks are on, kept by the page or by the key itself, and how to flip them. */
+function useSound(sound: boolean | undefined, defaultSound = false, onSoundChange?: (sound: boolean) => void) {
+  const [own, setOwn] = useState(defaultSound);
+  const audible = sound ?? own;
+  const toggle = () => {
+    if (sound === undefined) setOwn(!audible);
+    onSoundChange?.(!audible);
+  };
+  return { audible, toggle };
+}
+
+/** Starts the audio on the first press that asks for it, then keeps it until unmount. */
+function useClicks() {
+  const audio = useRef<Clicks | null>(null);
+  useEffect(
+    () => () => {
+      audio.current?.close();
+      audio.current = null;
+    },
+    [],
+  );
+  return useCallback(() => (audio.current ??= clicks()), []);
+}
+
+/** A row's sound, shared by its keys so they play through one audio context. */
+const Shared = createContext<{ audible: boolean; start: () => Clicks | null } | null>(null);
+
 const PRESS_KEYS = new Set([" ", "Enter"]);
 
 /** The button's own events the cap follows; a caller's handlers for them still run, first. */
@@ -99,10 +185,21 @@ type PressHandlers = Pick<
   "onPointerEnter" | "onPointerLeave" | "onPointerDown" | "onPointerUp" | "onPointerCancel" | "onKeyDown" | "onKeyUp" | "onBlur"
 >;
 
-/** Whether the cap is under the pointer and whether it is held down, from the button's own events. */
-function usePress(disabled: boolean, caller: PressHandlers) {
+/** Whether the cap is under the pointer and whether it is held down, from the button's own events; `changed` hears each press and release. */
+function usePress(disabled: boolean, caller: PressHandlers, changed: (down: boolean) => void) {
   const [hover, setHover] = useState(false);
-  const [held, setHeld] = useState(false);
+  const [held, setHeldState] = useState(false);
+  const down = useRef(false);
+  // A key disabled while held is up from then on, so it sends no release later and its next press clicks.
+  useEffect(() => {
+    if (disabled) down.current = false;
+  }, [disabled]);
+  const setHeld = (next: boolean) => {
+    setHeldState(next);
+    if (disabled || down.current === next) return;
+    down.current = next;
+    changed(next);
+  };
   const handlers: PressHandlers = {
     onPointerEnter: (event) => {
       caller.onPointerEnter?.(event);
@@ -127,7 +224,7 @@ function usePress(disabled: boolean, caller: PressHandlers) {
     },
     onKeyDown: (event) => {
       caller.onKeyDown?.(event);
-      if (PRESS_KEYS.has(event.key)) setHeld(true);
+      if (PRESS_KEYS.has(event.key) && !event.repeat) setHeld(true);
     },
     onKeyUp: (event) => {
       caller.onKeyUp?.(event);
@@ -148,18 +245,40 @@ export type KeycapProps = Omit<ComponentProps<"button">, "children"> & {
   onPress?: () => void;
   /** The cap's color; by default the page's `--vectoys-finish`, else its surface. */
   finish?: string;
-};
+} & SoundProps;
 
 /**
  * A big mechanical key that is a real button, for a call to action. The
  * label is live HTML on the cap's top, and the button is that top, so it
  * takes focus, Enter and Space as any button does. The cap lifts under the
  * pointer and travels down while held, then springs back; under reduced
- * motion it moves straight between those places.
+ * motion it moves straight between those places. It can click as it goes
+ * down and up, made with WebAudio after the first press; that is off by
+ * default.
  */
-export const Keycap = memo(function Keycap({ children, onPress, finish, onClick, style, disabled = false, ...button }: KeycapProps) {
+export const Keycap = memo(function Keycap({
+  children,
+  onPress,
+  finish,
+  onClick,
+  style,
+  disabled = false,
+  sound,
+  defaultSound,
+  onSoundChange,
+  soundToggle = false,
+  ...button
+}: KeycapProps) {
   const id = `keycap-${useId().replace(/[^\w-]/g, "")}`;
-  const { hover, held, handlers } = usePress(disabled, button);
+  const shared = useContext(Shared);
+  const own = useSound(sound, defaultSound, onSoundChange);
+  const start = useClicks();
+  const audible = sound ?? shared?.audible ?? own.audible;
+  const name = typeof children === "string" || typeof children === "number" ? String(children) : id;
+  const click = (down: boolean) => {
+    if (audible) (shared ? shared.start() : start())?.play(name, 1, down);
+  };
+  const { hover, held, handlers } = usePress(disabled, button, click);
   // The cap bottoms out on the switch, so the spring's overshoot never shows past it.
   const travel = Math.min(useSpring(held ? TRAVEL : hover ? -HOVER : 0), TRAVEL);
   const view = useMemo(() => seen(travel), [travel]);
@@ -187,12 +306,19 @@ export const Keycap = memo(function Keycap({ children, onPress, finish, onClick,
     </Screen>
   );
 
-  return (
+  const stage = (
     <Stage camera={view.camera} overlay={label} style={finish ? { "--vectoys-finish": finish } : {}}>
       <Shadow id={id} shadow={view.shadow} />
       <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
       {cap && <path d={cap.d} {...OUTLINE} />}
     </Stage>
+  );
+  if (!soundToggle) return stage;
+  return (
+    <div style={COLUMN}>
+      {stage}
+      <SoundSwitch on={audible} toggle={own.toggle} />
+    </div>
   );
 });
 
@@ -206,11 +332,14 @@ export type KeycapRowProps = {
   finish?: string;
   className?: string;
   style?: CSSProperties;
-};
+} & SoundProps;
 
-/** A row of keys side by side, such as a word spelled out, each its own button. */
-export function KeycapRow({ keys, onPress, label, finish, className, style }: KeycapRowProps) {
-  return (
+/** A row of keys side by side, such as a word spelled out, each its own button. Its keys share one audio context and one sound switch. */
+export function KeycapRow({ keys, onPress, label, finish, className, style, sound, defaultSound, onSoundChange, soundToggle = false }: KeycapRowProps) {
+  const { audible, toggle } = useSound(sound, defaultSound, onSoundChange);
+  const start = useClicks();
+  const shared = useMemo(() => ({ audible, start }), [audible, start]);
+  const row = (
     <div role="group" aria-label={label} className={className} style={{ display: "flex", ...style }}>
       {keys.map((key, index) => (
         <div key={index} style={{ flex: "1 1 0", minWidth: 0, marginInline: "-4%" }}>
@@ -220,5 +349,17 @@ export function KeycapRow({ keys, onPress, label, finish, className, style }: Ke
         </div>
       ))}
     </div>
+  );
+  return (
+    <Shared.Provider value={shared}>
+      {soundToggle ? (
+        <div style={COLUMN}>
+          {row}
+          <SoundSwitch on={audible} toggle={toggle} />
+        </div>
+      ) : (
+        row
+      )}
+    </Shared.Provider>
   );
 }
