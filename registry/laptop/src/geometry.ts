@@ -305,3 +305,16 @@ export const DESK = seen({ id: "desk", height: 70, perspective: 200, pitch: -15,
  * DESK has it, so one glass serves both. The lid opens to 102 degrees.
  */
 export const PHONE = seen({ id: "phone", height: 59, perspective: 600, pitch: -12, back: 88.07, originY: 0.22 * 70, anchorY: 53.43 });
+
+/**
+ * Straight on, as a product shot: the eye sits just above the deck and so far
+ * away the drawing reads flat, so the lid stands upright at 90 degrees, its
+ * glass a plain rectangle, and the base shows only as its front lip with the
+ * thumb slot. A shut lid hides its glass. The scene is 70 by 50, so the laptop
+ * fills it, centered with the lip near the bottom. Laptop takes no style or
+ * className, so to let a frame cut the laptop's sides and bottom, put it in a
+ * div with `width: 108%; margin-inline: -4%; margin-bottom: -3%` inside a
+ * wrapper with `overflow: hidden`. It cuts through the black bezel at the
+ * sides, short of the glass, and through the lip under the thumb slot.
+ */
+export const FRONT = seen({ id: "front", width: 70, height: 50, perspective: 100000, pitch: 0, anchorY: 47, originY: 46.8 });
