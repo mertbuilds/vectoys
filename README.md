@@ -31,6 +31,7 @@ Items to copy into a project, each described by its `item.json`. Every item is M
 Devices:
 
 - `registry/laptop`: a 14 inch laptop with a lid that opens and closes and live HTML on its display.
+  `<Laptop eye={FRONT}>` shows it straight on, as a product shot: the lid upright with its glass a plain rectangle and the base only a thin lip under it. Laptop takes no style or className, so to let a frame cut its sides and bottom, put it in a div with `width: 108%; margin-inline: -4%; margin-bottom: -3%` inside a wrapper with `overflow: hidden`. It cuts through the black bezel at the sides, short of the glass, and through the lip under the thumb slot.
 - `registry/phone`: a modern flagship phone that turns any way, with side buttons, a camera bump and live HTML on its display.
 - `registry/tablet`: an 11 inch tablet that turns any way, upright or on its side, with live HTML on its display.
 - `registry/monitor`: a 27 inch monitor on a stand that turns any way, its panel tilting on the stand, with live HTML on its display.

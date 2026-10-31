@@ -57,16 +57,18 @@ const Base = memo(function Base({ id, view: { DECK } }: { id: string; view: View
       <path d={DECK.hinge} style={{ fill: HINGE }} />
       <path d={DECK.barrels} style={{ fill: BARREL }} />
       <path d={DECK.top} style={SURFACE} />
-      {DECK.holes.map((holes, coarser) => (
-        <path
-          key={coarser}
-          d={holes}
-          className={`${HOLES}-${coarser}`}
-          strokeWidth={HOLE * 2 ** coarser}
-          strokeLinecap="round"
-          style={{ stroke: WELL, fill: "none" }}
-        />
-      ))}
+      <g clipPath={`url(#${id}-deck)`}>
+        {DECK.holes.map((holes, coarser) => (
+          <path
+            key={coarser}
+            d={holes}
+            className={`${HOLES}-${coarser}`}
+            strokeWidth={HOLE * 2 ** coarser}
+            strokeLinecap="round"
+            style={{ stroke: WELL, fill: "none" }}
+          />
+        ))}
+      </g>
       <path d={DECK.well} style={{ fill: WELL }} />
       <path d={DECK.keys} style={{ fill: KEY }} />
       <path d={DECK.touchId} style={{ fill: TOUCH_ID }} />
@@ -112,7 +114,7 @@ const FILL: CSSProperties = { position: "absolute", inset: 0 };
 type LaptopProps = {
   /** How far the lid has closed, from 0 (open) to 1 (shut on the base); open by default. */
   closed?: number;
-  /** The eye that sees it: `DESK` or `PHONE`; `DESK` by default. */
+  /** The eye that sees it: `DESK`, `PHONE` or `FRONT`; `DESK` by default. */
   eye?: View;
   /** The laptop's name for assistive technology. */
   label?: string;
@@ -121,8 +123,8 @@ type LaptopProps = {
 };
 
 /**
- * A 14 inch laptop seen from the front and a little above: one SVG drawn from the
- * laptop's projected outline, and the display's glass laid onto the lid with
+ * A 14 inch laptop seen from the eye you pass (DESK, PHONE or FRONT): one SVG
+ * drawn from the laptop's projected outline, and the display's glass laid onto the lid with
  * live content on it, hidden while the lid faces away.
  */
 export const Laptop = memo(function Laptop({ closed = 0, eye = DESK, children, label = "Laptop" }: LaptopProps) {
@@ -160,6 +162,9 @@ export const Laptop = memo(function Laptop({ closed = 0, eye = DESK, children, l
     <Stage role={children == null ? "img" : "group"} label={label} camera={camera} overlay={glass}>
       <defs>
         {defs(id, camera)}
+        <clipPath id={`${id}-deck`}>
+          <path d={DECK.top} />
+        </clipPath>
         {lid.shadow && (
           <linearGradient id={`${id}-lid-shadow`} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1={lid.shadow.from} y2={lid.shadow.to}>
             <stop offset="0" style={{ stopColor: SHADOW }} />
