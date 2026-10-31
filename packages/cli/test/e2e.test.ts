@@ -141,6 +141,10 @@ const USES: Record<string, { imports: string[]; jsx: string }> = {
   envelope: { imports: ['import { Envelope } from "./components/vectoys/envelope/envelope";'], jsx: "<Envelope open={0.5}><p>a</p></Envelope>" },
   floppy: { imports: ['import { Floppy } from "./components/vectoys/floppy/floppy";'], jsx: '<Floppy href="/kit.zip">kit</Floppy>' },
   gift: { imports: ['import { Gift } from "./components/vectoys/gift/gift";'], jsx: '<Gift ribbon="#fff">SAVE20</Gift>' },
+  keyboard: {
+    imports: ['import { Keyboard } from "./components/vectoys/keyboard/keyboard";'],
+    jsx: '<Keyboard demo="hi" defaultSound={false} onSoundChange={(sound) => sound} listen={false} finish="#eee" />',
+  },
   keycap: { imports: ['import { Keycap, KeycapRow } from "./components/vectoys/keycap/keycap";'], jsx: '<Keycap onPress={() => {}}>Go</Keycap><KeycapRow keys={["a", "b"]} />' },
   laptop: {
     imports: ['import { Laptop } from "./components/vectoys/laptop/laptop";', 'import { DESK } from "./components/vectoys/laptop/geometry";'],

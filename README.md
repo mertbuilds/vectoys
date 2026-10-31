@@ -40,7 +40,8 @@ Devices:
 
 Toys:
 
-- `registry/keycap`: a keycap that is a real button, with a live label on its dished top; it lifts on hover and travels down when pressed, and `KeycapRow` spells a word.
+- `registry/keycap`: a keycap that is a real button, with a live label on its dished top; it lifts on hover and travels down when pressed, and `KeycapRow` spells a word; it can click as it goes down and up, with a switch to turn the sound on and off.
+- `registry/keyboard`: a full-size keyboard with a US layout whose keys go down as you type on your own keyboard while it is on screen, each with a soft click, and a button that turns the sound off. It can show a text box that catches what you type and a button that fills the screen.
 - `registry/envelope`: a newsletter envelope that opens on a click, its flap swinging up and a letter with live content rising out.
 - `registry/floppy`: a floppy disk that is a download link or a button; its shutter slides open and it turns toward the eye on hover.
 - `registry/card`: a flip card with live HTML on both faces that flips on a click or a hover and leans toward the pointer.
@@ -115,7 +116,7 @@ Every item reads its colors from CSS variables, so a page themes them all at onc
 - `--vectoys-surface`: the main surface of a body or a part, `#f5f5f5`.
 - `--vectoys-hairline`: the outlines and the darker edges, `#8a8a8a`.
 - `--vectoys-shadow`: the shadow on the ground, `rgba(0, 0, 0, 0.08)`.
-- `--vectoys-finish`: the color of a body: the back and stand of a device, a keycap, a die, the card's back. By default the surface; the envelope's lining a shade under it, the floppy disk `#2c2c2e`, the gift box `#e5484d`.
+- `--vectoys-finish`: the color of a body: the back and stand of a device, a keycap, a keyboard's keys, a die, the card's back. By default the surface; the envelope's lining a shade under it, the floppy disk `#2c2c2e`, the gift box `#e5484d`.
 - `--vectoys-accent`: the gift box's ribbon and bow, `#f5c84c`.
 - `--vectoys-band`: the watch's band, a shade under the surface.
 - `--vectoys-ink`: a keycap's label, the die's pips and the browser's address, `#1d1d1c`.

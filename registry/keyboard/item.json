@@ -1,0 +1,8 @@
+{
+  "name": "keyboard",
+  "title": "Keyboard",
+  "description": "A full-size keyboard with a US layout drawn as SVG paths whose keys go down as you type on your own keyboard while it is on screen, or as you tap them, each with a soft click. A button turns the sound off. It can also show a text box that catches what you type and a button that fills the screen.",
+  "files": ["src/geometry.ts", "src/sound.ts", "src/keyboard.tsx"],
+  "dependencies": ["@vinena/vectoys", "@vinena/vectoys-react"],
+  "license": "MIT"
+}

@@ -19,6 +19,7 @@
     "@vectoys/envelope": "workspace:*",
     "@vectoys/floppy": "workspace:*",
     "@vectoys/gift": "workspace:*",
+    "@vectoys/keyboard": "workspace:*",
     "@vectoys/keycap": "workspace:*",
     "@vectoys/laptop": "workspace:*",
     "@vectoys/monitor": "workspace:*",
