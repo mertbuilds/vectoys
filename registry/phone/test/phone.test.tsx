@@ -43,3 +43,14 @@ test("the shadow is left out when the eye is under the ground", () => {
   expect(seen().shadow).not.toBeNull();
   expect(seen({ pitch: 40 }).shadow).toBeNull();
 });
+
+test("the display clips live HTML to its rounded corners", () => {
+  const html = renderToString(<Phone><p>live</p></Phone>);
+  const styles = [...html.matchAll(/style="([^"]*)"/g)].map((match) => match[1] ?? "").filter((style) => style.includes("container-type:inline-size") && style.includes("border-radius:"));
+  expect(styles).toHaveLength(1);
+  for (const style of styles) {
+    const radius = style.match(/border-radius:([^;]+)/)?.[1];
+    expect(radius).toBeDefined();
+    expect(style).toContain(`clip-path:inset(0 round ${radius})`);
+  }
+});

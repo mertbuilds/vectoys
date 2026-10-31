@@ -56,6 +56,7 @@ const DISPLAY_STYLE: CSSProperties = {
   overflow: "hidden",
   background: GLASS,
   borderRadius: `${ACROSS} / ${DOWN}`,
+  clipPath: `inset(0 round ${ACROSS} / ${DOWN})`,
   containerType: "inline-size",
 };
 const FILL: CSSProperties = { position: "absolute", inset: 0 };

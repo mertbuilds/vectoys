@@ -56,3 +56,14 @@ test("a face seen straight on keeps the page's color, unshaded", () => {
   expect(front.shade).toBeGreaterThan(0.875);
   expect(front.shade).toBeLessThanOrEqual(0.95);
 });
+
+test("both faces clip live HTML to their rounded corners", () => {
+  const html = renderToString(<Card front={<p>front</p>} back={<p>back</p>} />);
+  const styles = [...html.matchAll(/style="([^"]*)"/g)].map((match) => match[1] ?? "").filter((style) => style.includes("container-type:inline-size") && style.includes("border-radius:"));
+  expect(styles).toHaveLength(2);
+  for (const style of styles) {
+    const radius = style.match(/border-radius:([^;]+)/)?.[1];
+    expect(radius).toBeDefined();
+    expect(style).toContain(`clip-path:inset(0 round ${radius})`);
+  }
+});

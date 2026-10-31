@@ -47,6 +47,7 @@ const PAGE_STYLE: CSSProperties = {
   color: INK,
   // Only the bottom corners are the window's; the top runs under the bar.
   borderRadius: `0 0 ${ACROSS} ${ACROSS} / 0 0 ${DOWN} ${DOWN}`,
+  clipPath: `inset(0 round 0 0 ${ACROSS} ${ACROSS} / 0 0 ${DOWN} ${DOWN})`,
   containerType: "inline-size",
 };
 const FILL: CSSProperties = { position: "absolute", inset: 0 };
