@@ -273,8 +273,8 @@ test("unmounting closes the audio once a press started it", async () => {
   expect(closed).toBe(1);
 });
 
-test("the real keyboard moves the keys only while the board is on screen", async () => {
-  const observers: { callback: IntersectionObserverCallback; target?: Element }[] = [];
+/** Puts a stand-in IntersectionObserver in place until `restore`; `view` tells every observed board whether it is on screen. */
+function fakeObserver() {
   const real = globalThis.IntersectionObserver;
   const instances: FakeObserver[] = [];
   class FakeObserver implements IntersectionObserver {
@@ -283,14 +283,14 @@ test("the real keyboard moves the keys only while the board is on screen", async
     scrollMargin = "";
     thresholds = [0];
     takeRecords = () => [];
-    entry: (typeof observers)[number];
+    callback: IntersectionObserverCallback;
+    target?: Element;
     constructor(callback: IntersectionObserverCallback) {
-      this.entry = { callback };
-      observers.push(this.entry);
+      this.callback = callback;
       instances.push(this);
     }
     observe(target: Element) {
-      this.entry.target = target;
+      this.target = target;
     }
     disconnect() {}
     unobserve() {}
@@ -299,7 +299,7 @@ test("the real keyboard moves the keys only while the board is on screen", async
   const view = (isIntersecting: boolean) =>
     act(async () => {
       for (const observer of instances) {
-        const { callback, target } = observer.entry;
+        const { callback, target } = observer;
         if (!target) continue;
         const rect = target.getBoundingClientRect();
         callback(
@@ -308,19 +308,58 @@ test("the real keyboard moves the keys only while the board is on screen", async
         );
       }
     });
-  const { host, unmount } = await mount(<Keyboard />);
-  await view(false);
-  await press("keydown", "KeyQ");
-  expect(isDown(host, "KeyQ")).toBe(false);
-  expect(made).toBe(0);
-  await view(true);
-  await press("keydown", "KeyQ");
-  expect(isDown(host, "KeyQ")).toBe(true);
-  expect(made).toBe(1);
-  await view(false);
-  expect(isDown(host, "KeyQ")).toBe(false);
+  return { view, restore: () => Object.assign(globalThis, { IntersectionObserver: real }) };
+}
+
+test("the real keyboard moves the keys only while the board is on screen", async () => {
+  const { view, restore } = fakeObserver();
+  try {
+    const { host, unmount } = await mount(<Keyboard />);
+    await view(false);
+    await press("keydown", "KeyQ");
+    expect(isDown(host, "KeyQ")).toBe(false);
+    expect(made).toBe(0);
+    await view(true);
+    await press("keydown", "KeyQ");
+    expect(isDown(host, "KeyQ")).toBe(true);
+    expect(made).toBe(1);
+    await view(false);
+    expect(isDown(host, "KeyQ")).toBe(false);
+    await unmount();
+  } finally {
+    restore();
+  }
+});
+
+test("the demo rests while the board is off screen, and types again when it shows", async () => {
+  const { view, restore } = fakeObserver();
+  try {
+    const { host, unmount } = await mount(<Keyboard demo="hi" />);
+    await view(false);
+    // Let the caps' springs settle; then nothing asks for frames.
+    await frames.advance(1500);
+    expect(frames.pending()).toBe(0);
+    expect(host.querySelectorAll("[data-down]")).toHaveLength(0);
+    await view(true);
+    const seen = new Set<string>();
+    for (let step = 0; step < 100; step++) {
+      await frames.advance(16);
+      for (const down of host.querySelectorAll("[data-down]")) seen.add(down.getAttribute("data-key") ?? "");
+    }
+    expect([...seen].sort()).toEqual(["KeyH", "KeyI"]);
+    await unmount();
+  } finally {
+    restore();
+  }
+});
+
+test("with listen={false} a key held by a pointer still comes up when the window loses focus", async () => {
+  const { host, unmount } = await mount(<Keyboard listen={false} />);
+  await fire(key(host, "KeyL"), new PointerEvent("pointerdown", { bubbles: true, button: 0, pointerId: 4 }));
+  expect(isDown(host, "KeyL")).toBe(true);
+  await act(async () => void window.dispatchEvent(new Event("blur")));
+  expect(isDown(host, "KeyL")).toBe(false);
   await unmount();
-  Object.assign(globalThis, { IntersectionObserver: real });
 });
 
 const box = (host: Element) => host.querySelector("textarea")!;
@@ -355,6 +394,15 @@ test("an AltGr character, sent as ctrl and alt on Windows, goes into the text bo
   const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, code: "KeyQ", key: "@", ctrlKey: true, altKey: true });
   Object.defineProperty(event, "getModifierState", { value: (name: string) => name === "AltGraph" });
   await fire(document.body, event);
+  expect(document.activeElement).toBe(box(host));
+  await unmount();
+});
+
+test("a dead key pressed while nothing has focus focuses the text box, so the accent it starts lands there", async () => {
+  const { host, unmount } = await mount(<Keyboard typing />);
+  await press("keydown", "Quote", { key: "Dead", metaKey: true });
+  expect(document.activeElement).toBe(document.body);
+  await press("keydown", "Quote", { key: "Dead" });
   expect(document.activeElement).toBe(box(host));
   await unmount();
 });
@@ -453,7 +501,7 @@ test("a controlled text follows its prop, not the box", async () => {
   await unmount();
 });
 
-test("the text box brings no audio before a gesture, and listen={false} with typing still fills the box but presses nothing", async () => {
+test("the text box brings no audio before a gesture, and listen={false} with typing still focuses the box but presses nothing", async () => {
   const { host, unmount } = await mount(<Keyboard typing listen={false} />);
   await frames.advance(200);
   expect(made).toBe(0);
@@ -523,6 +571,18 @@ test("the full screen button shows only where the Fullscreen API is, and follows
     await act(async () => buttonNamed(only.host, "Exit full screen")!.click());
     expect(only.host.querySelector("textarea")).toBeNull();
     await only.unmount();
+
+    // The page takes the button away while the toy fills the screen: it leaves full screen and lays out as before.
+    const dropped = await mount(<Keyboard fullscreen typing="fullscreen" />);
+    await act(async () => buttonNamed(dropped.host, "Full screen")?.click());
+    expect(box(dropped.host)).not.toBeNull();
+    const exits = exitFullscreen.mock.calls.length;
+    await dropped.rerender(<Keyboard typing="fullscreen" />);
+    expect(exitFullscreen).toHaveBeenCalledTimes(exits + 1);
+    expect(screen.filled).toBeNull();
+    expect(dropped.host.querySelector("textarea")).toBeNull();
+    expect(dropped.host.firstElementChild?.getAttribute("style")).not.toContain("position: relative");
+    await dropped.unmount();
   } finally {
     Reflect.deleteProperty(HTMLElement.prototype, "requestFullscreen");
     Reflect.deleteProperty(document, "exitFullscreen");

@@ -86,8 +86,13 @@ const ARROWS: [id: string, x: number, y: number, text: string][] = [
   ["ArrowRight", 13.5, 0.5, "▶"],
 ];
 
+// How far the corner legends sit in from the edges of a cap's top, across and back, in hundredths of a key unit.
+const LEGEND_MARGIN_X = 11;
+const LEGEND_MARGIN_Y = 9;
+
 /** How far from the middle of a cap's top its corner legends stand, across and back, in hundredths of a key unit. */
-const inset = (width: number, height: number) => [(width * 100 - GAP * 100) / 2 - CAP_TAPER * 100 - 11, (height * 100 - GAP * 100) / 2 - CAP_TAPER * 100 - 9] as const;
+const inset = (width: number, height: number) =>
+  [(width * 100 - GAP * 100) / 2 - CAP_TAPER * 100 - LEGEND_MARGIN_X, (height * 100 - GAP * 100) / 2 - CAP_TAPER * 100 - LEGEND_MARGIN_Y] as const;
 
 /** A legend's place on a cap `width` by `height` key units. */
 function legend([at, text, size]: [At, string, number], width: number, height: number): Legend {

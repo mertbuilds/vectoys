@@ -11,12 +11,37 @@ afterEach(() => document.body.replaceChildren());
 let made = 0;
 let played = 0;
 let closed = 0;
+let resumed = 0;
+let disconnected = 0;
+let state = "running";
+// The sources made, so a test can end them as the audio would.
+const sources: { onended: (() => void) | null }[] = [];
 const param = () => ({ value: 0, setValueAtTime() {}, exponentialRampToValueAtTime() {} });
-const node = () => ({ connect: (next: unknown) => next, start() {}, stop() {}, gain: param(), frequency: param(), Q: param(), buffer: null, type: "" });
+const node = () => ({
+  connect: (next: unknown) => next,
+  disconnect() {
+    disconnected += 1;
+  },
+  start() {},
+  stop() {},
+  onended: null,
+  gain: param(),
+  frequency: param(),
+  Q: param(),
+  buffer: null,
+  type: "",
+});
+const source = () => {
+  const made = node();
+  sources.push(made);
+  return made;
+};
 class FakeAudio {
   sampleRate = 8000;
   currentTime = 0;
-  state = "running";
+  get state() {
+    return state;
+  }
   destination = {};
   constructor() {
     made += 1;
@@ -24,12 +49,14 @@ class FakeAudio {
   createBuffer = (_: number, length: number) => ({ getChannelData: () => new Float32Array(length) });
   createBufferSource = () => {
     played += 1;
-    return node();
+    return source();
   };
   createBiquadFilter = node;
   createGain = node;
-  createOscillator = node;
-  resume = async () => {};
+  createOscillator = source;
+  resume = async () => {
+    resumed += 1;
+  };
   close = async () => {
     closed += 1;
   };
@@ -39,6 +66,10 @@ beforeEach(() => {
   made = 0;
   played = 0;
   closed = 0;
+  resumed = 0;
+  disconnected = 0;
+  state = "running";
+  sources.length = 0;
   Object.assign(globalThis, { AudioContext: FakeAudio });
 });
 afterAll(() => Object.assign(globalThis, { AudioContext: real }));
@@ -83,6 +114,35 @@ test("sound is off by default and when the page turns it off, and a disabled key
   expect(played).toBe(0);
 });
 
+test("a key disabled while held sends no release later, and its next press clicks", async () => {
+  const { host, rerender, unmount } = await mount(<Keycap defaultSound>Join</Keycap>);
+  await fire(buttonIn(host, "Join"), new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+  expect(played).toBe(1);
+  await rerender(<Keycap defaultSound disabled>Join</Keycap>);
+  await rerender(<Keycap defaultSound>Join</Keycap>);
+  await fire(buttonIn(host, "Join"), new PointerEvent("pointerup", { bubbles: true }));
+  expect(played).toBe(1);
+  await fire(buttonIn(host, "Join"), new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+  expect(played).toBe(2);
+  await unmount();
+});
+
+test("each finished click lets go of its nodes, and a suspended or interrupted context resumes", async () => {
+  const { host, unmount } = await mount(<Keycap defaultSound>Join</Keycap>);
+  await pointer(buttonIn(host, "Join"));
+  expect(resumed).toBe(0);
+  // Two clicks, each a noise burst through a band and its gain, and a tone through its gain.
+  expect(sources).toHaveLength(4);
+  for (const ended of sources) ended.onended?.();
+  expect(disconnected).toBe(10);
+  for (const next of ["suspended", "interrupted", "closed"]) {
+    state = next;
+    await pointer(buttonIn(host, "Join"));
+  }
+  expect(resumed).toBe(4);
+  await unmount();
+});
+
 test("a row's keys share one audio context, closed when the row goes", async () => {
   const { host, unmount } = await mount(<KeycapRow keys={["T", "O", "Y"]} defaultSound />);
   for (const key of ["T", "O", "Y"]) await pointer(buttonIn(host, key));
@@ -97,7 +157,7 @@ test("the row's sound switch turns the clicks off and on and tells the page", as
   const { host, unmount } = await mount(<KeycapRow keys={["T"]} defaultSound soundToggle onSoundChange={(sound) => changes.push(sound)} />);
   const toggle = host.querySelector('[role="switch"]');
   if (!toggle) throw new Error("no switch");
-  expect(toggle.getAttribute("aria-label")).toBe("Sound");
+  expect(toggle.hasAttribute("aria-label")).toBe(false);
   expect(toggle.getAttribute("aria-checked")).toBe("true");
   expect(toggle.textContent).toBe("Sound on");
   await fire(toggle, new MouseEvent("click", { bubbles: true }));
@@ -137,7 +197,7 @@ test("the keycap's sound is the same file as the keyboard's", async () => {
 test("renders the same on the server with the sound switch, and no switch without it", () => {
   const row = <KeycapRow keys={["v"]} label="vec" defaultSound soundToggle />;
   expect(renderToString(row)).toBe(renderToString(row));
-  expect(renderToString(row)).toContain('role="switch" aria-checked="true" aria-label="Sound"');
+  expect(renderToString(row)).toContain('role="switch" aria-checked="true" class=');
   expect(renderToString(<KeycapRow keys={["v"]} />)).not.toContain('role="switch"');
   expect(renderToString(<Keycap />)).not.toContain('role="switch"');
 });

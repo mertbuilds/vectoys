@@ -119,7 +119,7 @@ Every item reads its colors from CSS variables, so a page themes them all at onc
 - `--vectoys-finish`: the color of a body: the back and stand of a device, a keycap, a keyboard's keys, a die, the card's back. By default the surface; the envelope's lining a shade under it, the floppy disk `#2c2c2e`, the gift box `#e5484d`.
 - `--vectoys-accent`: the gift box's ribbon and bow, `#f5c84c`.
 - `--vectoys-band`: the watch's band, a shade under the surface.
-- `--vectoys-ink`: a keycap's label, the die's pips and the browser's address, `#1d1d1c`.
+- `--vectoys-ink`: a keycap's label, a keyboard's legends, the die's pips and the browser's address, `#1d1d1c`.
 - `--vectoys-bg`: the laptop's and the browser's page behind the content, `#ffffff`.
 - `--vectoys-border`: the laptop's rim and trackpad outline, `#d4d4d4`.
 - `--vectoys-paper`: the floppy disk's label, `#f7f6f1`.
@@ -127,7 +127,7 @@ Every item reads its colors from CSS variables, so a page themes them all at onc
 - `--vectoys-focus`: the focus ring of the card, the die and the gift box, `currentColor`.
 - `--vectoys-focus-width`: how thick that ring is, `1px`.
 
-Under a dark color scheme the browser window, the keycap and the die fall back to dark tones instead: `--vectoys-surface` `#262626`, `--vectoys-hairline` `#5a5a5a`, `--vectoys-ink` `#ededed`, `--vectoys-shadow` `rgba(0, 0, 0, 0.4)`, and for the browser `--vectoys-bg` `#161616`. The browser also takes `theme="dark"`. The shading variables are below.
+Under a dark color scheme the browser window, the keycap, the keyboard and the die fall back to dark tones instead: `--vectoys-surface` `#262626`, `--vectoys-hairline` `#5a5a5a`, `--vectoys-ink` `#ededed`, `--vectoys-shadow` `rgba(0, 0, 0, 0.4)`, and for the browser `--vectoys-bg` `#161616`. The browser also takes `theme="dark"`. The shading variables are below.
 
 ## Develop
 

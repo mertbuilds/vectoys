@@ -132,7 +132,7 @@ const Speaker = ({ on }: { on: boolean }) => (
 const SoundSwitch = ({ on, toggle }: { on: boolean; toggle: () => void }) => (
   <>
     <style>{SHEET}</style>
-    <button type="button" role="switch" aria-checked={on} aria-label="Sound" className={SOUND} onClick={toggle} style={TOGGLE}>
+    <button type="button" role="switch" aria-checked={on} className={SOUND} onClick={toggle} style={TOGGLE}>
       <Speaker on={on} />
       {on ? "Sound on" : "Sound off"}
     </button>
@@ -190,6 +190,10 @@ function usePress(disabled: boolean, caller: PressHandlers, changed: (down: bool
   const [hover, setHover] = useState(false);
   const [held, setHeldState] = useState(false);
   const down = useRef(false);
+  // A key disabled while held is up from then on, so it sends no release later and its next press clicks.
+  useEffect(() => {
+    if (disabled) down.current = false;
+  }, [disabled]);
   const setHeld = (next: boolean) => {
     setHeldState(next);
     if (disabled || down.current === next) return;

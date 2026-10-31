@@ -73,7 +73,7 @@ test("renders on the server the same twice, with no props, as a named group", ()
   expect(html).toStartWith('<div role="group" aria-label="Keyboard"');
   expect(html).not.toContain("NaN");
   expect(html.match(/data-key=/g)).toHaveLength(KEYS.length);
-  expect(html).toMatch(/<button type="button" role="switch" aria-checked="true" aria-label="Sound"[^>]*>.*Sound on<\/button>/);
+  expect(html).toMatch(/<button type="button" role="switch" aria-checked="true" class="[^"]*"[^>]*>.*Sound on<\/button>/);
   expect(html.match(/<button/g)).toHaveLength(1);
   for (const legend of [">Q<", ">command<", ">caps lock<", ">return<", ">F12<", ">⌥<"]) expect(html).toContain(legend);
 });

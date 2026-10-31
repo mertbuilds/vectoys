@@ -200,8 +200,8 @@ function exitFull() {
   if ("webkitExitFullscreen" in document && typeof document.webkitExitFullscreen === "function") document.webkitExitFullscreen();
 }
 
-/** Whether a key is one character to type, with no command or control shortcut held. */
-const printable = (event: KeyboardEvent) => [...event.key].length === 1 && !event.metaKey && (!event.ctrlKey || event.getModifierState("AltGraph")) && !event.isComposing;
+/** Whether a key is one character to type, or a dead key that starts an accent, with no command or control shortcut held. */
+const printable = (event: KeyboardEvent) => ([...event.key].length === 1 || event.key === "Dead") && !event.metaKey && (!event.ctrlKey || event.getModifierState("AltGraph")) && !event.isComposing;
 
 export type KeyboardProps = {
   /** Names the keyboard for assistive technology. */
@@ -351,6 +351,20 @@ export function Keyboard({
     return () => observer.disconnect();
   }, []);
 
+  // Pointer presses need letting go too, so this runs whether or not the keyboard listens.
+  useEffect(() => {
+    if (!shown) return;
+    const clear = () => letGo((source) => source !== BY_DEMO);
+    const hidden = () => document.visibilityState === "hidden" && clear();
+    addEventListener("blur", clear);
+    document.addEventListener("visibilitychange", hidden);
+    return () => {
+      removeEventListener("blur", clear);
+      document.removeEventListener("visibilitychange", hidden);
+      clear();
+    };
+  }, [shown, letGo]);
+
   useEffect(() => {
     if ((!listen && !writing) || !shown) return;
     let capsAt = -Infinity;
@@ -395,19 +409,13 @@ export function Keyboard({
       hold(key, BY_KEY, false);
       if (key === "MetaLeft" || key === "MetaRight") letGo((source) => source === BY_KEY);
     };
-    const clear = () => letGo((source) => source !== BY_DEMO);
-    const hidden = () => document.visibilityState === "hidden" && clear();
     // In the capture phase, so a page that stops a key on its way cannot leave a cap stuck down.
     addEventListener("keydown", press, true);
     addEventListener("keyup", lift, true);
-    addEventListener("blur", clear);
-    document.addEventListener("visibilitychange", hidden);
     return () => {
       removeEventListener("keydown", press, true);
       removeEventListener("keyup", lift, true);
-      removeEventListener("blur", clear);
-      document.removeEventListener("visibilitychange", hidden);
-      clear();
+      letGo((source) => source === BY_KEY);
     };
   }, [listen, writing, shown, hold, letGo, person, tap]);
 
@@ -420,13 +428,17 @@ export function Keyboard({
     for (const name of FULL_CHANGES) document.addEventListener(name, change);
     return () => {
       for (const name of FULL_CHANGES) document.removeEventListener(name, change);
+      // Without the button there is no way back, so the toy leaves full screen with it.
+      if (fullElement() === element) exitFull();
+      setFull(false);
     };
   }, [fullscreen]);
 
   const word = demo === true ? "hello" : demo || "";
   useEffect(() => {
     const { steps, length } = script(word);
-    if (steps.length === 0 || reduced || touched.current) return;
+    // Off screen the demo rests, and starts over when the board shows again.
+    if (steps.length === 0 || reduced || touched.current || !shown) return;
     let clock = 0;
     let next = 0;
     frames((elapsed) => {
@@ -447,7 +459,7 @@ export function Keyboard({
       stop();
       stopDemo.current = () => {};
     };
-  }, [word, reduced, frames, hold, letGo]);
+  }, [word, reduced, shown, frames, hold, letGo]);
 
   useEffect(
     () => () => {
@@ -543,7 +555,7 @@ export function Keyboard({
       </div>
       <div className={full ? CORNER : undefined} style={full ? CORNER_STYLE : CONTROLS}>
         {full && writing && button("Clear", clear)}
-        <button type="button" role="switch" aria-checked={audible} aria-label="Sound" className={BUTTON} onClick={toggle} style={TOGGLE}>
+        <button type="button" role="switch" aria-checked={audible} className={BUTTON} onClick={toggle} style={TOGGLE}>
           <Speaker on={audible} />
           {audible ? "Sound on" : "Sound off"}
         </button>
