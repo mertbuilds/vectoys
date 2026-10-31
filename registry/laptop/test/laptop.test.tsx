@@ -71,7 +71,7 @@ test("seen from the front, the open lid's glass is a plain rectangle at the glas
 
 test("the glass clips live HTML to its rounded top corners", () => {
   const html = renderToString(<Laptop><p>live</p></Laptop>);
-  const styles = [...html.matchAll(/style="([^"]*border-radius[^"]*container-type:inline-size[^"]*)"/g)].map((match) => match[1] ?? "");
+  const styles = [...html.matchAll(/style="([^"]*)"/g)].map((match) => match[1] ?? "").filter((style) => style.includes("container-type:inline-size") && style.includes("border-radius:"));
   expect(styles).toHaveLength(1);
   for (const style of styles) {
     const radius = style.match(/border-radius:([^;]+)/)?.[1];

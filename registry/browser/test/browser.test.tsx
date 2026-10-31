@@ -60,7 +60,7 @@ test("the shadow is left out when the eye is under the ground or when asked", ()
 
 test("the page clips live HTML to its rounded bottom corners", () => {
   const html = renderToString(<Browser url="vectoys.com"><p>live</p></Browser>);
-  const styles = [...html.matchAll(/style="([^"]*border-radius[^"]*container-type:inline-size[^"]*)"/g)].map((match) => match[1] ?? "");
+  const styles = [...html.matchAll(/style="([^"]*)"/g)].map((match) => match[1] ?? "").filter((style) => style.includes("container-type:inline-size") && style.includes("border-radius:"));
   expect(styles).toHaveLength(1);
   for (const style of styles) {
     const radius = style.match(/border-radius:([^;]+)/)?.[1];
