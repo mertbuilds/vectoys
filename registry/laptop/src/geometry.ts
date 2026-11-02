@@ -56,10 +56,9 @@ export const LIFT = 0.15;
 export const ROUND = 2.1;
 const RIM = 0.25;
 // The lid turns about an axis 2.9 mm in from the base's back edge and 4.6 mm
-// under the shut lid's face, so open its chin drops behind the base toward
-// the table. The hinge fills a cut 237.6 mm wide and 4.5 mm deep in the
-// base's back edge, between shoulders of 37.5 mm: an aluminum barrel 15 mm
-// long at each end and the dark cover between them.
+// under the shut lid's face, so open its chin drops behind the base. The
+// hinge fills a cut 237.6 by 4.5 mm in the back edge: a barrel at each end
+// and a dark cover between.
 const PIVOT: Flat = [0.62, -0.98];
 const CUT = 50.16;
 const CUT_DEPTH = 0.94;
@@ -133,11 +132,9 @@ const LOCK_KEY = KEYS[ROWS[0]!.length - 1]!;
 // The trackpad, 129.6 by 80.9 mm, 3 mm under the well.
 const TRACKPAD: Box = [-13.68, 5.07, 13.68, 22.17];
 
-// The speaker grilles' holes, a square grid centered in the deck beside the
-// keyboard, 1.6 mm from its side edge and from the well and 4.5 mm short of
-// the well's ends. The machine has 15 holes across at 0.93 mm; down the deck,
-// which the eye sees foreshortened, they stand 2.3 mm apart so they are as far
-// apart on screen. Each is one dot HOLE wide.
+// The speaker grilles' holes, a grid beside the keyboard, 1.6 mm from the
+// side edge and the well and 4.5 mm short of its ends: 0.93 mm apart across,
+// 2.3 mm down the foreshortened deck so they look as far apart.
 const GRILLE_GAP = 0.34;
 const GRILLE_END = 0.95;
 
@@ -452,21 +449,19 @@ export const DESK = seen({ id: "desk", height: 70, perspective: 200, pitch: -15,
 
 /**
  * Over the words, on a phone: the eye is three times as far and a little
- * lower, so the deck is hardly wider than the lid and half as deep, and the
- * whole laptop fits a narrow page. `back` and `anchorY` put the open lid where
- * DESK has it, so one glass serves both. The lid opens to 102 degrees.
+ * lower, so the whole laptop fits a narrow page. `back` and `anchorY` put the
+ * open lid where DESK has it, so one glass serves both. The lid opens to 102 degrees.
  */
 export const PHONE = seen({ id: "phone", height: 59, perspective: 600, pitch: -12, back: 88.07, originY: 0.22 * 70, anchorY: 53.43 });
 
 /**
- * The fixed box, in scene units, that holds the whole laptop in every pose an
- * eye can take: yaw from -35 to 35, pitch from 5 to 30, the lid shut to open,
- * with its shadow, and the laptop in the middle. A `Laptop` passed `turning`
- * draws in it, so its stage keeps one size while a scroll turns it; its
- * aspect ratio is `width / height`. `x` and `y` are where the eye's own
- * scene sits in the box, in scene units: a point of the eye's own drawing
- * lands `x` to the right and `y` down in the box, so an overlay placed on
- * the untouched laptop can follow it into a turning one.
+ * The fixed box, in scene units, that holds the laptop and its shadow in
+ * every pose an eye can take: yaw from -35 to 35, pitch from 5 to 30, the
+ * lid shut to open, the laptop in the middle. A `Laptop` passed `turning`
+ * draws in it, so its stage keeps one size; its aspect ratio is `width /
+ * height`. A point of the eye's own scene lands `x` to the right and `y`
+ * down in the box, so an overlay placed on the still laptop can follow it
+ * into a turning one.
  */
 export const LAPTOP_BOX = {
   get desk() {
@@ -478,11 +473,9 @@ export const LAPTOP_BOX = {
 };
 
 
-// Straight on, as product shots draw the machine. Every size here is in
-// hundredths of the lid's width, measured on such shots: the base shows 1.214
-// times as wide as the lid, since its front edge stands much nearer the camera
-// than the hinge, and the lid shows 1.465 times as wide as it is tall above
-// the base, since it leans back and the base hides its foot.
+// Straight on, as product shots draw the machine, in hundredths of the lid's
+// width: the near base shows 1.214 times as wide as the lid, and the lid
+// 1.465 times as wide as it is tall, leaning back over a hidden foot.
 const share = (hundredths: number) => (hundredths * WIDTH) / 100;
 const OVERHANG = 10.7;
 const SHOWN = 100 / 1.465;
@@ -626,12 +619,9 @@ export type View = Perspective | Straight;
 export const FRONT = straight();
 
 // A laptop free to turn any way, as a trick takes it. At `flat` 1 the eye is
-// FRONT's, level with the deck, and sees the shapes FRONT draws: the camera,
-// the base's thickness and round underside, the lid's place and the feet are
-// fitted to FRONT's sizes once, on first use. Toward 0 the camera, those
-// sizes and the lid's face ease into the eye's own, so nothing jumps. The
-// laptop rolls about its long axis and turns about its upright one round
-// the middle of the shut slab, then moves and grows on screen.
+// FRONT's and sees FRONT's shapes, fitted once on first use; toward 0 they
+// ease into the eye's own, so nothing jumps. It rolls and turns round the
+// middle of the shut slab, then moves and grows on screen.
 
 /** A pose of a laptop free to turn: `flat` from the eye's own look (0) to FRONT's (1), a move `x` and `y` and a `scale` on screen, and a `roll` about its long axis. */
 export type TrickPose = LaptopPose & { flat: number; x: number; y: number; scale: number; roll: number };

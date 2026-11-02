@@ -2,6 +2,8 @@ import { afterAll, expect, test } from "bun:test";
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { version as engine } from "../../engine/package.json";
+import { version as react } from "../../react/package.json";
 import { AUTHOR, FIRST, SCHEMA, buildRegistry, checkItem, componentName, header, type RegistryIndex, type RegistryItem } from "../src";
 
 const root = resolve(import.meta.dir, "../../..");
@@ -22,8 +24,11 @@ test("writes an index and one shadcn registry item per device", async () => {
     $schema: SCHEMA,
     name: "phone",
     type: "registry:component",
-    dependencies: ["@vinena/vectoys", "@vinena/vectoys-react"],
+    // Ranges from the packages' own versions, so an install upgrades an older copy.
+    dependencies: [`@vinena/vectoys@^${engine}`, `@vinena/vectoys-react@^${react}`],
     meta: { license: "MIT", source: "https://example.test/r/phone.json" },
+    // Older CLIs print docs after add and never upgrade, so the item asks for a new enough package in words.
+    docs: `This toy needs @vinena/vectoys-react ${react} or newer. If your project has an older one, run: npm install @vinena/vectoys-react@latest`,
   });
   expect(phone.files.map((file) => [file.path, file.target])).toEqual([
     ["registry/phone/src/geometry.ts", "@components/vectoys/phone/geometry.ts"],
@@ -55,11 +60,37 @@ test("the index keeps an outside maker's name and credit", async () => {
     const item = { name: "ball", title: "Ball", description: "A ball.", files: ["src/ball.tsx"], license: "MIT", author: "Jane Doe (https://jane.example)", credit: "Jane Doe" };
     await writeFile(join(repo, "registry/ball/item.json"), JSON.stringify(item));
     const index = await buildRegistry({ root: repo, out: join(repo, "out") });
+    // A root without the vectoys packages keeps the names item.json gives.
+    await writeFile(join(repo, "registry/ball/item.json"), JSON.stringify({ ...item, dependencies: ["@vinena/vectoys-react"] }));
+    await buildRegistry({ root: repo, out: join(repo, "out2") });
+    const ball: RegistryItem = JSON.parse(await readFile(join(repo, "out2/ball.json"), "utf8"));
+    expect(ball.dependencies).toEqual(["@vinena/vectoys-react"]);
+    expect(ball.docs).toBeUndefined();
+    // With the package's version known, the item's own docs come first and the version line follows.
+    await mkdir(join(repo, "packages/react"), { recursive: true });
+    await writeFile(join(repo, "packages/react/package.json"), JSON.stringify({ name: "@vinena/vectoys-react", version: "0.5.0" }));
+    await writeFile(join(repo, "registry/ball/item.json"), JSON.stringify({ ...item, dependencies: ["@vinena/vectoys-react"], docs: "Wrap it in a Scene." }));
+    await buildRegistry({ root: repo, out: join(repo, "out3") });
+    expect(JSON.parse(await readFile(join(repo, "out3/ball.json"), "utf8")).docs).toBe(
+      "Wrap it in a Scene.\nThis toy needs @vinena/vectoys-react 0.5.0 or newer. If your project has an older one, run: npm install @vinena/vectoys-react@latest",
+    );
     expect(index.items).toEqual([
       { name: "ball", title: "Ball", description: "A ball.", type: "registry:component", author: "Jane Doe (https://jane.example)", license: "MIT", credit: "Jane Doe" },
     ]);
     const written: RegistryIndex = JSON.parse(await readFile(join(repo, "out/index.json"), "utf8"));
     expect(written.items).toEqual(index.items);
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("a package.json that cannot be read, other than a missing one, fails the build", async () => {
+  const repo = await mkdtemp(join(tmpdir(), "vectoys-unreadable-"));
+  try {
+    await mkdir(join(repo, "registry"), { recursive: true });
+    // A folder in the file's place reads with an error that is not "missing".
+    await mkdir(join(repo, "packages/engine/package.json"), { recursive: true });
+    await expect(buildRegistry({ root: repo, out: join(repo, "out") })).rejects.toThrow(/EISDIR/);
   } finally {
     await rm(repo, { recursive: true, force: true });
   }

@@ -121,12 +121,28 @@ function textOf(html: string): string {
 
 const labelled = (attributes: string) => /\saria-label="[^"]*\S[^"]*"/.test(attributes) || /\saria-labelledby="[^"]+"/.test(attributes);
 
-/** How the markup is named for assistive technology, or undefined if it is not. */
+// The Turntable from @vinena/vectoys-react every item wraps itself in: its
+// style, its root and the body around the item's own root.
+const TURNTABLE_ROOT = /<div class="vectoys-turntable(?: [^"]*)?"/;
+const TURNTABLE_START = /^(?:<style\b[^>]*>[\s\S]*?<\/style>)*<div class="vectoys-turntable(?: [^"]*)?"[^>]*>(?:<div class="vectoys-turntable-body"[^>]*>)?/;
+
+/** Whether the markup has the Turntable in it, so the item turns and fills the screen. */
+export const usesTurntable = (html: string) => TURNTABLE_ROOT.test(html);
+
+const TURNTABLE_IMPORT = /\bimport\s*\{[^}]*\bTurntable\b[^}]*\}\s*from\s*["']@vinena\/vectoys-react["']/;
+
+/** Whether a shipped file imports Turntable from @vinena/vectoys-react and renders it, so a look-alike div does not count. */
+export const rendersTurntable = (files: Source[], shipped: readonly string[]) =>
+  files.some((file) => "code" in file && shipped.includes(file.path) && TURNTABLE_IMPORT.test(file.code) && /\bjsx\w*\(Turntable\b/.test(file.code));
+
+/** How the markup is named for assistive technology, or undefined if it is not. The Turntable around it and its button do not count. */
 export function accessibleName(html: string): string | undefined {
-  const root = /^<[a-z][\w-]*([^>]*)>/i.exec(html);
+  const root = /^<[a-z][\w-]*([^>]*)>/i.exec(html.replace(TURNTABLE_START, ""));
   const role = /\srole="(img|group)"/.exec(root?.[1] ?? "")?.[1];
   if (role && labelled(root?.[1] ?? "")) return `the root is role="${role}" with an aria-label`;
-  const controls = [...html.matchAll(/<(button|a|input|select|textarea)\b([^>]*)>/gi)].filter(([, tag, attributes]) => tag?.toLowerCase() !== "a" || /\shref=/.test(attributes ?? ""));
+  const controls = [...html.matchAll(/<(button|a|input|select|textarea)\b([^>]*)>/gi)].filter(
+    ([, tag, attributes = ""]) => (tag?.toLowerCase() !== "a" || /\shref=/.test(attributes)) && !attributes.includes('class="vectoys-turntable-full"'),
+  );
   if (controls.length === 0) return undefined;
   const named = controls.every((control) => {
     const [, tag = "", attributes = ""] = control;
@@ -520,6 +536,9 @@ export function checks(dir: string): Result[] {
 
   const name = accessibleName(html);
   results.push({ pass: name !== undefined, line: name ?? 'the root is not role="img" or "group" with an aria-label, and it has no labelled controls' });
+
+  const turns = usesTurntable(html) && typeof read !== "string" && rendersTurntable(read, item.files);
+  results.push({ pass: turns, line: turns ? "the toy uses Turntable, so it turns and fills the screen" : "the toy does not use Turntable from @vinena/vectoys-react" });
   return results;
 }
 

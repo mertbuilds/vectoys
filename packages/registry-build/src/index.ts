@@ -7,6 +7,7 @@ export { AUTHOR, componentName } from "./names";
 
 export const SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";
 export const BASE_URL = "https://vectoys.com/r";
+const REACT = "@vinena/vectoys-react";
 
 /** The items the index lists first, in this order; the rest follow in name order. */
 export const FIRST = ["keyboard", "keycap"];
@@ -21,6 +22,7 @@ export type ItemSource = {
   license: string;
   author?: string;
   credit?: string;
+  docs?: string;
 };
 
 /** One item as served at `/r/<name>.json`, in the shadcn registry-item shape. */
@@ -31,9 +33,12 @@ export type RegistryItem = {
   title: string;
   description: string;
   author: string;
+  /** Package specs, as `@vinena/vectoys-react@^0.3.0` for the repository's own packages. */
   dependencies: string[];
   files: { path: string; type: "registry:component"; target: string; content: string }[];
   meta: { license: string; source: string; credit: string };
+  /** Printed by `vectoys add` after the install. */
+  docs?: string;
 };
 
 /** One item as `/r/index.json` lists it, with its maker as "Name (url)" so the gallery can credit them. */
@@ -56,7 +61,8 @@ export async function buildRegistry({ root, out, baseUrl = BASE_URL }: Options):
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort(byPlace);
-  const items = await Promise.all(names.map((dir) => readItem(root, dir, baseUrl)));
+  const versions = await packageVersions(root);
+  const items = await Promise.all(names.map((dir) => readItem(root, dir, baseUrl, versions)));
 
   await rm(out, { recursive: true, force: true });
   await mkdir(out, { recursive: true });
@@ -70,13 +76,28 @@ export async function buildRegistry({ root, out, baseUrl = BASE_URL }: Options):
   return index;
 }
 
+/** The packages under packages/ that items depend on, by name, each with a caret range from its version; none for a root without them. */
+async function packageVersions(root: string): Promise<Map<string, string>> {
+  const versions = new Map<string, string>();
+  for (const dir of ["engine", "react"]) {
+    const path = join(root, "packages", dir, "package.json");
+    const pkg: { name?: unknown; version?: unknown } = await readFile(path, "utf8").then(JSON.parse, (error: NodeJS.ErrnoException) => {
+      // Only a missing file means no package here; any other failure is a real one.
+      if (error.code === "ENOENT") return {};
+      throw error;
+    });
+    if (typeof pkg.name === "string" && typeof pkg.version === "string") versions.set(pkg.name, `^${pkg.version}`);
+  }
+  return versions;
+}
+
 /** Orders folder names: those in FIRST by their place there, then the rest by name. */
 function byPlace(a: string, b: string) {
   const place = (name: string) => (FIRST.includes(name) ? FIRST.indexOf(name) : FIRST.length);
   return place(a) - place(b) || a.localeCompare(b);
 }
 
-async function readItem(root: string, dir: string, baseUrl: string): Promise<RegistryItem> {
+async function readItem(root: string, dir: string, baseUrl: string, versions: Map<string, string>): Promise<RegistryItem> {
   const file = `registry/${dir}/item.json`;
   const source = checkItem(JSON.parse(await readFile(join(root, file), "utf8")), file);
   // The site finds an item's code by its folder, so the two names must match.
@@ -95,6 +116,11 @@ async function readItem(root: string, dir: string, baseUrl: string): Promise<Reg
       };
     }),
   );
+  const dependencies = (source.dependencies ?? []).map((name) => (versions.has(name) ? `${name}@${versions.get(name)}` : name));
+  // CLIs before 0.3 skip a package the project lists at any version, so the item says what it needs.
+  const react = versions.get(REACT);
+  const needs = react && source.dependencies?.includes(REACT) ? `This toy needs ${REACT} ${react.slice(1)} or newer. If your project has an older one, run: npm install ${REACT}@latest` : undefined;
+  const docs = [source.docs, needs].filter(Boolean).join("\n") || undefined;
   return {
     $schema: SCHEMA,
     name: source.name,
@@ -102,9 +128,11 @@ async function readItem(root: string, dir: string, baseUrl: string): Promise<Reg
     title: source.title,
     description: source.description,
     author: source.author ?? AUTHOR,
-    dependencies: source.dependencies ?? [],
+    // A range, so an install upgrades a project whose copy is too old for the item's code.
+    dependencies,
     files,
     meta: { license: source.license, source: url, credit },
+    ...(docs ? { docs } : {}),
   };
 }
 
@@ -117,6 +145,7 @@ export function checkItem(value: unknown, file: string): ItemSource {
   if (!Array.isArray(item.files) || item.files.length === 0) throw new Error(`${file} needs "files"`);
   if (item.author !== undefined && !isOneLine(item.author)) throw new Error(`${file} "author" must be one line of text like "Name (https://site)"`);
   if (item.credit !== undefined && !isOneLine(item.credit)) throw new Error(`${file} "credit" must be one line of text`);
+  if (item.docs !== undefined && typeof item.docs !== "string") throw new Error(`${file} "docs" must be text`);
   return item as ItemSource;
 }
 
