@@ -52,15 +52,71 @@ export function installCommand(pm: PackageManager, packages: string[]): [string,
   return [pm, [pm === "npm" ? "install" : "add", ...packages]];
 }
 
-/** The packages from `wanted` the project's package.json does not list yet. */
+/**
+ * The specs from `wanted` the project needs installed: a package its
+ * package.json does not list yet, or one older than the spec's version. The
+ * version is the higher of the installed one in node_modules and the lowest
+ * the package.json range allows, so a newer one is kept, never replaced. A
+ * listed package with neither version readable is installed, unless it is a
+ * workspace package.
+ */
 export function missing(cwd: string, wanted: string[]): string[] {
   const path = join(cwd, "package.json");
   if (!existsSync(path)) return wanted;
   const pkg = JSON.parse(readFileSync(path, "utf8"));
-  const have = new Set(
-    ["dependencies", "devDependencies", "peerDependencies"].flatMap((field) => Object.keys(pkg[field] ?? {})),
-  );
-  return wanted.filter((spec) => !have.has(packageName(spec)));
+  const listed: Record<string, unknown> = Object.assign({}, ...["peerDependencies", "devDependencies", "dependencies"].map((field) => pkg[field] ?? {}));
+  return wanted.filter((spec) => {
+    const name = packageName(spec);
+    if (!Object.hasOwn(listed, name)) return true;
+    const want = base(spec.slice(name.length + 1));
+    const range = listed[name];
+    if (!want || (typeof range === "string" && range.startsWith("workspace:"))) return false;
+    const installed = readPackage(join(cwd, "node_modules", name, "package.json"))?.version;
+    const have = [installed, range].flatMap((version) => (typeof version === "string" ? (base(version) ?? []) : []));
+    return !have.some((version) => compare(version, want) >= 0);
+  });
+}
+
+type Version = { parts: number[]; pre: string[] };
+
+// The lowest version `range` allows: a version, or a ^ or ~ range of one to
+// three parts, such as 0.3.0, ^0.4.0-next.1, ~0.3 or ^1. Any other range is undefined.
+const base = (range: string): Version | undefined => {
+  const found = /^[\^~]?=?v?(\d+)(?:\.(\d+)(?:\.(\d+)(?:-([\w.-]+))?)?)?(?:\+[\w.-]*)?$/.exec(range.trim());
+  return found ? { parts: [found[1], found[2], found[3]].map((part) => Number(part ?? 0)), pre: found[4]?.split(".") ?? [] } : undefined;
+};
+
+// Below 0 if `a` is the lower version, above 0 if it is the higher, by semver
+// order: a prerelease such as 0.4.0-next.1 is below 0.4.0.
+function compare(a: Version, b: Version): number {
+  for (const [at, part] of a.parts.entries()) {
+    const other = b.parts[at];
+    if (other === undefined) return 1;
+    if (part !== other) return part - other;
+  }
+  if (a.pre.length === 0 || b.pre.length === 0) return b.pre.length - a.pre.length;
+  for (const [at, id] of a.pre.entries()) {
+    const other = b.pre[at];
+    if (other === undefined) return 1;
+    if (id === other) continue;
+    const [x, y] = [/^\d+$/.test(id), /^\d+$/.test(other)];
+    if (x && y) return Number(id) - Number(other);
+    if (x !== y) return x ? -1 : 1;
+    return id < other ? -1 : 1;
+  }
+  return a.pre.length - b.pre.length;
+}
+
+/**
+ * Whether `version` is at least the base version of `range`, a version or a
+ * ^ or ~ range such as ^0.3.0, ~0.3 or ^0.4.0-next.1. Any other range, or a
+ * version that is not semver, such as workspace:*, counts as met.
+ */
+export function atLeast(version: string, range: string): boolean {
+  const have = base(version);
+  const want = base(range);
+  if (!have || !want) return true;
+  return compare(have, want) >= 0;
 }
 
 // "@scope/name@1.2.0" is "@scope/name", "name@^1" is "name".
