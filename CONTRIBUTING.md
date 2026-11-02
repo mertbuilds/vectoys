@@ -51,6 +51,7 @@ npx @vinena/vectoys-cli check registry/spinning-top
 - `item.json` has the fields the registry needs.
 - The files are under 96 KB together.
 - Neither `item.json` nor the rendered text names a brand or a device maker.
+- The component is in `src/<name>.tsx`, which `item.json` lists, and that file exports the toy's component name (`spinning-top` exports `SpinningTop`).
 - The component renders on the server.
 - Two renders give the same markup.
 - The markup has no `NaN` or `Infinity`.
@@ -95,7 +96,7 @@ Submissions open at launch.
 npx @vinena/vectoys-cli submit registry/spinning-top
 ```
 
-`submit` runs `check` first and stops if any check fails. Then it uses the [GitHub CLI](https://cli.github.com) (`gh`) to fork this repository, copy your toy to `registry/<name>/` on a branch `item/<name>`, and open a pull request with the check results. Until launch, it checks and shows what it would send, and sends nothing.
+`submit` runs `check` first and stops if any check fails. It needs bun 1.3.2 or newer. Then it uses the [GitHub CLI](https://cli.github.com) (`gh`) to fork this repository, copy your toy to `registry/<name>/` on a branch `item/<name>` (the files `item.json` lists, its `package.json`, `tsconfig.json`, `src/index.ts` and `test/`), add the toy's package to `bun.lock`, and open a pull request with the check results. Until launch, it checks and shows what it would send, and sends nothing.
 
 To see what it would do without sending anything:
 

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
-import { buildRegistry } from "@vectoys/registry-build";
+import { buildRegistry, componentName } from "@vectoys/registry-build";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -161,13 +161,24 @@ const USES: Record<string, { imports: string[]; jsx: string }> = {
   watch: { imports: ['import { Watch } from "./components/vectoys/watch/watch";'], jsx: '<Watch band="#333"><p>d</p></Watch>' },
 };
 
+const indexNames = (): string[] => JSON.parse(readFileSync(join(out, "index.json"), "utf8")).items.map((item: { name: string }) => item.name);
+
+/** How the page uses `name`: as USES says, else the `Demo` its src/<name>.tsx exports, else its component with no props; check makes every item have that file and component. */
+function use(name: string) {
+  if (USES[name]) return USES[name];
+  const from = `./components/vectoys/${name}/${name}`;
+  const demo = /export\s+(const|function)\s+Demo\b/.test(readFileSync(target(name, `${name}.tsx`), "utf8"));
+  const local = demo ? `${componentName(name)}Demo` : componentName(name);
+  return { imports: [`import { ${demo ? `Demo as ${local}` : local} } from "${from}";`], jsx: `<${local} />` };
+}
+
 test("every item in the index adds, and the page uses each one", async () => {
-  const names: string[] = JSON.parse(readFileSync(join(out, "index.json"), "utf8")).items.map((item: { name: string }) => item.name);
-  expect(Object.keys(USES).sort()).toEqual([...names].sort());
+  const names = indexNames();
+  expect(Object.keys(USES).filter((name) => !names.includes(name))).toEqual([]);
   const { stderr, code } = await run("add", ...names, "--no-install", "--overwrite");
   expect(stderr).toBe("");
   expect(code).toBe(0);
-  for (const name of names) expect(existsSync(target(name, "geometry.ts"))).toBe(true);
+  for (const name of names) expect(existsSync(target(name, `${name}.tsx`))).toBe(true);
 });
 
 // A tsconfig for `dir` that maps the vectoys packages and React to this repo.
@@ -202,8 +213,9 @@ function tsconfig(dir: string, options: Record<string, unknown>) {
 
 // A page in `dir` that uses every item, with relative imports ending in `extension`.
 function page(dir: string, extension = "") {
-  const imports = Object.values(USES).flatMap((use) => use.imports.map((line) => line.replace(/(\/[\w-]+)";$/, `$1${extension}";`)));
-  writeFileSync(join(dir, "src/page.tsx"), [...imports, `export const Page = () => (<>${Object.values(USES).map((use) => use.jsx).join("")}</>);`].join("\n"));
+  const uses = indexNames().map(use);
+  const imports = uses.flatMap((each) => each.imports.map((line) => line.replace(/(\/[\w-]+)";$/, `$1${extension}";`)));
+  writeFileSync(join(dir, "src/page.tsx"), [...imports, `export const Page = () => (<>${uses.map((each) => each.jsx).join("")}</>);`].join("\n"));
 }
 
 function typecheck(dir: string) {

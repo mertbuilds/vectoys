@@ -38,7 +38,7 @@ export type SubmitOptions = {
 };
 
 /** A pull request to open: on `branch`, with the files `write` puts in a clone. */
-type Change = { branch: string; title: string; body: string; steps: string[]; write: (clone: string) => void };
+type Change = { branch: string; title: string; body: string; steps: string[]; write: (clone: string, runner: Run) => void };
 
 /** Runs `args` and gives back its output, or fails with what it printed. */
 function must(runner: Run, command: string, args: string[], cwd: string): string {
@@ -68,7 +68,7 @@ function openPullRequest(change: Change, runner: Run, cwd: string): { url: strin
     const clone = join(work, "vectoys");
     must(runner, "gh", ["repo", "clone", `${login}/vectoys`, clone, "--", "--depth", "1"], work);
     must(runner, "git", ["checkout", "-b", change.branch], clone);
-    change.write(clone);
+    change.write(clone, runner);
     must(runner, "git", ["add", "--all"], clone);
     must(runner, "git", ["commit", "-m", change.title], clone);
     // The shallow clone tracks only main, so the lease names the branch's commit on the fork, or none if it has no such branch.
@@ -96,9 +96,32 @@ function steps(change: Pick<Change, "branch" | "title">, own: string[]): string[
   ];
 }
 
-/** The files of an item folder that go into the registry: those item.json lists, its package, tsconfig and tests. */
+/** The bun CI installs with, in .github/workflows/ci.yml. */
+export const CI_BUN = "1.3.14";
+
+/** The oldest bun whose `install --lockfile-only` keeps bun.lock as CI's bun writes it; older ones drop its configVersion. */
+export const MIN_BUN = "1.3.2";
+
+const OLD_BUN = `Update bun to ${CI_BUN}, the version CI uses, and submit again.`;
+
+/** Whether the version `have` is `want` or later. */
+export function atLeast(have: string, want: string): boolean {
+  const parts = (version: string) => (/^(\d+)\.(\d+)\.(\d+)/.exec(version) ?? []).slice(1).map(Number);
+  const [a, b] = [parts(have), parts(want)];
+  if (a.length !== 3) return false;
+  for (let at = 0; at < 3; at++) if ((a[at] ?? 0) !== (b[at] ?? 0)) return (a[at] ?? 0) > (b[at] ?? 0);
+  return true;
+}
+
+/** Fails unless the bun here is `MIN_BUN` or later, so the bun.lock it writes is the one CI reads. */
+function needBun(runner: Run, cwd: string) {
+  const version = must(runner, "bun", ["--version"], cwd);
+  if (!atLeast(version, MIN_BUN)) throw new Error(`bun ${version} is older than ${MIN_BUN} and rewrites bun.lock beyond the item's lines. ${OLD_BUN}`);
+}
+
+/** The files of an item folder that go into the registry: those item.json lists, its package, tsconfig, index and tests. */
 export function itemFiles(dir: string, listed: string[]): string[] {
-  const extra = ["package.json", "tsconfig.json", "test"].filter((path) => existsSync(join(dir, path)));
+  const extra = ["package.json", "tsconfig.json", "src/index.ts", "test"].filter((path) => existsSync(join(dir, path)));
   return [...new Set(["item.json", ...listed, ...extra])];
 }
 
@@ -157,14 +180,21 @@ function itemChange(context: Context, dir: string): Change {
     branch,
     title,
     body,
-    steps: steps({ branch, title }, [`Copy ${files.join(", ")} into registry/${item.name}/`]),
-    write: (clone) => {
+    steps: steps({ branch, title }, [`Copy ${files.join(", ")} into registry/${item.name}/`, "Add the item's package to bun.lock with bun install --lockfile-only"]),
+    write: (clone, runner) => {
       for (const file of files) {
         const to = join(clone, "registry", item.name, file);
         mkdirSync(dirname(to), { recursive: true });
         cpSync(join(dir, file), to, { recursive: true });
       }
       inRepoForm(join(clone, "registry", item.name));
+      // The item is a new workspace package, and CI installs with a frozen lockfile.
+      must(runner, "bun", ["install", "--lockfile-only", "--ignore-scripts"], clone);
+      // The item only adds lines; a deleted line means this bun rewrote what CI's bun wrote.
+      const deleted = must(runner, "git", ["diff", "--numstat", "bun.lock"], clone)
+        .split("\n")
+        .some((line) => Number(line.split("\t")[1]) > 0);
+      if (deleted) throw new Error(`bun ${must(runner, "bun", ["--version"], clone)} rewrote bun.lock beyond the item's lines. ${OLD_BUN}`);
     },
   };
 }
@@ -247,6 +277,7 @@ export async function submit(context: Context, given: string | undefined, option
     context.log(CLOSED);
     return undefined;
   }
+  if (!options.registry) needBun(runner, context.cwd);
   const { url, opened } = openPullRequest(change, runner, context.cwd);
   context.log(`${opened ? "Opened" : "Updated"} ${url}`);
   return url;
