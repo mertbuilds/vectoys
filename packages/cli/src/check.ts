@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { basename, extname, join, posix, relative, resolve, sep } from "node:path";
 import { checkItem, type ItemSource } from "@vectoys/registry-build";
 import { ITEM_NAME, type Context } from "./commands";
-import { BASE_TSCONFIG, componentName, itemPackage, itemTsconfig } from "./create";
+import { BASE_TSCONFIG, componentName, inVectoysRepo, itemPackage, itemTsconfig } from "./create";
 import { isPackageSpec } from "./pm";
 
 /**
@@ -124,7 +124,8 @@ const labelled = (attributes: string) => /\saria-label="[^"]*\S[^"]*"/.test(attr
 // The Turntable from @vinena/vectoys-react every item wraps itself in: its
 // style, its root and the body around the item's own root.
 const TURNTABLE_ROOT = /<div class="vectoys-turntable(?: [^"]*)?"/;
-const TURNTABLE_START = /^(?:<style\b[^>]*>[\s\S]*?<\/style>)*<div class="vectoys-turntable(?: [^"]*)?"[^>]*>(?:<div class="vectoys-turntable-body"[^>]*>)?/;
+// An item that renders another may wrap it in a div that only sets a style.
+const TURNTABLE_START = /^(?:<style\b[^>]*>[\s\S]*?<\/style>)*(?:<div(?: style="[^"]*")?>)?<div class="vectoys-turntable(?: [^"]*)?"[^>]*>(?:<div class="vectoys-turntable-body"[^>]*>)?/;
 
 /** Whether the markup has the Turntable in it, so the item turns and fills the screen. */
 export const usesTurntable = (html: string) => TURNTABLE_ROOT.test(html);
@@ -134,6 +135,10 @@ const TURNTABLE_IMPORT = /\bimport\s*\{[^}]*\bTurntable\b[^}]*\}\s*from\s*["']@v
 /** Whether a shipped file imports Turntable from @vinena/vectoys-react and renders it, so a look-alike div does not count. */
 export const rendersTurntable = (files: Source[], shipped: readonly string[]) =>
   files.some((file) => "code" in file && shipped.includes(file.path) && TURNTABLE_IMPORT.test(file.code) && /\bjsx\w*\(Turntable\b/.test(file.code));
+
+/** Whether a shipped file imports one of the items `item` depends on, each of which check makes render Turntable itself. */
+export const rendersDependency = (files: Source[], item: Pick<ItemSource, "files" | "registryDependencies">) =>
+  files.some((file) => "imports" in file && item.files.includes(file.path) && file.imports.some((entry) => (item.registryDependencies ?? []).some((dep) => entry.path === `@vectoys/${dep}`)));
 
 /** How the markup is named for assistive technology, or undefined if it is not. The Turntable around it and its button do not count. */
 export function accessibleName(html: string): string | undefined {
@@ -172,6 +177,11 @@ function itemProblem(item: ItemSource, dir: string): string | undefined {
   if (outside !== undefined) return `files lists ${JSON.stringify(outside)}, which is outside the folder`;
   if (item.dependencies !== undefined && !(Array.isArray(item.dependencies) && item.dependencies.every(isPackageSpec))) {
     return "dependencies are not all plain npm package names";
+  }
+  for (const dep of item.registryDependencies ?? []) {
+    if (dep === item.name) return "registryDependencies lists the item itself";
+    // In the repository each one is a folder beside this one, as the registry build needs.
+    if (inVectoysRepo(dir) && !existsSync(resolve(dir, "..", dep, "item.json"))) return `registryDependencies lists ${dep}, which is not an item under registry/`;
   }
   return undefined;
 }
@@ -331,7 +341,7 @@ function lineOf(text: string, found: string): string {
  * import the test runner, and the tests any file in the folder. One line for
  * each, naming the file; none if it sees none.
  */
-export function safety(files: Source[], item: Pick<ItemSource, "dependencies" | "files">): string[] {
+export function safety(files: Source[], item: Pick<ItemSource, "dependencies" | "files" | "registryDependencies">): string[] {
   const problems = (item.dependencies ?? []).filter((name) => !ALLOWED_DEPENDENCIES.includes(name)).map((name) => `item.json depends on ${name}, which is not ${ALLOWED_DEPENDENCIES.join(" or ")}`);
   const all = files.map((file) => file.path);
   for (const file of files) {
@@ -344,14 +354,16 @@ export function safety(files: Source[], item: Pick<ItemSource, "dependencies" | 
     // Shipped files import each other; the index any file but the tests, so
     // code under test/ never reaches the site; the tests any file.
     const reachable = shipped ? item.files : test ? all : all.filter((path) => !path.startsWith("test/"));
+    // Another item, only as `@vectoys/<name>` and only one item.json lists in registryDependencies.
+    const items = (item.registryDependencies ?? []).map((dep) => `@vectoys/${dep}`);
     const packages = shipped ? ALLOWED_IMPORTS : [...ALLOWED_IMPORTS, ...ALLOWED_TEST_IMPORTS];
     for (const entry of file.imports) {
       if (entry.kind !== "import-statement") continue;
       const needed = ALLOWED_DEPENDENCIES.find((pkg) => entry.path === pkg || entry.path.startsWith(`${pkg}/`));
       if (shipped && needed && !(item.dependencies ?? []).includes(needed)) problems.push(`${file.path}${lineOf(file.text, JSON.stringify(entry.path))} imports ${entry.path}, but item.json's dependencies do not list ${needed}`);
-      const fine = entry.path.startsWith(".") ? names(entry.path, file.path, reachable) || (test && TEST_HELPERS.some((helper) => helper.test(entry.path))) : allowed(entry.path, packages);
+      const fine = entry.path.startsWith(".") ? names(entry.path, file.path, reachable) || (test && TEST_HELPERS.some((helper) => helper.test(entry.path))) : allowed(entry.path, packages) || items.includes(entry.path);
       const where = shipped ? "one of its files" : test ? "a file in its folder" : "a file in its folder outside test/";
-      if (!fine) problems.push(`${file.path}${lineOf(file.text, JSON.stringify(entry.path))} imports ${entry.path}, which is not ${where} or ${packages.join(", ")}`);
+      if (!fine) problems.push(`${file.path}${lineOf(file.text, JSON.stringify(entry.path))} imports ${entry.path}, which is not ${where} or ${[...packages, ...items].join(", ")}`);
     }
     const pragma = /@jsx\w*/.exec(file.text);
     if (pragma) problems.push(`${file.path}${lineOf(file.text, pragma[0])} sets the JSX runtime in a comment: ${pragma[0]}`);
@@ -444,9 +456,10 @@ function versionsFit(value: unknown, inRepo: unknown, outside: unknown): boolean
 /**
  * What in the item's package.json differs from the one `vectoys create`
  * writes, inside the repository or outside it: anything but its name and
- * description, such as an install script or another dependency. One line for each.
+ * description, such as an install script or another dependency, but for
+ * the items it imports, each as `"@vectoys/<name>": "workspace:*"`. One line for each.
  */
-export function packageProblems(dir: string, item: Pick<ItemSource, "name">): string[] {
+export function packageProblems(dir: string, item: Pick<ItemSource, "name" | "registryDependencies">): string[] {
   const path = join(dir, "package.json");
   if (!existsSync(path)) return ["there is no package.json; vectoys create writes one"];
   let pkg: unknown;
@@ -457,8 +470,11 @@ export function packageProblems(dir: string, item: Pick<ItemSource, "name">): st
   }
   if (!isRecord(pkg)) return ["package.json is not an object"];
   const description = typeof pkg.description === "string" ? pkg.description : "";
-  const inRepo: Record<string, unknown> = { ...itemPackage(item.name, description, true) };
-  const outside: Record<string, unknown> = { ...itemPackage(item.name, description, false) };
+  // The workspace links the items it imports, as the site's package.json does.
+  const items = Object.fromEntries((item.registryDependencies ?? []).map((dep) => [`@vectoys/${dep}`, "workspace:*"]));
+  const withItems = (pkg: ReturnType<typeof itemPackage>): Record<string, unknown> => ({ ...pkg, dependencies: { ...items, ...pkg.dependencies } });
+  const inRepo = withItems(itemPackage(item.name, description, true));
+  const outside = withItems(itemPackage(item.name, description, false));
   return [...new Set([...Object.keys(inRepo), ...Object.keys(pkg)])].flatMap((key) => {
     if (!(key in inRepo)) return [`package.json has ${key}, which items may not have`];
     const fits = key === "dependencies" || key === "devDependencies" ? versionsFit(pkg[key], inRepo[key], outside[key]) : canonical(pkg[key]) === canonical(inRepo[key]);
@@ -518,7 +534,12 @@ export function checks(dir: string): Result[] {
   const shape = { pass: false, line: `the component must be ${component} exporting ${wanted}` };
   if (!item.files.includes(component)) return [...results, shape];
   const rendered = render(resolve(dir, component), dir, wanted);
-  if ("error" in rendered) return [...results, { pass: false, line: `${component} does not render on the server: ${rendered.error}` }];
+  if ("error" in rendered) {
+    // Items it imports resolve only through the vectoys workspace, which links each one under registry/.
+    const away = (item.registryDependencies ?? []).length > 0 && !inVectoysRepo(dir);
+    const how = away ? `. It imports ${item.registryDependencies!.map((dep) => `@vectoys/${dep}`).join(", ")}, which check finds only in a vectoys checkout: move the folder under registry/ there, run bun install, and check it again` : "";
+    return [...results, { pass: false, line: `${component} does not render on the server: ${rendered.error}${how}` }];
+  }
   if (rendered.name !== wanted) return [...results, shape];
   const [html, again] = rendered.html;
   results.push({ pass: true, line: `${rendered.name} renders on the server` });
@@ -537,7 +558,7 @@ export function checks(dir: string): Result[] {
   const name = accessibleName(html);
   results.push({ pass: name !== undefined, line: name ?? 'the root is not role="img" or "group" with an aria-label, and it has no labelled controls' });
 
-  const turns = usesTurntable(html) && typeof read !== "string" && rendersTurntable(read, item.files);
+  const turns = usesTurntable(html) && typeof read !== "string" && (rendersTurntable(read, item.files) || rendersDependency(read, item));
   results.push({ pass: turns, line: turns ? "the toy uses Turntable, so it turns and fills the screen" : "the toy does not use Turntable from @vinena/vectoys-react" });
   return results;
 }

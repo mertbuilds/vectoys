@@ -80,7 +80,21 @@ npx @vinena/vectoys-cli check registry/spinning-top
 - Dynamic imports or browser storage.
 - Outside URLs or `javascript:` URLs, in the source or in the rendered markup.
 
-Imports are limited too. The component files import only each other, `react`, `@vinena/vectoys` and `@vinena/vectoys-react`. Those two vectoys packages are the only dependencies `item.json` may list.
+Imports are limited too. The component files import only each other, `react`, `@vinena/vectoys` and `@vinena/vectoys-react`, and the other toys `registryDependencies` lists. Those two vectoys packages are the only dependencies `item.json` may list.
+
+### Use another toy
+
+Reuse a toy that already exists; do not copy or redraw it. To build on the laptop, list it in `item.json` and import it by its package name:
+
+```json
+"registryDependencies": ["laptop"]
+```
+
+```tsx
+import { Laptop } from "@vectoys/laptop";
+```
+
+Add `"@vectoys/laptop": "workspace:*"` to the toy's `package.json` dependencies and run `bun install`, so the workspace links it. Import only what the toy's component file exports, here `src/laptop.tsx`, as that is the file a project gets. The registry build points the import at `../laptop/laptop`, where `vectoys add` and the shadcn CLI put the laptop, and the item's JSON lists the laptop's URL so both add it first. `check` renders the toy only inside a clone of this repository, where the workspace finds the laptop.
 
 ### Folder rules
 

@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { ALLOWED_DEPENDENCIES, accessibleName, brands, bunScript, check, checks, markupSafety, rendersTurntable, runInBun, safety, sources, usesTurntable } from "../src/check";
+import { ALLOWED_DEPENDENCIES, accessibleName, brands, bunScript, check, checks, markupSafety, rendersDependency, rendersTurntable, runInBun, safety, sources, usesTurntable } from "../src/check";
 import type { Context } from "../src/commands";
 import { create } from "../src/create";
 
@@ -171,7 +171,7 @@ test("a shipped file must import Turntable from the package and render it", () =
 // files, read by bun as `check` reads them. item.json lists every file but
 // src/index.ts and those under test/.
 let scans = 0;
-function unsafe(code: string, extra: Record<string, string> = {}, dependencies: string[] = ALLOWED_DEPENDENCIES): string[] {
+function unsafe(code: string, extra: Record<string, string> = {}, dependencies: string[] = ALLOWED_DEPENDENCIES, registryDependencies?: string[]): string[] {
   const folder = join(work, `scan-${scans++}`);
   const files = { "src/toy.tsx": code, ...extra };
   for (const [path, text] of Object.entries(files)) {
@@ -181,7 +181,7 @@ function unsafe(code: string, extra: Record<string, string> = {}, dependencies: 
   const read = sources(folder, Object.keys(files));
   if (typeof read === "string") throw new Error(read);
   const listed = Object.keys(files).filter((path) => path !== "src/index.ts" && !path.startsWith("test/"));
-  return safety(read, { dependencies, files: listed });
+  return safety(read, { dependencies, files: listed, ...(registryDependencies && { registryDependencies }) });
 }
 
 test("safe code passes, with comments, labels and words that only look like the rules", () => {
@@ -293,6 +293,43 @@ test("imports outside the item's files and the allowed packages fail", () => {
   expect(unsafe('import { a } from "./index";', { "src/index.ts": "export const a = 1;" })).toEqual([`src/toy.tsx:1 imports ./index, ${not}`]);
   expect(unsafe('const a = await import("./geometry");', { "src/geometry.ts": "export const a = 1;" })).toEqual(["src/toy.tsx:1 has a dynamic import: import("]);
 });
+
+test("another item may be imported as @vectoys/<name> only when registryDependencies lists it", () => {
+  const laptop = 'import { Laptop } from "@vectoys/laptop";\nexport const Toy = Laptop;';
+  expect(unsafe(laptop, {}, ALLOWED_DEPENDENCIES, ["laptop"])).toEqual([]);
+  expect(unsafe(laptop)).toEqual(["src/toy.tsx:1 imports @vectoys/laptop, which is not one of its files or @vinena/vectoys, @vinena/vectoys-react, react"]);
+  const listed = "which is not one of its files or @vinena/vectoys, @vinena/vectoys-react, react, @vectoys/laptop";
+  expect(unsafe('import { g } from "@vectoys/laptop/src/geometry";', {}, ALLOWED_DEPENDENCIES, ["laptop"])).toEqual([`src/toy.tsx:1 imports @vectoys/laptop/src/geometry, ${listed}`]);
+  expect(unsafe('import { Phone } from "@vectoys/phone";', {}, ALLOWED_DEPENDENCIES, ["laptop"])).toEqual([`src/toy.tsx:1 imports @vectoys/phone, ${listed}`]);
+  // The rest of the scan holds as before.
+  expect(unsafe(`${laptop}\nfetch("/x");`, {}, ALLOWED_DEPENDENCIES, ["laptop"])).toEqual(['src/toy.tsx:3 uses fetch: fetch']);
+});
+
+test("an item that renders another counts as using Turntable only through a shipped file's import of an item it lists", () => {
+  const file = (path: string, imports: string[]) => ({ path, text: "", code: "", imports: imports.map((path) => ({ path, kind: "import-statement" })) });
+  expect(rendersDependency([file("src/toy.tsx", ["@vectoys/laptop"])], { files: ["src/toy.tsx"], registryDependencies: ["laptop"] })).toBe(true);
+  expect(rendersDependency([file("src/toy.tsx", ["@vectoys/laptop"])], { files: ["src/toy.tsx"] })).toBe(false);
+  expect(rendersDependency([file("test/toy.test.tsx", ["@vectoys/laptop"])], { files: ["src/toy.tsx"], registryDependencies: ["laptop"] })).toBe(false);
+  // A wrapper that only sets a style may stand round the Turntable.
+  const wrapped = turntable('<div role="img" aria-label="Laptop"><svg></svg></div>').replace("</style>", '</style><div style="--vectoys-tint:brightness(0.255)">');
+  expect(accessibleName(wrapped)).toBe('the root is role="img" with an aria-label');
+  expect(accessibleName(turntable('<div role="img" aria-label="Laptop"></div>').replace("</style>", '</style><div class="x">'))).toBeUndefined();
+});
+
+test("an item that imports another lists it in package.json, and outside the repository check says how to render it", () => {
+  const { folder, edit } = item("stand");
+  edit("item.json", (text) => JSON.stringify({ ...JSON.parse(text), registryDependencies: ["laptop"] }));
+  edit("package.json", (text) => {
+    const pkg = JSON.parse(text);
+    return JSON.stringify({ ...pkg, dependencies: { "@vectoys/laptop": "workspace:*", ...pkg.dependencies } });
+  });
+  edit("src/stand.tsx", (text) => `import { Laptop } from "@vectoys/laptop";\nexport const Used = Laptop;\n${text}`);
+  expect(failed(folder)).toEqual([
+    expect.stringMatching(/^src\/stand\.tsx does not render on the server: .*It imports @vectoys\/laptop, which check finds only in a vectoys checkout: move the folder under registry\/ there, run bun install, and check it again$/),
+  ]);
+  edit("item.json", (text) => JSON.stringify({ ...JSON.parse(text), registryDependencies: ["stand"] }));
+  expect(failed(folder)).toEqual(["registryDependencies lists the item itself"]);
+}, 30_000);
 
 test("the index and tests are read too, and may import the test runner, the folder's files and the shared test helpers", () => {
   const test = `import { expect, test } from "bun:test";

@@ -2,7 +2,7 @@
   "name": "@vectoys/laptop-front",
   "version": "0.0.0",
   "private": true,
-  "description": "A 14 inch laptop seen straight on, drawn with the vectoys engine, with live content on its display.",
+  "description": "A 14 inch laptop seen straight on that turns round in 3D, the laptop toy at its front look, with live content on its display.",
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -13,6 +13,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@vectoys/laptop": "workspace:*",
     "@vinena/vectoys": "workspace:*",
     "@vinena/vectoys-react": "workspace:*"
   },

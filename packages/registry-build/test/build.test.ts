@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { version as engine } from "../../engine/package.json";
 import { version as react } from "../../react/package.json";
-import { AUTHOR, FIRST, SCHEMA, buildRegistry, checkItem, componentName, header, type RegistryIndex, type RegistryItem } from "../src";
+import { AUTHOR, FIRST, SCHEMA, buildRegistry, checkDependencies, checkItem, componentName, header, rewriteItemImports, type ItemSource, type RegistryIndex, type RegistryItem } from "../src";
 
 const root = resolve(import.meta.dir, "../../..");
 const out = await mkdtemp(join(tmpdir(), "vectoys-registry-"));
@@ -121,6 +121,52 @@ test("an item's name must match its folder, so the site finds its code", async (
     const item = { name: "round-ball", title: "Ball", description: "A ball.", files: ["src/ball.tsx"], license: "MIT" };
     await writeFile(join(repo, "registry/ball/item.json"), JSON.stringify(item));
     await expect(buildRegistry({ root: repo, out: join(repo, "out") })).rejects.toThrow('registry/ball/item.json "name" must be "ball", the name of its folder');
+  } finally {
+    await rm(repo, { recursive: true, force: true });
+  }
+});
+
+test("an item that imports another lists it by URL, says so for older CLIs, and imports it from where the CLIs put it", async () => {
+  const front: RegistryItem = JSON.parse(await readFile(join(out, "laptop-front.json"), "utf8"));
+  expect(front.registryDependencies).toEqual(["https://example.test/r/laptop.json"]);
+  expect(front.docs).toStartWith("This toy uses the laptop toy. If your CLI did not add it, run: npx @vinena/vectoys-cli@latest add laptop\n");
+  const [component] = front.files;
+  expect(component?.target).toBe("@components/vectoys/laptop-front/laptop-front.tsx");
+  expect(component?.content).toContain('from "../laptop/laptop";');
+  expect(component?.content).not.toContain("@vectoys/");
+  // An item with none has no field.
+  expect(JSON.parse(await readFile(join(out, "phone.json"), "utf8"))).not.toHaveProperty("registryDependencies");
+});
+
+test("imports of other items are rewritten only for the items item.json lists", () => {
+  const code = 'import { Laptop } from "@vectoys/laptop";\nimport type { View } from \'@vectoys/laptop\';\nimport { x } from "@vinena/vectoys";\n';
+  expect(rewriteItemImports(code, "a.tsx", ["laptop"])).toBe('import { Laptop } from "../laptop/laptop";\nimport type { View } from \'../laptop/laptop\';\nimport { x } from "@vinena/vectoys";\n');
+  expect(() => rewriteItemImports(code, "a.tsx", [])).toThrow('a.tsx imports @vectoys/laptop, but item.json\'s "registryDependencies" do not list "laptop"');
+  expect(() => rewriteItemImports('import { g } from "@vectoys/laptop/src/geometry";', "a.tsx", ["laptop"])).toThrow("imports @vectoys/laptop/src/geometry");
+});
+
+test("registryDependencies must be item names here, never the item itself, with no cycle", () => {
+  const item = (name: string, registryDependencies?: string[]): ItemSource => ({ name, title: name, description: "x", files: ["src/x.tsx"], license: "MIT", ...(registryDependencies ? { registryDependencies } : {}) });
+  expect(() => checkDependencies([item("a", ["b"]), item("b")])).not.toThrow();
+  expect(() => checkDependencies([item("a", ["c"]), item("b")])).toThrow('registry/a/item.json depends on "c", which is not an item under registry/');
+  expect(() => checkDependencies([item("a", ["a"])])).toThrow("registry/a/item.json lists itself");
+  expect(() => checkDependencies([item("a", ["b"]), item("b", ["c"]), item("c", ["a"])])).toThrow("registry dependencies go round in a cycle: a -> b -> c -> a");
+  const base = { name: "a", title: "A", description: "x", files: ["src/a.tsx"], license: "MIT" };
+  for (const bad of ["laptop", ["../laptop"], [42], ["https://example.test/r/laptop.json"]]) {
+    expect(() => checkItem({ ...base, registryDependencies: bad }, "item.json")).toThrow('item.json "registryDependencies" must be a list of item names');
+  }
+});
+
+test("a build with an import of an item item.json does not list fails", async () => {
+  const repo = await mkdtemp(join(tmpdir(), "vectoys-deps-"));
+  try {
+    for (const name of ["ball", "cup"]) {
+      await mkdir(join(repo, `registry/${name}/src`), { recursive: true });
+      await writeFile(join(repo, `registry/${name}/item.json`), JSON.stringify({ name, title: name, description: "x", files: [`src/${name}.tsx`], license: "MIT" }));
+    }
+    await writeFile(join(repo, "registry/ball/src/ball.tsx"), 'import { Cup } from "@vectoys/cup";\nexport const Ball = Cup;\n');
+    await writeFile(join(repo, "registry/cup/src/cup.tsx"), "export const Cup = () => null;\n");
+    await expect(buildRegistry({ root: repo, out: join(repo, "out") })).rejects.toThrow('registry/ball/src/ball.tsx imports @vectoys/cup, but item.json\'s "registryDependencies" do not list "cup"');
   } finally {
     await rm(repo, { recursive: true, force: true });
   }

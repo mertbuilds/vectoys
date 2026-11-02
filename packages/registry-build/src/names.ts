@@ -11,3 +11,6 @@ export function componentName(name: string): string {
     .join("");
   return /^[A-Za-z]/.test(joined) ? joined : `Item${joined}`;
 }
+
+/** What an item may be named: one folder name, never `.` or `..`. */
+export const ITEM_NAME = /^(?!\.{1,2}$)[\w.-]+$/;
