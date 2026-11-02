@@ -22,6 +22,9 @@ export async function mount(node: ReactNode) {
   };
 }
 
+/** Sends `event` to the window, such as a blur, and lets React finish what it starts. */
+export const fireOnWindow = (event: Event) => act(async () => void window.dispatchEvent(event));
+
 /** Sends `event` to `target` and lets React finish what it starts. */
 export const fire = (target: Element, event: Event) => act(async () => void target.dispatchEvent(event));
 
@@ -67,3 +70,30 @@ export function reducedMotion(reduce: boolean) {
   });
   return { restore: () => spy.mockRestore() };
 }
+
+// Items' tests may not reach globalThis, Bun or HTML strings themselves, as
+// `vectoys check` refuses them, so they do it through these.
+
+/** Puts `value` on the page as the global `name`, such as a stand-in AudioContext; the returned function puts the real one back. */
+export function installGlobal(name: string, value: unknown): () => void {
+  if (name === "__proto__") throw new Error("installGlobal does not set __proto__");
+  const real = Object.getOwnPropertyDescriptor(globalThis, name);
+  Object.defineProperty(globalThis, name, { value, configurable: true, writable: true, enumerable: real?.enumerable ?? true });
+  return () => void (real ? Object.defineProperty(globalThis, name, real) : Reflect.deleteProperty(globalThis, name));
+}
+
+/**
+ * The text of the file at `path` from the test file at `from`, its
+ * `import.meta.url`. Only a test under registry/<item>/test/ may read, and
+ * only files under registry/.
+ */
+export function readSibling(from: string, path: string): Promise<string> {
+  const registry = /^(file:\/\/.*\/registry\/)[^/]+\/test\//.exec(from)?.[1];
+  if (!registry) throw new Error(`readSibling reads only from a test under registry/<item>/test/, not ${from}`);
+  const url = new URL(path, from);
+  if (!url.href.startsWith(registry)) throw new Error(`readSibling reads only files under registry/, not ${url.href}`);
+  return Bun.file(url).text();
+}
+
+/** The markup inside `element`, or of `element` itself with `outer`. */
+export const htmlOf = (element: Element | null | undefined, outer = false) => (outer ? element?.outerHTML : element?.innerHTML) ?? "";
