@@ -79,13 +79,18 @@ test("a drag on the key turns it and lets the key up without pressing it, and a 
   await unmount();
 });
 
-test("a drag on a key in a row tilts the whole row", async () => {
+test("a drag on a key in a row turns the eye round every key in it", async () => {
   const { host, unmount } = await mount(<KeycapRow keys={["v", "e"]} label="ve" />);
   const body = host.querySelector<HTMLElement>(".vectoys-turntable-body")!;
   const key = host.querySelector("button")!;
+  const caps = () => [...host.querySelectorAll("svg")].map((svg) => [...svg.querySelectorAll("path")].map((path) => path.getAttribute("d")).join(" "));
+  const before = caps();
   await fire(key, pointer("pointerdown", 0));
   await fire(key, pointer("pointermove", 60));
-  expect(body.style.transform).not.toContain("rotateY(0deg)");
+  expect(body.style.transform).toBe("");
+  const after = caps();
+  expect(after[0]).not.toBe(before[0]);
+  expect(after[1]).not.toBe(before[1]);
   expect(key.hasAttribute("data-pressed")).toBe(false);
   await fire(key, pointer("pointerup", 60));
   await frames.advance(400);

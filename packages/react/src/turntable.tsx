@@ -23,8 +23,9 @@ export type Turn = { yaw: number; pitch: number; full: boolean };
 export type TurntableProps = TurnOptions & {
   /**
    * `camera` passes the turn to the children, which add it to their own
-   * camera; `tilt` turns the children with a CSS transform and passes the
-   * same turn, for a flat toy or one with a fixed camera.
+   * camera; `tilt` turns the children with a CSS transform, seen from about
+   * three times their width away, and passes the same turn, for a flat toy
+   * with no 3D model.
    */
   mode: "camera" | "tilt";
   /** The toy's name, for the full screen button. */
@@ -44,6 +45,10 @@ const KEY_REST_MS = 1500;
 const DOUBLE_TAP_MS = 300;
 // Degrees per pixel when the toy has no size yet to measure.
 const PER_PIXEL = 0.45;
+// A tilt looks from this many times the toy's width away, so a big toy turns no more steeply than a small one.
+const DEPTH = 3;
+// How far away a tilt looks from, in pixels, before the toy is measured.
+const NO_DEPTH = 1000;
 // Degrees per second, so a flick never spins wildly.
 const FASTEST = 1500;
 const DEFAULT_LIMITS: Record<TurntableProps["mode"], Required<TurnLimits>> = {
@@ -152,6 +157,7 @@ export function Turntable({ mode, label, children, className, style, draggable =
   const [dragging, setDragging] = useState(false);
   const [full, setFull] = useState<false | "screen" | "overlay">(false);
   const [ratio, setRatio] = useState(1);
+  const [depth, setDepth] = useState(NO_DEPTH);
   const pose = useRef<{ yaw: Spring; pitch: Spring }>({ yaw: { value: 0, velocity: 0 }, pitch: { value: 0, velocity: 0 } });
   const drag = useRef<Drag | null>(null);
   // Whether the click that ends a drag is still to come, so the toy's own click does not fire.
@@ -160,6 +166,12 @@ export function Turntable({ mode, label, children, className, style, draggable =
   const keyRest = useRef<ReturnType<typeof setTimeout>>(undefined);
   const yawRange = limits?.yaw ?? DEFAULT_LIMITS[mode].yaw;
   const pitchRange = limits?.pitch ?? DEFAULT_LIMITS[mode].pitch;
+
+  /** Measures the unturned width a tilt looks from, as the toy may have changed size since it last turned. */
+  const measure = () => {
+    const width = body.current?.offsetWidth ?? 0;
+    if (mode === "tilt" && width > 0) setDepth(width * DEPTH);
+  };
 
   const show = (yaw: Spring, pitch: Spring) => {
     pose.current = { yaw, pitch };
@@ -322,6 +334,7 @@ export function Turntable({ mode, label, children, className, style, draggable =
       const height = body.current?.offsetHeight ?? 0;
       current.perYaw = perPixel(mode === "camera" ? 180 : span(yawRange), width);
       current.perPitch = mode === "camera" ? current.perYaw : perPixel(span(pitchRange), height);
+      measure();
       stop();
       setDragging(true);
     }
@@ -368,6 +381,7 @@ export function Turntable({ mode, label, children, className, style, draggable =
     if (!step) return;
     event.preventDefault();
     stop();
+    measure();
     const times = event.shiftKey ? KEY_BIG : 1;
     const { yaw, pitch } = pose.current;
     show({ value: clamp(yaw.value + step[0] * times, ...yawRange), velocity: 0 }, { value: clamp(pitch.value + step[1] * times, ...pitchRange), velocity: 0 });
@@ -385,7 +399,7 @@ export function Turntable({ mode, label, children, className, style, draggable =
 
   const state: Turn = { ...turn, full: full !== false };
   const bodyStyle: CSSProperties = {
-    ...(mode === "tilt" && { transform: `perspective(1000px) rotateX(${turn.pitch}deg) rotateY(${turn.yaw}deg)` }),
+    ...(mode === "tilt" && { transform: `perspective(${depth}px) rotateX(${turn.pitch}deg) rotateY(${turn.yaw}deg)` }),
     ...(full && { width: `min(92vw, calc(92dvh * ${ratio}))` }),
   };
 

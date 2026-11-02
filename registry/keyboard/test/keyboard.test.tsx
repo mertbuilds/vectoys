@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { renderToString } from "react-dom/server";
-import { FIELD_WIDTH, KEYS, Keyboard, ORDER, TRAVEL, keyFor, seen } from "../src";
+import { FIELD_WIDTH, KEYS, Keyboard, LIMITS, ORDER, TRAVEL, keyFor, sceneAt, seen } from "../src";
+import { BOARD } from "../src/geometry";
 
 // Every code a US keyboard of this shape sends, as `KeyboardEvent.code` names them.
 const US = [
@@ -105,6 +106,34 @@ test("a pressed key sinks and its legends ride down with it", () => {
   expect(down.legends).not.toBe(rest.legends);
   expect(seen(key, 0)).toBe(rest);
   expect(JSON.stringify(seen(key, TRAVEL / 2))).not.toContain("NaN");
+});
+
+test("the eye at rest draws the board as before, and a turned eye redraws the case, its shadow, every key and its legends in the same box", () => {
+  const rest = sceneAt({ yaw: 0, pitch: 0 });
+  expect(rest.board).toBe(BOARD);
+  expect(rest.order).toBe(ORDER);
+  const key = KEYS.find((one) => one.id === "KeyJ")!;
+  expect(seen(key, 0, rest)).toBe(seen(key));
+  for (const yaw of LIMITS.yaw)
+    for (const pitch of LIMITS.pitch) {
+      const turned = sceneAt({ yaw, pitch });
+      expect([turned.eye.width, turned.eye.height]).toEqual([rest.eye.width, rest.eye.height]);
+      expect(turned.board.drawn.faces).not.toEqual(BOARD.drawn.faces);
+      expect(turned.board.shadow.ground).not.toBe(BOARD.shadow.ground);
+      const view = seen(key, 0, turned);
+      expect(view.drawn.faces).not.toEqual(seen(key).drawn.faces);
+      expect(view.legends).not.toBe(seen(key).legends);
+      expect(seen(key, 0, turned)).toBe(view);
+      expect(JSON.stringify(view)).not.toContain("NaN");
+    }
+});
+
+test("the eye turned one way or the other swaps which end of a row draws first", () => {
+  const before = (yaw: number) => {
+    const { order } = sceneAt({ yaw, pitch: 0 });
+    return order.findIndex((key) => key.id === "Escape") < order.findIndex((key) => key.id === "Lock");
+  };
+  expect(before(LIMITS.yaw[0])).not.toBe(before(LIMITS.yaw[1]));
 });
 
 test("keys draw from the back row to the front", () => {

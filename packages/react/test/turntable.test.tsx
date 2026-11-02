@@ -656,3 +656,16 @@ test("the overlay moves focus to its exit button when it opens", async () => {
   await fire(document.body, new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   expect(document.activeElement).toBe(root);
 });
+
+test("a tilt looks from three times the toy's unturned width away, and from 1000 pixels before it is measured", async () => {
+  const frames = fakeFrames();
+  cleanup.push(frames.restore);
+  const { host } = await place(<Turntable mode="tilt">{toy}</Turntable>);
+  const root = rootOf(host);
+  const body = host.querySelector<HTMLElement>(".vectoys-turntable-body")!;
+  expect(body.style.transform).toContain("perspective(1000px)");
+  Object.defineProperties(body, { offsetWidth: { value: 600 }, offsetHeight: { value: 300 } });
+  await dragOn(root, 40);
+  expect(body.style.transform).toContain("perspective(1800px)");
+  await fire(root, pointer("pointerup", 40));
+});

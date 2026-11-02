@@ -68,7 +68,7 @@ Mix tones with `color-mix(in srgb, ...)` instead of new colors. `shading` darken
 Every item wraps itself in `Turntable` from `@vinena/vectoys-react`. A mouse, a finger or the arrow keys turn it, and a button in its corner shows it full screen. `check` fails an item without it.
 
 - `mode="camera"`: for an item with a real 3D camera. The children are a function that gets `{ yaw, pitch, full }`: the turn from rest, in degrees, and whether it fills the screen. Add `yaw` and `pitch` to the item's own before you call `seen`. Call no hooks in that function; render a component from it, as the item `create` writes does.
-- `mode="tilt"`: for a flat item or one with a fixed camera. Turntable turns the children with a CSS transform, a little each way, so the item stays easy to read.
+- `mode="tilt"`: only for a flat item with no 3D model, such as art drawn for one view. Turntable turns the children with a CSS transform, a little each way, seen from about three times the item's width away, so the item stays easy to read. An item drawn from a 3D model uses `mode="camera"`, even when it rests at one fixed eye: add the turn to that eye, as a tilt of the drawing reads as a flat sticker.
 - Take `TurnOptions` in the item's props and pass them on to Turntable, with `label` for the button's name:
   - `draggable`: whether a drag or the arrow keys turn it. Default `true`.
   - `fullscreen`: whether the full screen button shows. Default `true`.
