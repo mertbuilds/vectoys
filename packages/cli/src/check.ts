@@ -136,9 +136,18 @@ const TURNTABLE_IMPORT = /\bimport\s*\{[^}]*\bTurntable\b[^}]*\}\s*from\s*["']@v
 export const rendersTurntable = (files: Source[], shipped: readonly string[]) =>
   files.some((file) => "code" in file && shipped.includes(file.path) && TURNTABLE_IMPORT.test(file.code) && /\bjsx\w*\(Turntable\b/.test(file.code));
 
-/** Whether a shipped file imports one of the items `item` depends on, each of which check makes render Turntable itself. */
+/** Whether a shipped file imports a component from one of the items `item` depends on and renders it, as check makes each of those render Turntable itself. */
 export const rendersDependency = (files: Source[], item: Pick<ItemSource, "files" | "registryDependencies">) =>
-  files.some((file) => "imports" in file && item.files.includes(file.path) && file.imports.some((entry) => (item.registryDependencies ?? []).some((dep) => entry.path === `@vectoys/${dep}`)));
+  files.some(
+    (file) =>
+      "code" in file &&
+      item.files.includes(file.path) &&
+      (item.registryDependencies ?? []).some((dep) =>
+        [...file.code.matchAll(new RegExp(`\\bimport\\s*\\{([^}]*)\\}\\s*from\\s*["']@vectoys/${dep}["']`, "g"))]
+          .flatMap((match) => (match[1] ?? "").split(",").map((name) => name.trim().split(/\s+as\s+/).pop() ?? ""))
+          .some((name) => /^[A-Z]\w*$/.test(name) && new RegExp(`\\bjsx\\w*\\(${name}\\b`).test(file.code)),
+      ),
+  );
 
 /** How the markup is named for assistive technology, or undefined if it is not. The Turntable around it and its button do not count. */
 export function accessibleName(html: string): string | undefined {

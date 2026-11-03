@@ -249,6 +249,9 @@ export function Turntable({ mode, label, children, className, style, draggable =
     };
   }, [fullscreen]);
 
+  // Full screen changes the toy's width, so a tilt that stays turned looks from the new one.
+  useEffect(measure, [full]);
+
   // The stand-in for full screen covers the page: the page stays still under it, Tab stays in it, and esc closes it and gives focus back.
   useEffect(() => {
     const element = root.current;

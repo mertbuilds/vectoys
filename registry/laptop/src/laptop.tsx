@@ -202,11 +202,12 @@ export const Laptop = memo(function Laptop({ draggable, fullscreen = true, limit
   const uid = useId();
   const inner = useRef<LaptopHandle>(null);
   const turned = useRef({ yaw: 0, pitch: 0 });
-  // A drag up looks from lower, so it takes from the eye's height.
+  // A drag up looks from lower, so it takes from the eye's height, or at flat 1 adds to the roll.
   useImperativeHandle(ref, () => ({
     set: (next) => {
       const { yaw, pitch } = turned.current;
-      inner.current?.set({ ...next, ...(next.yaw !== undefined && { yaw: next.yaw + yaw }), ...(next.pitch !== undefined && { pitch: next.pitch - pitch }) });
+      const flat = props.flat === 1;
+      inner.current?.set({ ...next, ...(next.yaw !== undefined && { yaw: next.yaw + yaw }), ...(!flat && next.pitch !== undefined && { pitch: next.pitch - pitch }), ...(flat && next.roll !== undefined && { roll: next.roll + pitch }) });
     },
   }));
   const front = "art" in eye;
@@ -708,8 +709,7 @@ const PANE: Stop[] = [
   [AT, "white", DIM],
   [0.6, "white", 0],
 ];
-// The pane's light at the notch's middle height. It changes under 3 levels there, and some
-// browsers draw a gradient there on the wrong scale under the glass's 3D transform, so the notch takes it whole.
+// The pane's light at the notch's middle height: some browsers scale a gradient there wrong in 3D.
 const NOTCH_LIGHT = fixed(lerp(BRIGHT, DIM, (FRONT.glass.y + (FRONT.notch.height * WIDTH) / 200) / DEPTH / AT));
 
 /** The glass's top corners and the notch, from the eye's own at `flat` 0 to FRONT's at 1. */
@@ -826,8 +826,7 @@ function Free({
   const given = useRef(pose);
 
   // After every render the frame is drawn whole, the handle's if it still
-  // holds, so nothing a render wrote over is left behind. Turning `free` on
-  // or off lets go of the handle's pose, which was held to the other ranges.
+  // holds. Turning `free` on or off lets go of the handle's pose.
   useLayoutEffect(() => {
     given.current = pose;
     const hold = set.current;

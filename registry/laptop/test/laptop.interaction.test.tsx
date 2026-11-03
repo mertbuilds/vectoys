@@ -362,7 +362,8 @@ test("a drag on the display turns the laptop, held to its ranges, and the handle
 test("at flat 1, where the eye is level, a drag down rolls the laptop to look down on it, as the roll prop draws it", async () => {
   const frames = fakeFrames();
   try {
-    const { host } = await mount(<Laptop eye={DESK} look="realistic" free flat={1} pitch={0} limits={{ pitch: [-20, 0] }} />);
+    const handle = createRef<LaptopHandle>();
+    const { host } = await mount(<Laptop eye={DESK} look="realistic" free flat={1} pitch={0} limits={{ pitch: [-20, 0] }} ref={handle} />);
     const before = markup(host);
     const body = host.querySelector(".vectoys-turntable")!;
     await act(async () => void body.dispatchEvent(pointer("pointerdown", 0, 0)));
@@ -376,6 +377,11 @@ test("at flat 1, where the eye is level, a drag down rolls the laptop to look do
     const rolled = await mount(<Laptop eye={DESK} look="realistic" free flat={1} pitch={0} roll={-20} />);
     const ids = (html: string) => html.replace(/laptop-desk-\w+?-/g, "laptop-desk-X-");
     expect(ids(dragged)).toBe(ids(markup(rolled.host)));
+    // The drag went to the roll, so the handle leaves the pitch alone and adds the drag to the roll it sets.
+    await act(async () => handle.current?.set({ pitch: 0 }));
+    expect(ids(markup(host))).toBe(ids(dragged));
+    await act(async () => handle.current?.set({ roll: 0 }));
+    expect(ids(markup(host))).toBe(ids(dragged));
   } finally {
     frames.restore();
   }

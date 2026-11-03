@@ -101,6 +101,7 @@ test("the whole laptop stays inside its stage in every pose its limits reach", (
     }
   }
   const { width, height } = DESK.trick({ lid: 1, yaw: 0, pitch: DESK.pitch, flat: 1, x: 0, y: 0, scale: 1, roll: 0 }, false, true).camera;
+  expect(bounds.every(Number.isFinite)).toBe(true);
   expect(bounds[0]).toBeGreaterThan(0);
   expect(bounds[1]).toBeGreaterThan(0);
   expect(bounds[2]).toBeLessThan(width);

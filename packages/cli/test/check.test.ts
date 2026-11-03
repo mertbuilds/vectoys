@@ -306,10 +306,14 @@ test("another item may be imported as @vectoys/<name> only when registryDependen
 });
 
 test("an item that renders another counts as using Turntable only through a shipped file's import of an item it lists", () => {
-  const file = (path: string, imports: string[]) => ({ path, text: "", code: "", imports: imports.map((path) => ({ path, kind: "import-statement" })) });
-  expect(rendersDependency([file("src/toy.tsx", ["@vectoys/laptop"])], { files: ["src/toy.tsx"], registryDependencies: ["laptop"] })).toBe(true);
-  expect(rendersDependency([file("src/toy.tsx", ["@vectoys/laptop"])], { files: ["src/toy.tsx"] })).toBe(false);
-  expect(rendersDependency([file("test/toy.test.tsx", ["@vectoys/laptop"])], { files: ["src/toy.tsx"], registryDependencies: ["laptop"] })).toBe(false);
+  const renders = 'import { Laptop as Base } from "@vectoys/laptop";\nexport const Toy = () => jsx(Base, {});';
+  const file = (path: string, code = renders) => ({ path, text: "", code, imports: [{ path: "@vectoys/laptop", kind: "import-statement" }] });
+  expect(rendersDependency([file("src/toy.tsx")], { files: ["src/toy.tsx"], registryDependencies: ["laptop"] })).toBe(true);
+  expect(rendersDependency([file("src/toy.tsx")], { files: ["src/toy.tsx"] })).toBe(false);
+  expect(rendersDependency([file("test/toy.test.tsx")], { files: ["src/toy.tsx"], registryDependencies: ["laptop"] })).toBe(false);
+  // A look-alike that imports the laptop but draws its own Turntable div does not count.
+  const lookAlike = 'import { Laptop } from "@vectoys/laptop";\nexport const Used = Laptop;\nexport const Toy = () => jsx("div", { className: "vectoys-turntable" });';
+  expect(rendersDependency([file("src/toy.tsx", lookAlike)], { files: ["src/toy.tsx"], registryDependencies: ["laptop"] })).toBe(false);
   // A wrapper that only sets a style may stand round the Turntable.
   const wrapped = turntable('<div role="img" aria-label="Laptop"><svg></svg></div>').replace("</style>", '</style><div style="--vectoys-tint:brightness(0.255)">');
   expect(accessibleName(wrapped)).toBe('the root is role="img" with an aria-label');

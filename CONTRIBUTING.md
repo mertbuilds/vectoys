@@ -101,7 +101,7 @@ Add `"@vectoys/laptop": "workspace:*"` to the toy's `package.json` dependencies 
 - No files whose name starts with a dot, except `.gitignore`.
 - No `bunfig.toml`.
 - No symlinks.
-- `package.json` must stay as `vectoys create` writes it. Only the name and description may change.
+- `package.json` must stay as `vectoys create` writes it. Only the name and description may change, and each item listed in `registryDependencies` may be added to its dependencies as `"@vectoys/<name>": "workspace:*"`.
 - `tsconfig.json` may set only the options `vectoys create` writes.
 
 ### Tests

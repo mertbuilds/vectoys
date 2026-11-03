@@ -664,8 +664,16 @@ test("a tilt looks from three times the toy's unturned width away, and from 1000
   const root = rootOf(host);
   const body = host.querySelector<HTMLElement>(".vectoys-turntable-body")!;
   expect(body.style.transform).toContain("perspective(1000px)");
-  Object.defineProperties(body, { offsetWidth: { value: 600 }, offsetHeight: { value: 300 } });
+  let width = 600;
+  Object.defineProperties(body, { offsetWidth: { get: () => width }, offsetHeight: { value: 300 } });
   await dragOn(root, 40);
   expect(body.style.transform).toContain("perspective(1800px)");
   await fire(root, pointer("pointerup", 40));
+  // Full screen widens it, and a tilt that stays turned looks from the new width.
+  width = 900;
+  Object.assign(root, { requestFullscreen: () => Promise.reject(new TypeError("Permissions check failed")) });
+  await fire(host.querySelector(".vectoys-turntable-full")!, new MouseEvent("click", { bubbles: true }));
+  await act(async () => new Promise((done) => setTimeout(done, 0)));
+  expect(root.dataset.full).toBe("overlay");
+  expect(body.style.transform).toContain("perspective(2700px)");
 });
