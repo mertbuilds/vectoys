@@ -413,14 +413,15 @@ function Board({
     (key: string, event: PointerEvent, on: boolean, types: boolean) => {
       const first = on && !holds.current.get(key)?.has(`pointer ${event.pointerId}`);
       if (first) person();
-      if (types && (first || !on)) {
+      // With no text box a click only presses the key: no shift latches and caps lock stays as it is.
+      if (writing && types && (first || !on)) {
         type.current(key, event.shiftKey);
         // A mouse puts the caret in the box; a finger or pen does not, as that would open the device's own keyboard.
         if (event.pointerType === "mouse") box.current?.focus({ preventScroll: true });
       }
       hold(key, `pointer ${event.pointerId}`, on);
     },
-    [hold, person],
+    [hold, person, writing],
   );
 
   useLayoutEffect(() => {

@@ -270,6 +270,21 @@ test("caps lock comes up at once on a quick key up, and taps again only after 60
   await unmount();
 });
 
+test("with no text box, a clicked shift does not stay down and a clicked caps lock leaves the light alone", async () => {
+  const { host, unmount } = await mount(<Keyboard />);
+  const click = async (id: string) => {
+    await fire(key(host, id), new PointerEvent("pointerdown", { bubbles: true, button: 0, pointerId: 1, pointerType: "mouse" }));
+    await fire(key(host, id), new PointerEvent("pointerup", { bubbles: true, pointerId: 1, pointerType: "mouse" }));
+  };
+  await click("ShiftLeft");
+  expect(isDown(host, "ShiftLeft")).toBe(false);
+  await click("KeyA");
+  expect(isDown(host, "ShiftLeft")).toBe(false);
+  await click("CapsLock");
+  expect(light(host)).toBe(false);
+  await unmount();
+});
+
 test("the caps lock light follows the system's caps lock", async () => {
   const { host, unmount } = await mount(<Keyboard />);
   expect(light(host)).toBe(false);

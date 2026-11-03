@@ -69,8 +69,11 @@ test("turned any way within its limits, open or shut, the envelope and its shado
       for (const pitch of [-20, -10, 0, 8, 14]) {
         const view = seen(open, { yaw, pitch });
         const { width, height } = view.camera;
-        // The shadow's blur reaches about 4 units past its outline.
-        const drawn = [...view.drawn.faces.flatMap((face) => points(face.d)), ...(view.shadow ? points(view.shadow.ground).map(([x, y]) => [x, y + 4] as const) : [])];
+        // The far shadow blurs by 3 units across and 1.6 down; all but a trace of it lies within 2.5 times that of its outline.
+        const blur = [7.5, 4] as const;
+        const outline = [...view.drawn.faces.map((face) => face.d), ...view.drawn.hulls.map((hull) => hull.d), ...(view.shadow ? [view.shadow.contact] : [])].flatMap(points);
+        const shadow = view.shadow ? points(view.shadow.ground).flatMap(([x, y]) => [[x - blur[0], y - blur[1]], [x + blur[0], y + blur[1]]] as const) : [];
+        const drawn = [...outline, ...shadow];
         expect(drawn.length).toBeGreaterThan(0);
         for (const [x, y] of drawn) {
           expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
