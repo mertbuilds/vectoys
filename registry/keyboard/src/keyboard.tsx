@@ -1,5 +1,5 @@
 import { Faces, Stage, Turntable, useFrames, useReducedMotion, useSpring, type Look, type StyleWithVariables, type TurnOptions } from "@vinena/vectoys-react";
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { EYE, KEYS, LIMITS, TRAVEL, keyFor, sceneAt, seen, type Key as KeySpec, type Scene } from "./geometry";
 import { clicks, type Clicks } from "./sound";
 
@@ -119,9 +119,11 @@ const FIT_BOARD: CSSProperties = { width: `min(100%, 1100px, calc((100cqh - ${WR
 // The page is 92dvh tall in the middle of the screen, so its top is 4dvh down; the buttons stay below the full screen button, whose bottom is 40 pixels down.
 const CORNER_STYLE: CSSProperties = { ...ROW, position: "absolute", top: "max(clamp(12px, 3vmin, 28px), calc(48px - 4dvh))", right: "clamp(12px, 3vmin, 28px)", margin: 0 };
 
-// Where a hold comes from: the real keyboard, a pointer by its id, or the demo.
+// Where a hold comes from: the real keyboard, a pointer by its id, the demo, or a shift clicked to stay down for the next key.
 const BY_KEY = "key";
 const BY_DEMO = "demo";
+const BY_LATCH = "latch";
+const SHIFTS = new Set(["ShiftLeft", "ShiftRight"]);
 // Keys that scroll the page when focus is on no control, which would carry the board off screen as someone types on it.
 const SCROLLERS = new Set(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]);
 const MODIFIERS = new Set(["ShiftLeft", "ShiftRight", "ControlLeft", "AltLeft", "AltRight", "MetaLeft", "MetaRight", "Fn", "CapsLock"]);
@@ -129,7 +131,7 @@ const WIDTHS = new Map(KEYS.map((key) => [key.id, key.width]));
 // A key that sends no key up, such as caps lock on some systems, springs back after this long.
 const TAP = 120;
 const SPRING = { stiffness: 1100, damping: 46 };
-// A pointer that moves this far while holding a key is turning the keyboard, so the key comes up.
+// A finger or pen that moves this far on a key is scrolling or sliding off, so the key types nothing when it lifts.
 const DRAG_FROM = 4;
 const NONE: ReadonlySet<string> = new Set();
 
@@ -147,29 +149,40 @@ function script(word: string) {
   return { steps, length: at + 2200 };
 }
 
-type KeyProps = { spec: KeySpec; scene: Scene; down: boolean; lit: boolean; press: (key: string, pointer: number, on: boolean) => void; drag: boolean };
+type KeyProps = { spec: KeySpec; scene: Scene; down: boolean; lit: boolean; press: (key: string, event: PointerEvent, on: boolean, types: boolean) => void };
 
-/** One key, as the eye of `scene` sees it: its cap springs down while it is held, its legends riding on its top. With `drag`, a pointer that moves lets it up. */
-const Key = memo(function Key({ spec, scene, down, lit, press, drag }: KeyProps) {
+/**
+ * One key, as the eye of `scene` sees it: its cap springs down while it is held, its legends riding on its top. A press on it never turns the keyboard.
+ * A mouse types it as it goes down; a finger or pen as it lifts, unless it moved, left the key or the browser took it to scroll.
+ */
+const Key = memo(function Key({ spec, scene, down, lit, press }: KeyProps) {
   // The cap bottoms out, so the spring's overshoot never shows past it.
   const travel = Math.min(useSpring(down ? TRAVEL : 0, SPRING), TRAVEL);
   const view = useMemo(() => seen(spec, travel, scene), [spec, travel, scene]);
-  const from = useRef<{ x: number; y: number } | null>(null);
+  const from = useRef<{ id: number; x: number; y: number } | null>(null);
   const end = (event: PointerEvent) => {
+    const tapped = event.type === "pointerup" && from.current?.id === event.pointerId;
     from.current = null;
-    press(spec.id, event.pointerId, false);
+    press(spec.id, event, false, tapped);
   };
   return (
     <g
       className={`${CAP}-key`}
       data-key={spec.id}
       data-down={down || undefined}
+      data-vectoys-nodrag=""
       onPointerDown={(event) => {
         if (event.pointerType === "mouse" && event.button !== 0) return;
-        from.current = { x: event.clientX, y: event.clientY };
-        press(spec.id, event.pointerId, true);
+        // Keeps focus where it is, so a click types into the box that has it and a tap opens no on-screen keyboard.
+        event.preventDefault();
+        const mouse = event.pointerType === "mouse";
+        from.current = mouse ? null : { id: event.pointerId, x: event.clientX, y: event.clientY };
+        press(spec.id, event, true, mouse);
       }}
-      onPointerMove={(event) => drag && from.current && Math.hypot(event.clientX - from.current.x, event.clientY - from.current.y) >= DRAG_FROM && end(event)}
+      onPointerMove={(event) => {
+        const start = from.current;
+        if (start?.id === event.pointerId && Math.hypot(event.clientX - start.x, event.clientY - start.y) >= DRAG_FROM) from.current = null;
+      }}
       onPointerUp={end}
       onPointerCancel={end}
       onPointerLeave={end}
@@ -197,6 +210,30 @@ const Speaker = ({ on }: { on: boolean }) => (
 
 /** Whether a key is one character to type, or a dead key that starts an accent, with no command or control shortcut held. */
 const printable = (event: KeyboardEvent) => ([...event.key].length === 1 || event.key === "Dead") && !event.metaKey && (!event.ctrlKey || event.getModifierState("AltGraph")) && !event.isComposing;
+
+/** What a key clicked on the board types: its one legend, lower case unless `upper`, or its shifted or plain legend of a pair; a space or a new line; or nothing. */
+function character(spec: KeySpec, shift: boolean, upper: boolean) {
+  if (spec.id === "Space") return " ";
+  if (spec.id === "Enter") return "\n";
+  const [top, bottom] = spec.legends;
+  if (/^Key[A-Z]$/.test(spec.id)) return upper ? top?.text : top?.text.toLowerCase();
+  if (spec.legends.length === 2 && [...(top?.text ?? "")].length === 1 && [...(bottom?.text ?? "")].length === 1) return shift ? top?.text : bottom?.text;
+  return undefined;
+}
+
+/** `text` after the key `id` acts on the selection from `start` to `end`, typing `char`, and where the caret goes; or nothing for a key that changes neither. */
+function edit(text: string, start: number, end: number, id: string, char: string | undefined) {
+  if (char !== undefined) return { text: text.slice(0, start) + char + text.slice(end), caret: start + char.length };
+  if (id === "Backspace") {
+    // A character outside the basic plane is two code units, and goes as one.
+    const from = start < end ? start : Math.max(0, start - (/[\udc00-\udfff]/.test(text[start - 1] ?? "") && start > 1 ? 2 : 1));
+    return { text: text.slice(0, from) + text.slice(end), caret: from };
+  }
+  // The arrows step over a character outside the basic plane whole, too.
+  if (id === "ArrowLeft") return { text, caret: start < end ? start : Math.max(0, start - (/[\udc00-\udfff]/.test(text[start - 1] ?? "") && start > 1 ? 2 : 1)) };
+  if (id === "ArrowRight") return { text, caret: start < end ? end : Math.min(text.length, end + (/[\ud800-\udbff]/.test(text[end] ?? "") ? 2 : 1)) };
+  return undefined;
+}
 
 export type KeyboardProps = {
   /** Names the keyboard for assistive technology. */
@@ -235,7 +272,9 @@ export type KeyboardProps = {
  * another control on the page leave it alone. Each press clicks, made with WebAudio after the first press,
  * and a button turns that off. Under reduced motion the keys change at once.
  * With `typing`, a text box takes what you type (with `typing="fullscreen"`,
- * only while full screen). A drag, from anywhere on it, moves the eye round
+ * only while full screen), and keys clicked or tapped on the board type there
+ * too, a clicked shift staying down for the next key. A drag from its case,
+ * not from a key, moves the eye round
  * it, always from above, and a button in its corner fills the screen with it
  * (`fullscreen`, true by default).
  */
@@ -251,7 +290,7 @@ export function Keyboard({ label = "Keyboard", draggable, fullscreen, limits, re
       limits={{ ...LIMITS, ...limits }}
       {...(release && { release })}
     >
-      {({ full, yaw, pitch }) => <Board {...props} label={label} full={full} yaw={yaw} pitch={pitch} drag={draggable !== false} room={fullscreen !== false} />}
+      {({ full, yaw, pitch }) => <Board {...props} label={label} full={full} yaw={yaw} pitch={pitch} room={fullscreen !== false} />}
     </Turntable>
   );
 }
@@ -272,9 +311,8 @@ function Board({
   full,
   yaw,
   pitch,
-  drag,
   room,
-}: Omit<KeyboardProps, keyof TurnOptions | "className" | "style"> & { full: boolean; yaw: number; pitch: number; drag: boolean; room: boolean }) {
+}: Omit<KeyboardProps, keyof TurnOptions | "className" | "style"> & { full: boolean; yaw: number; pitch: number; room: boolean }) {
   const id = `keyboard-${useId().replace(/[^\w-]/g, "")}`;
   const reduced = useReducedMotion();
   const frames = useFrames();
@@ -347,13 +385,49 @@ function Board({
     [hold],
   );
 
+  /** Where the caret goes once the text a click typed is in the box; a page that keeps the text may refuse it, and the caret then stays. */
+  const caret = useRef<{ text: string; caret: number } | null>(null);
+  const type = useRef((_key: string, _shift: boolean) => {});
+  type.current = (key: string, shift: boolean) => {
+    if (key === "CapsLock") return setCaps(!caps);
+    if (MODIFIERS.has(key) && !SHIFTS.has(key)) return;
+    const latched = [...holds.current].filter(([, sources]) => sources.has(BY_LATCH)).map(([id]) => id);
+    for (const id of latched) hold(id, BY_LATCH, false);
+    // A shift clicked stays down for the next key clicked, and a second click lets it up.
+    if (SHIFTS.has(key)) return void (latched.length === 0 && hold(key, BY_LATCH, true));
+    const spec = KEYS.find((each) => each.id === key);
+    const field = box.current;
+    if (!spec || !field) return;
+    shift ||= latched.length > 0;
+    // Typed at the caret while the box has focus, else at the end, as the real keyboard does.
+    const focused = document.activeElement === field;
+    const result = edit(text, focused ? field.selectionStart : text.length, focused ? field.selectionEnd : text.length, key, character(spec, shift, shift !== caps));
+    if (!result) return;
+    if (result.text !== text) {
+      caret.current = result;
+      write(result.text);
+    } else field.setSelectionRange(result.caret, result.caret);
+  };
+
   const pointer = useCallback(
-    (key: string, pointerId: number, on: boolean) => {
-      if (on) person();
-      hold(key, `pointer ${pointerId}`, on);
+    (key: string, event: PointerEvent, on: boolean, types: boolean) => {
+      const first = on && !holds.current.get(key)?.has(`pointer ${event.pointerId}`);
+      if (first) person();
+      if (types && (first || !on)) {
+        type.current(key, event.shiftKey);
+        // A mouse puts the caret in the box; a finger or pen does not, as that would open the device's own keyboard.
+        if (event.pointerType === "mouse") box.current?.focus({ preventScroll: true });
+      }
+      hold(key, `pointer ${event.pointerId}`, on);
     },
     [hold, person],
   );
+
+  useLayoutEffect(() => {
+    const pending = caret.current;
+    caret.current = null;
+    if (pending?.text === text) box.current?.setSelectionRange(pending.caret, pending.caret);
+  }, [text]);
 
   useEffect(() => {
     const element = root.current;
@@ -408,6 +482,8 @@ function Board({
       if (free() && SCROLLERS.has(event.code) && !event.metaKey && !event.ctrlKey && !event.altKey) event.preventDefault();
       person();
       if (key === "CapsLock") capsAt = event.timeStamp;
+      // A shift clicked to stay down is for the next key clicked, not typed.
+      if (!MODIFIERS.has(key)) for (const [id, sources] of [...holds.current]) if (sources.has(BY_LATCH)) hold(id, BY_LATCH, false);
       // Some systems send no key up for caps lock, nor for keys pressed while command is down.
       if (key === "CapsLock" || (event.metaKey && !MODIFIERS.has(key))) return tap(key);
       hold(key, BY_KEY, true);
@@ -546,7 +622,7 @@ function Board({
           {board}
           <g style={{ cursor: "pointer" }}>
             {scene.order.map((key) => (
-              <Key key={key.id} spec={key} scene={scene} down={down.has(key.id)} lit={key.light ? caps : false} press={pointer} drag={drag} />
+              <Key key={key.id} spec={key} scene={scene} down={down.has(key.id)} lit={key.light ? caps : false} press={pointer} />
             ))}
           </g>
         </Stage>

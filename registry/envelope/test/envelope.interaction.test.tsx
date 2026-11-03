@@ -61,14 +61,19 @@ test("a closed envelope clips its letter away, so clicks pass through to the pag
 
 const pointer = (type: string, x: number) => new PointerEvent(type, { clientX: x, clientY: 0, pointerId: 1, pointerType: "mouse", button: 0, buttons: 1, bubbles: true });
 
-test("a drag on the envelope tilts it without opening it, and a click still opens it", async () => {
+/** The envelope's drawing, which a turn of the eye redraws. */
+const drawn = (host: HTMLElement) => [...host.querySelectorAll("svg path")].map((path) => path.getAttribute("d")).join("|");
+
+test("a drag turns the envelope in 3D without opening it, and a click still opens it", async () => {
   const { host, unmount } = await mount(<Envelope>Hi</Envelope>);
   const button = host.querySelector("button[aria-label='Open the letter']")!;
   const body = host.querySelector<HTMLElement>(".vectoys-turntable-body")!;
-  expect(body.style.transform).toBe("perspective(1000px) rotateX(0deg) rotateY(0deg)");
+  const rest = drawn(host);
   await fire(button, pointer("pointerdown", 0));
   await fire(button, pointer("pointermove", 60));
-  expect(body.style.transform).not.toContain("rotateY(0deg)");
+  // The drawing itself turns: a camera turn, not a tilt of the flat art.
+  expect(drawn(host)).not.toBe(rest);
+  expect(body.style.transform).not.toContain("rotate");
   await fire(button, pointer("pointerup", 60));
   await fire(button, new MouseEvent("click", { bubbles: true, detail: 1 }));
   expect(button.getAttribute("aria-expanded")).toBe("false");
@@ -77,6 +82,33 @@ test("a drag on the envelope tilts it without opening it, and a click still open
   await fire(button, new MouseEvent("click", { bubbles: true, detail: 1 }));
   expect(button.getAttribute("aria-expanded")).toBe("true");
   await frames.advance(1500);
+  await unmount();
+});
+
+test("turned round, the plain front takes the clicks and opens the envelope, its letter out of sight", async () => {
+  const { host, unmount } = await mount(
+    <Envelope>
+      <a href="#join">Join</a>
+    </Envelope>,
+  );
+  const table = host.querySelector<HTMLElement>(".vectoys-turntable")!;
+  const [back, front] = [...host.querySelectorAll<HTMLButtonElement>("button[aria-label='Open the letter']")];
+  if (!back || !front) throw new Error("no opener on each face");
+  // Each opener lies on its own Screen, which hides it while its face is turned away.
+  const shown = () => [back, front].map((button) => button.parentElement?.style.visibility);
+  expect(shown()).toEqual(["visible", "hidden"]);
+  // Half a turn with the keys: the eye now sees the front.
+  table.focus();
+  for (let press = 0; press < 6; press++) await fire(table, new KeyboardEvent("keydown", { key: "ArrowRight", shiftKey: true, bubbles: true }));
+  expect(shown()).toEqual(["hidden", "visible"]);
+  await fire(front, new MouseEvent("click", { bubbles: true, detail: 1 }));
+  expect(back.getAttribute("aria-expanded")).toBe("true");
+  expect(front.getAttribute("aria-expanded")).toBe("true");
+  await frames.advance(1500);
+  // Out of the pocket, the letter still hides with its face, turned away from the eye.
+  const letter = host.querySelector("a")?.parentElement;
+  expect(letter?.style.visibility).toBe("inherit");
+  expect(letter?.parentElement?.style.visibility).toBe("hidden");
   await unmount();
 });
 
