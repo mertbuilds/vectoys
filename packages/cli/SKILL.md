@@ -47,7 +47,7 @@ Keep `seen(...)` in `geometry.ts`: one pure function from the item's state (open
 
 Take colors from the page's CSS variables, each with a fallback so the item shows before the page sets them:
 
-- `--vectoys-finish`: the main material. Expose a `finish` prop that sets it.
+- `--vectoys-finish`: the main material. Expose a `finish` prop that sets it. The one exception is a toy built on a measured realistic model, as laptop-front is: its `finish` sets `--vectoys-tint`, a CSS filter on that model. New toys still follow the `--vectoys-finish` rule.
 - `--vectoys-surface`, `--vectoys-hairline`, `--vectoys-shadow`, `--vectoys-accent`, `--vectoys-ink`, `--vectoys-bg`. Add an item variable such as `--vectoys-paper` only when none of these fits.
 - `--vectoys-focus` and `--vectoys-focus-width` for focus rings.
 

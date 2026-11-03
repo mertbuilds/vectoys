@@ -179,6 +179,25 @@ test("items that depend on each other in a cycle, or on one that is missing, sto
   expect(existsSync(join(dir, "vectoys.json"))).toBe(false);
 });
 
+test("a chain of items more than 8 deep, or two URLs with items by one name, stop the add before any file is written", async () => {
+  const files = (name: string) => [{ path: `x/${name}.tsx`, content: "export {};\n" }];
+  for (let at = 1; at <= 9; at++) {
+    writeFileSync(join(out, `deep-${at}.json`), JSON.stringify({ name: `deep-${at}`, files: files(`d${at}`), registryDependencies: at < 9 ? [`deep-${at + 1}`] : [] }));
+  }
+  writeFileSync(join(out, "dup-a.json"), JSON.stringify({ name: "dup", files: files("a") }));
+  writeFileSync(join(out, "dup-b.json"), JSON.stringify({ name: "dup", files: files("b") }));
+  const dir = join(work, "deep");
+  mkdirSync(dir);
+  const deep = await runIn(dir, "add", "deep-1", "--no-install");
+  expect(deep.code).toBe(1);
+  expect(deep.stderr).toContain(`${registry}/deep-1.json depends on items more than 8 deep.`);
+  const dup = await runIn(dir, "add", `${registry}/dup-a.json`, `${registry}/dup-b.json`, "--no-install");
+  expect(dup.code).toBe(1);
+  expect(dup.stderr).toContain(`${registry}/dup-b.json and ${registry}/dup-a.json are both named "dup".`);
+  expect(existsSync(join(dir, "components"))).toBe(false);
+  expect(existsSync(join(dir, "vectoys.json"))).toBe(false);
+});
+
 // Each item in use on a page, so the typecheck below covers every one.
 const USES: Record<string, { imports: string[]; jsx: string }> = {
   browser: { imports: ['import { Browser } from "./components/vectoys/browser/browser";'], jsx: '<Browser url="example.com" depth={20} offset={[4, 2]}><p>a</p></Browser>' },

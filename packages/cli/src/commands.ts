@@ -58,7 +58,8 @@ export async function add(context: Context, specs: string[]) {
   const placed = items.flatMap(({ url, item }) => place(item.files).map((file) => ({ url, folder: resolve(root, item.name), file: { ...file, to: posix.join(item.name, file.to) } })));
   const named = withExtensions(placed.map(({ file }) => file), importExtension(context.cwd));
   const writes = placed.map(({ url, folder }, at) => {
-    const file = named[at]!;
+    const file = named[at];
+    if (!file) throw new Error(`${url} has a file that lost its name.`);
     const path = resolve(root, file.to);
     if (!folder.startsWith(root + sep) || !path.startsWith(folder + sep)) throw new Error(`${url} has a file that would land outside ${config.dir}.`);
     return { path, content: file.content };
@@ -97,8 +98,9 @@ export async function list(context: Context, scope: string | undefined) {
 export async function withDependencies(urls: string[], urlOf: (spec: string) => string): Promise<Fetched[]> {
   const fetched = new Map<string, Promise<Item>>();
   const get = (url: string) => {
-    if (!fetched.has(url)) fetched.set(url, fetchJson<unknown>(url).then((value) => check(value, url)));
-    return fetched.get(url)!;
+    const found = fetched.get(url) ?? fetchJson<unknown>(url).then((value) => check(value, url));
+    fetched.set(url, found);
+    return found;
   };
   // The ones asked for are fetched together; the rest as the walk meets them.
   await Promise.all(urls.map(get));

@@ -536,8 +536,9 @@ export function checks(dir: string): Result[] {
   const rendered = render(resolve(dir, component), dir, wanted);
   if ("error" in rendered) {
     // Items it imports resolve only through the vectoys workspace, which links each one under registry/.
-    const away = (item.registryDependencies ?? []).length > 0 && !inVectoysRepo(dir);
-    const how = away ? `. It imports ${item.registryDependencies!.map((dep) => `@vectoys/${dep}`).join(", ")}, which check finds only in a vectoys checkout: move the folder under registry/ there, run bun install, and check it again` : "";
+    const deps = item.registryDependencies ?? [];
+    const away = deps.length > 0 && !inVectoysRepo(dir);
+    const how = away ? `. It imports ${deps.map((dep) => `@vectoys/${dep}`).join(", ")}, which check finds only in a vectoys checkout: move the folder under registry/ there, run bun install, and check it again` : "";
     return [...results, { pass: false, line: `${component} does not render on the server: ${rendered.error}${how}` }];
   }
   if (rendered.name !== wanted) return [...results, shape];
