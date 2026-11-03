@@ -1,6 +1,6 @@
 import { Faces, Screen, Stage, Turntable, useSpring, type Look, type TurnOptions } from "@vinena/vectoys-react";
 import { memo, useId, useMemo, useState, type CSSProperties, type FocusEvent, type ReactNode } from "react";
-import { CARD, FRONT, seen, type View } from "./geometry";
+import { CARD, FACE, FRONT, seen, type View } from "./geometry";
 
 // The page's colors, as CSS variables, each with a light tone so the
 // envelope shows as meant before they are set. The outside is the surface,
@@ -53,6 +53,9 @@ const OPENER: CSSProperties = {
   WebkitTapHighlightColor: "transparent",
 };
 const FILL: CSSProperties = { position: "absolute", inset: 0 };
+
+// The eye goes all the way round, but never so far below that the ground, and the shadow on it, drops out of sight.
+const LIMITS = { yaw: [-180, 180], pitch: [-20, 14] } as const;
 
 /** The soft shadow under the envelope, under names of its own so any number of envelopes share a page. */
 const Shadow = ({ id, shadow }: { id: string; shadow: NonNullable<View["shadow"]> }) => (
@@ -108,13 +111,29 @@ function useOpening(open: number | undefined, defaultOpen: boolean, onOpenChange
  * card inside. A real button over the envelope opens it on a click, or as
  * soon as the keyboard reaches it; the flap swings up behind the card and
  * the card rises out, its content clipped to what shows over the pocket.
- * Under reduced motion it opens without the motion. A drag tilts it, and a
+ * Under reduced motion it opens without the motion. A drag or the arrow
+ * keys turn it round, its plain front too, which opens it the same, and a
  * button shows it full screen.
  */
-export const Envelope = memo(function Envelope({ open, defaultOpen = false, onOpenChange, label = "Open the letter", finish, children, ...turning }: EnvelopeProps) {
+export const Envelope = memo(function Envelope({ open, defaultOpen = false, onOpenChange, label = "Open the letter", finish, children, limits, ...turning }: EnvelopeProps) {
   const id = `envelope-${useId().replace(/[^\w-]/g, "")}`;
-  const { amount, isOpen, ask, setHover } = useOpening(open, defaultOpen, onOpenChange);
-  const view = useMemo(() => seen(amount), [amount]);
+  const opening = useOpening(open, defaultOpen, onOpenChange);
+  return (
+    <Turntable mode="camera" label="envelope" limits={{ ...LIMITS, ...limits }} {...turning}>
+      {({ yaw, pitch }) => (
+        <Drawn id={id} opening={opening} label={label} finish={finish} yaw={yaw} pitch={pitch}>
+          {children}
+        </Drawn>
+      )}
+    </Turntable>
+  );
+});
+
+type DrawnProps = { id: string; opening: ReturnType<typeof useOpening>; label: string; finish: string | undefined; children: ReactNode; yaw: number; pitch: number };
+
+/** The envelope drawn with the eye turned `yaw` and `pitch` from its rest. */
+function Drawn({ id, opening: { amount, isOpen, ask, setHover }, label, finish, children, yaw, pitch }: DrawnProps) {
+  const view = useMemo(() => seen(amount, { yaw, pitch }), [amount, yaw, pitch]);
   // The letter's content is live only once the flap has swung past upright and left it uncovered.
   // Until then its box is clipped to nothing, so it takes no clicks meant for the opener under it.
   const out = view.flap > 90;
@@ -123,36 +142,41 @@ export const Envelope = memo(function Envelope({ open, defaultOpen = false, onOp
     if (!isOpen && event.currentTarget.matches(":focus-visible")) ask(true);
   };
 
+  // One opener on each face of the sheet; the one turned away is hidden and takes no clicks.
+  const button = (
+    <button
+      type="button"
+      aria-label={label}
+      aria-expanded={isOpen}
+      onClick={() => ask(!isOpen)}
+      onFocus={focus}
+      onPointerEnter={() => setHover(true)}
+      onPointerLeave={() => setHover(false)}
+      data-vectoys-grab=""
+      style={OPENER}
+    />
+  );
+
   const overlay = (
     <>
       <Screen camera={view.camera} pose={view.back} rect={FRONT} width={LETTER_WIDTH}>
-        <button
-          type="button"
-          aria-label={label}
-          aria-expanded={isOpen}
-          onClick={() => ask(!isOpen)}
-          onFocus={focus}
-          onPointerEnter={() => setHover(true)}
-          onPointerLeave={() => setHover(false)}
-          data-vectoys-grab=""
-          style={OPENER}
-        />
+        {button}
       </Screen>
       <Screen camera={view.camera} pose={view.card} rect={CARD} width={LETTER_WIDTH} style={{ clipPath: out ? view.clip : "inset(50%)" }}>
-        <div inert={!out} style={{ ...FILL, visibility: out ? "visible" : "hidden" }}>
+        <div inert={!out} style={{ ...FILL, visibility: out ? "inherit" : "hidden" }}>
           {children}
         </div>
+      </Screen>
+      <Screen camera={view.camera} pose={view.front} rect={FACE} width={LETTER_WIDTH}>
+        {button}
       </Screen>
     </>
   );
 
-  // Tilted, not turned: the card's clip is worked out for this one eye.
   return (
-    <Turntable mode="tilt" label="envelope" {...turning}>
-      <Stage camera={view.camera} overlay={overlay} style={finish ? { "--vectoys-finish": finish } : {}}>
-        {view.shadow && <Shadow id={id} shadow={view.shadow} />}
-        <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
-      </Stage>
-    </Turntable>
+    <Stage camera={view.camera} overlay={overlay} style={finish ? { "--vectoys-finish": finish } : {}}>
+      {view.shadow && <Shadow id={id} shadow={view.shadow} />}
+      <Faces faces={view.drawn.faces} hulls={view.drawn.hulls} styles={STYLES} shading />
+    </Stage>
   );
-});
+}

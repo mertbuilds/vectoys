@@ -72,6 +72,20 @@ async function leave(page: Page) {
   await page.clock.runFor(SETTLE_MS);
 }
 
+/** The point nearest the middle of `table`, straight down from it, on the keyboard's case, below the last key, as a press on a key types and never turns it. */
+const onCase = (table: Locator) =>
+  table.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const x = box.x + box.width / 2;
+    let below = 0;
+    for (let y = box.y + box.height / 2; y < box.bottom; y += 1) {
+      const hit = document.elementFromPoint(x, y);
+      if (hit?.closest("[data-key]")) below = 0;
+      else if (hit && element.contains(hit) && (below += 1) === 8) return { x, y };
+    }
+    throw new Error("no case under the keys");
+  });
+
 const bodyTransform = (table: Locator) => table.locator("> .vectoys-turntable-body").evaluate((body) => (body as HTMLElement).style.transform);
 
 /** Leaves out the Fullscreen API, as an iPhone does, so the toy covers the page with its own overlay. */
@@ -94,10 +108,9 @@ for (const name of ["phone", "card", "envelope", "keyboard"]) {
   test(`${name} turns on a drag and resets on a double click`, async ({ page }) => {
     const { preview, table } = await open(page, name);
     const rest = await preview.screenshot();
-    const restTransform = await bodyTransform(table);
     const pressed = name === "card" ? await table.locator("[data-vectoys-grab]").getAttribute("aria-pressed") : null;
     const input = await timed(page);
-    const from = await center(table);
+    const from = name === "keyboard" ? await onCase(table) : await center(table);
     await input.drag(from, 90, -30);
     await page.clock.runFor(SETTLE_MS);
     await expect(table).not.toHaveAttribute("data-dragging");
@@ -107,9 +120,8 @@ for (const name of ["phone", "card", "envelope", "keyboard"]) {
     await leave(page);
     // A drag that ends on the card's own button turns it and does not flip it.
     if (pressed !== null) await expect(table.locator("[data-vectoys-grab]")).toHaveAttribute("aria-pressed", pressed);
-    // The keyboard turns its camera, so only the envelope's box turns.
-    if (name === "envelope") expect(await bodyTransform(table)).not.toBe(restTransform);
-    if (name === "keyboard") expect(await bodyTransform(table)).toBe("");
+    // The envelope and the keyboard turn their camera, so their box never turns.
+    if (name === "envelope" || name === "keyboard") expect(await bodyTransform(table)).toBe("");
     expect((await preview.screenshot()).equals(rest)).toBe(false);
     await expect(preview).toHaveScreenshot(`${name}-turned.png`);
 
@@ -134,12 +146,14 @@ test("the arrow keys turn the focused envelope, as far as its limits", async ({ 
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowUp");
-  // It looks from three times its unturned width away.
-  const depth = await table.locator("> .vectoys-turntable-body").evaluate((body) => (body as HTMLElement).offsetWidth * 3);
-  expect(await bodyTransform(table)).toBe(`perspective(${depth}px) rotateX(6deg) rotateY(20deg)`);
-  // Each limit holds: the envelope turns at most 28 degrees each way.
-  await page.keyboard.press("Shift+ArrowRight");
-  expect(await bodyTransform(table)).toBe(`perspective(${depth}px) rotateX(6deg) rotateY(28deg)`);
+  // The drawing turns, not its box.
+  expect(await bodyTransform(table)).toBe("");
+  await expect(table).toHaveScreenshot("envelope-keys.png");
+  // Each limit holds: it looks up at most 14 degrees from rest.
+  await page.keyboard.press("Shift+ArrowUp");
+  const limit = await table.screenshot();
+  await page.keyboard.press("ArrowUp");
+  expect((await table.screenshot()).equals(limit)).toBe(true);
 });
 
 test("the arrow keys turn the focused phone", async ({ page }) => {
@@ -189,6 +203,32 @@ for (const name of ["phone", "keyboard"]) {
   });
 }
 
+/** Clicks the keyboard's keys `ids` one after another, by mouse or with `tap` by finger. */
+async function typeOn(table: Locator, ids: string[], tap = false) {
+  for (const id of ids) {
+    const key = table.locator(`[data-key="${id}"]`);
+    if (tap) await key.tap();
+    else await key.click();
+  }
+}
+// Shift clicked stays down for the next key, so this types "Hi!".
+const HI = ["ShiftLeft", "KeyH", "KeyI", "ShiftRight", "Digit1"];
+
+test("keys clicked on the full screen keyboard type into its text box", async ({ page }) => {
+  await page.addInitScript(withoutFullscreen);
+  const { table, button } = await open(page, "keyboard");
+  await table.hover();
+  await button.click();
+  await expect(table).toHaveAttribute("data-full", "overlay");
+  await typeOn(table, HI);
+  await expect(table.locator("textarea")).toHaveValue("Hi!");
+  // A click turns nothing.
+  expect(await bodyTransform(table)).toBe("");
+  await page.mouse.move(0, 0);
+  await page.clock.runFor(SETTLE_MS);
+  await expect(page).toHaveScreenshot("keyboard-typed.png");
+});
+
 test.describe("on a phone", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
@@ -214,6 +254,19 @@ test.describe("on a phone", () => {
     await expect(table.locator("[data-vectoys-grab]")).toHaveAttribute("aria-pressed", pressed ?? "false");
     expect((await preview.screenshot()).equals(rest)).toBe(false);
     await expect(preview).toHaveScreenshot("card-phone-turned.png");
+  });
+
+  test("keys tapped on the full screen keyboard type, with the text box left unfocused", async ({ page }) => {
+    await page.addInitScript(withoutFullscreen);
+    const { table, button } = await open(page, "keyboard");
+    await button.tap();
+    await expect(table).toHaveAttribute("data-full", "overlay");
+    await typeOn(table, HI, true);
+    const box = table.locator("textarea");
+    await expect(box).toHaveValue("Hi!");
+    await expect(box).not.toBeFocused();
+    await page.clock.runFor(SETTLE_MS);
+    await expect(page).toHaveScreenshot("keyboard-typed-phone.png");
   });
 
   test("the phone covers the screen with its own overlay", async ({ page }) => {

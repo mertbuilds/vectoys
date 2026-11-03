@@ -10,7 +10,7 @@ test.each([0, 0.3, 0.6, 1])("renders on the server, open %p", (open) => {
       {FORM}
     </Envelope>,
   );
-  expect(html).toContain('<svg viewBox="0 0 100 120"');
+  expect(html).toContain('<svg viewBox="0 0 115 138"');
   expect(html).toContain('aria-label="Email"');
   expect(html).toContain("--vectoys-finish:#c9d8c5");
   expect(html).not.toContain("NaN");
@@ -55,4 +55,52 @@ test("the card's content is clipped to what shows over the pocket", () => {
   // Shut, the pocket's sides reach over the card's top corners; risen, the card's top half shows.
   expect(shown(0)).toContain("100% 0%, 100% 0%");
   expect(shown(RISE)).not.toContain("100% 0%, 100% 0%");
+});
+
+/** The x and y of every point in SVG path data. */
+const points = (d: string) => {
+  const numbers = (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+  return numbers.flatMap((value, index) => (index % 2 === 0 ? [[value, numbers[index + 1]!] as const] : []));
+};
+
+test("turned any way within its limits, open or shut, the envelope and its shadow stay finite and inside the box", () => {
+  for (const open of [0, 0.3, 0.5, 0.75, 1])
+    for (let yaw = -180; yaw <= 180; yaw += 15)
+      for (const pitch of [-20, -10, 0, 8, 14]) {
+        const view = seen(open, { yaw, pitch });
+        const { width, height } = view.camera;
+        // The far shadow blurs by 3 units across and 1.6 down; all but a trace of it lies within 2.5 times that of its outline.
+        const blur = [7.5, 4] as const;
+        const outline = [...view.drawn.faces.map((face) => face.d), ...view.drawn.hulls.map((hull) => hull.d), ...(view.shadow ? [view.shadow.contact] : [])].flatMap(points);
+        const shadow = view.shadow ? points(view.shadow.ground).flatMap(([x, y]) => [[x - blur[0], y - blur[1]], [x + blur[0], y + blur[1]]] as const) : [];
+        const drawn = [...outline, ...shadow];
+        expect(drawn.length).toBeGreaterThan(0);
+        for (const [x, y] of drawn) {
+          expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
+          expect(x).toBeGreaterThanOrEqual(0);
+          expect(x).toBeLessThanOrEqual(width);
+          expect(y).toBeGreaterThanOrEqual(0);
+          expect(y).toBeLessThanOrEqual(height);
+        }
+        // The eye never drops under the ground, so the shadow never drops out of sight.
+        expect(view.shadow).not.toBeNull();
+      }
+});
+
+test("at rest the turn changes nothing", () => {
+  for (const open of [0, 0.5, 1]) {
+    const [turned, rest] = [seen(open, { yaw: 0, pitch: 0 }), seen(open)];
+    expect([turned.drawn, turned.shadow, turned.card, turned.clip]).toEqual([rest.drawn, rest.shadow, rest.card, rest.clip]);
+  }
+});
+
+test("turned round, the plain front covers the rest, and the open flap lies over the card once flat", () => {
+  const order = (open: number, yaw: number) => seen(open, { yaw, pitch: 0 }).drawn.hulls.map((hull) => hull.part).filter((part) => !part.startsWith("pocket-") || part === "pocket-bottom");
+  expect(seen(0, { yaw: 180, pitch: 0 }).fromBack).toBe(false);
+  expect(seen(0, { yaw: 60, pitch: 0 }).fromBack).toBe(true);
+  expect(order(0, 180)).toEqual(["flap", "pocket-bottom", "card", "back"]);
+  expect(order(0.3, 180)).toEqual(["flap", "pocket-bottom", "card", "back"]);
+  expect(order(1, 180)).toEqual(["pocket-bottom", "card", "flap", "back"]);
+  // The pocket's sheets face only the back, so from the front only the slabs draw.
+  expect(seen(1, { yaw: 180, pitch: 0 }).drawn.faces.some((face) => face.part.startsWith("pocket-"))).toBe(false);
 });

@@ -145,11 +145,19 @@ test("bun versions compare by number, and CI_BUN is the bun CI uses", () => {
   expect(readFileSync(join(repo, ".github/workflows/ci.yml"), "utf8")).toContain(`bun-version: ${CI_BUN}`);
 });
 
+test("submissions are open by default, so submit opens a pull request with no submissionsOpen option", async () => {
+  create(context().context, "open", undefined);
+  const { context: here } = context();
+  const { runner, calls } = fake();
+  expect(await submit(here, "open", { registry: undefined, dryRun: false, run: runner })).toBe("https://github.com/vinenastudio/vectoys/pull/7");
+  expect(calls).toContain("git checkout -b item/open");
+}, 30_000);
+
 test("while submissions are closed, submit checks the item, says what it would do and calls no gh", async () => {
   create(context().context, "closed", undefined);
   const { context: here, lines } = context();
   const { runner, calls } = fake();
-  expect(await submit(here, "closed", { registry: undefined, dryRun: false, run: runner })).toBeUndefined();
+  expect(await submit(here, "closed", { registry: undefined, dryRun: false, submissionsOpen: false, run: runner })).toBeUndefined();
   expect(calls).toEqual([]);
   expect(lines).toContain("  pass  Closed renders on the server");
   expect(lines).toContain("  3. Make the branch item/closed");
@@ -189,7 +197,7 @@ test("submit --registry opens a pull request that lists the registry in registri
 test("submit --registry while closed validates the index and calls no gh", async () => {
   const { context: here, lines } = context();
   const { runner, calls } = fake();
-  await submit(here, undefined, { registry: `${origin}/r/index.json`, dryRun: false, run: runner });
+  await submit(here, undefined, { registry: `${origin}/r/index.json`, dryRun: false, submissionsOpen: false, run: runner });
   expect(calls).toEqual(["git config user.name"]);
   expect(lines).toContain("  pass  it lists 2 items");
   expect(lines).toContain(`  4. Add {"name":"acme","url":"${origin}/r","author":"Ada Lovelace"} to registries.json, sorted by name`);

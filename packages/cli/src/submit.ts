@@ -8,13 +8,13 @@ import { ITEM_NAME, type Context } from "./commands";
 import { BASE_TSCONFIG } from "./create";
 import { fetchJson } from "./fetch";
 
-/** Whether submit sends anything: it only says what it would until vectoys launches. */
-export const SUBMISSIONS_OPEN = false;
+/** Whether submit sends anything; when false it only says what it would send. */
+export const SUBMISSIONS_OPEN = true;
 
 /** The repository items and registries are submitted to. */
 export const UPSTREAM = "vinenastudio/vectoys";
 
-export const CLOSED = "Submissions open when vectoys launches. Nothing was sent.";
+export const CLOSED = "Nothing was sent.";
 
 export type Ran = { status: number; stdout: string; stderr: string };
 /** Runs a program, gh or git, in `cwd`. */
@@ -261,7 +261,7 @@ async function listingChange(context: Context, given: string, runner: Run): Prom
   };
 }
 
-/** Submits an item folder, or with `registry` a registry, as a pull request to vectoys; until launch it only says how. */
+/** Submits an item folder, or with `registry` a registry, as a pull request to vectoys. */
 export async function submit(context: Context, given: string | undefined, options: SubmitOptions): Promise<string | undefined> {
   const runner = options.run ?? run;
   const change = options.registry ? await listingChange(context, options.registry, runner) : itemChange(context, resolve(context.cwd, given ?? "."));

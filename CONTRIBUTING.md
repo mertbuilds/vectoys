@@ -35,7 +35,7 @@ bun install
 Every toy wraps itself in `Turntable` from `@vinena/vectoys-react`, as the toy `create` writes does. A mouse, a finger or the arrow keys turn the toy, and a button in its corner shows it full screen.
 
 - Use `mode="camera"` for a toy with a real 3D camera. Pass a function as the child: Turntable calls it with the turn in degrees, and the toy adds it to its own `yaw` and `pitch`, as in `<Turntable mode="camera">{(turn) => <Drawn yaw={yaw + turn.yaw} pitch={pitch + turn.pitch} />}</Turntable>`. Plain children get no turn.
-- Use `mode="tilt"` only for a flat toy with no 3D model, such as art drawn for one view. Turntable tilts it a little with a CSS transform, seen from about three times its width away. A toy drawn from a 3D model uses `mode="camera"`, even when it rests at one fixed eye: add the turn to that eye, or a tilt of the drawing reads as a flat sticker.
+- Use `mode="tilt"` only for a flat toy with no 3D model, such as art drawn for one view. Turntable tilts it a little with a CSS transform, seen from about three times its width away. A toy drawn from a 3D model uses `mode="camera"`, even when it rests at one fixed eye: add the turn to that eye, or a tilt of the drawing reads as a flat sticker. No registry toy uses `Turntable mode="tilt"`: the envelope, all flat sheets, turns its camera too.
 - Take `TurnOptions` in the toy's props and pass them on: `draggable` (default `true`), `fullscreen` (default `true`), `limits` (how far it turns each way, in degrees) and `release` (`"stay"` by default, where a double click resets it, or `"return"` to spring back to rest).
 - Links, buttons and form fields never start a drag. Put `data-vectoys-nodrag` on other parts that must never start one, such as keys. Put `data-vectoys-grab` on a big button or link that covers the toy, such as a die or an envelope's front, so a drag on it still turns the toy and a click still presses it.
 
@@ -114,15 +114,15 @@ This applies once pull request #24 (visual tests) merges. Every toy's gallery pr
 
 ## Submit it
 
-Submissions open at launch.
+Submissions are open. `npx @vinena/vectoys-cli submit <dir>` (it needs the GitHub CLI, `gh`, and bun 1.3.2 or newer) opens the pull request for you. You can also open it by hand: fork the repository, add your toy under `registry/<name>/` on a branch `item/<name>`, and open a pull request. A maintainer reviews every toy.
 
 ```sh
 npx @vinena/vectoys-cli submit registry/spinning-top
 ```
 
-`submit` runs `check` first and stops if any check fails. It needs bun 1.3.2 or newer. Then it uses the [GitHub CLI](https://cli.github.com) (`gh`) to fork this repository, copy your toy to `registry/<name>/` on a branch `item/<name>` (the files `item.json` lists, its `package.json`, `tsconfig.json`, `src/index.ts` and `test/`), add the toy's package to `bun.lock`, and open a pull request with the check results. Until launch, it checks and shows what it would send, and sends nothing.
+`submit` runs `check` first and stops if any check fails. It needs bun 1.3.2 or newer. Then it uses the [GitHub CLI](https://cli.github.com) (`gh`) to fork this repository, copy your toy to `registry/<name>/` on a branch `item/<name>` (the files `item.json` lists, its `package.json`, `tsconfig.json`, `src/index.ts` and `test/`), add the toy's package to `bun.lock`, and open a pull request with the check results.
 
-To see what it would do without sending anything:
+With `--dry-run` it runs the checks, says what it would send, and sends nothing:
 
 ```sh
 npx @vinena/vectoys-cli submit registry/spinning-top --dry-run

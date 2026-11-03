@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, expect, mock, test } from "bun:test";
-import { act } from "react";
+import { act, useState } from "react";
 import { fakeFrames, fire, fireOnWindow, installGlobal, mount, reducedMotion } from "../../../packages/react/test/dom";
 import { Keyboard } from "../src";
 
@@ -267,6 +267,21 @@ test("caps lock comes up at once on a quick key up, and taps again only after 60
   expect(isDown(host, "CapsLock")).toBe(true);
   await wait(200);
   expect(isDown(host, "CapsLock")).toBe(false);
+  await unmount();
+});
+
+test("with no text box, a clicked shift does not stay down and a clicked caps lock leaves the light alone", async () => {
+  const { host, unmount } = await mount(<Keyboard />);
+  const click = async (id: string) => {
+    await fire(key(host, id), new PointerEvent("pointerdown", { bubbles: true, button: 0, pointerId: 1, pointerType: "mouse" }));
+    await fire(key(host, id), new PointerEvent("pointerup", { bubbles: true, pointerId: 1, pointerType: "mouse" }));
+  };
+  await click("ShiftLeft");
+  expect(isDown(host, "ShiftLeft")).toBe(false);
+  await click("KeyA");
+  expect(isDown(host, "ShiftLeft")).toBe(false);
+  await click("CapsLock");
+  expect(light(host)).toBe(false);
   await unmount();
 });
 
@@ -643,6 +658,19 @@ test("the full screen button fills the screen with the turntable, follows full s
     expect(dropped.host.querySelector("textarea")).toBeNull();
     expect(dropped.host.querySelector('[role="group"]')?.getAttribute("style")).not.toContain("position: relative");
     await dropped.unmount();
+
+    // A shift clicked in full screen lets go on the way out and does not shift the next key clicked.
+    const latch = await mount(<Keyboard typing="fullscreen" />);
+    await act(async () => buttonNamed(latch.host, "Full screen Keyboard")!.click());
+    await click(latch.host, "ShiftLeft");
+    expect(isDown(latch.host, "ShiftLeft")).toBe(true);
+    await act(async () => buttonNamed(latch.host, "Exit full screen")!.click());
+    expect(isDown(latch.host, "ShiftLeft")).toBe(false);
+    await act(async () => buttonNamed(latch.host, "Full screen Keyboard")!.click());
+    expect(isDown(latch.host, "ShiftLeft")).toBe(false);
+    await click(latch.host, "KeyH");
+    expect(box(latch.host).value).toBe("h");
+    await latch.unmount();
   } finally {
     Reflect.deleteProperty(HTMLElement.prototype, "requestFullscreen");
     Reflect.deleteProperty(document, "exitFullscreen");
@@ -652,24 +680,27 @@ test("the full screen button fills the screen with the turntable, follows full s
 
 const pointer = (type: string, x: number) => new PointerEvent(type, { clientX: x, clientY: 0, pointerId: 7, pointerType: "mouse", button: 0, buttons: 1, bubbles: true });
 
-test("a drag from a key turns the eye round the keyboard and lets the key up, and a press with no drag holds it", async () => {
+test("a drag from a key never turns the eye and keeps the key down, and a drag from the case turns it", async () => {
   const { host, unmount } = await mount(<Keyboard />);
   const body = host.querySelector<HTMLElement>(".vectoys-turntable-body")!;
   const faces = () => key(host, "KeyJ").querySelector("path")?.getAttribute("d");
   const before = faces();
   await fire(key(host, "KeyJ"), pointer("pointerdown", 0));
   expect(isDown(host, "KeyJ")).toBe(true);
-  await fire(key(host, "KeyJ"), pointer("pointermove", 2));
-  expect(isDown(host, "KeyJ")).toBe(true);
   await fire(key(host, "KeyJ"), pointer("pointermove", 60));
+  expect(isDown(host, "KeyJ")).toBe(true);
+  expect(faces()).toBe(before);
+  await fire(key(host, "KeyJ"), pointer("pointerup", 60));
   expect(isDown(host, "KeyJ")).toBe(false);
+  await frames.advance(400);
+  expect(faces()).toBe(before);
+  const caseFace = host.querySelector("svg")!.querySelector(":scope path")!;
+  expect(caseFace.closest("[data-key]")).toBeNull();
+  await fire(caseFace, pointer("pointerdown", 0));
+  await fire(caseFace, pointer("pointermove", 60));
   expect(faces()).not.toBe(before);
   expect(body.style.transform).toBe("");
-  await fire(key(host, "KeyJ"), pointer("pointerup", 60));
-  await fire(key(host, "KeyK"), pointer("pointerdown", 0));
-  expect(isDown(host, "KeyK")).toBe(true);
-  await fire(key(host, "KeyK"), pointer("pointerup", 0));
-  expect(isDown(host, "KeyK")).toBe(false);
+  await fire(caseFace, pointer("pointerup", 60));
   await frames.advance(400);
   await unmount();
 });
@@ -685,7 +716,7 @@ test("keys typed while the turntable round the keyboard has focus still press, a
   await unmount();
 });
 
-test("with dragging off a pointer that moves keeps its key down", async () => {
+test("with dragging off a pointer that moves still keeps its key down", async () => {
   const { host, unmount } = await mount(<Keyboard draggable={false} fullscreen={false} />);
   expect(host.querySelector(".vectoys-turntable")?.hasAttribute("tabindex")).toBe(false);
   expect(host.querySelectorAll("button")).toHaveLength(1);
@@ -719,4 +750,216 @@ test("the text row leaves room for the full screen button, so it never covers Cl
   };
   expect(await row(true)).toBe("40px");
   expect(await row(false)).toBe("");
+});
+
+/** Clicks key `id` with a mouse, or a finger with `touch`, holding shift with `shiftKey`. */
+const click = async (host: Element, id: string, { touch = false, shiftKey = false } = {}) => {
+  const init = { bubbles: true, cancelable: true, button: 0, buttons: 1, pointerId: 9, pointerType: touch ? "touch" : "mouse", shiftKey };
+  await fire(key(host, id), new PointerEvent("pointerdown", init));
+  await fire(key(host, id), new PointerEvent("pointerup", { ...init, buttons: 0 }));
+};
+const clickAll = async (host: Element, ids: string[]) => {
+  for (const id of ids) await click(host, id);
+};
+
+test("a key clicked on the board presses it and types its character into the box, at the press, once", async () => {
+  const onValueChange = mock((_: string) => {});
+  const { host, unmount } = await mount(<Keyboard typing onValueChange={onValueChange} />);
+  const event = new PointerEvent("pointerdown", { bubbles: true, cancelable: true, button: 0, pointerId: 9, pointerType: "mouse" });
+  await fire(key(host, "KeyH"), event);
+  expect(event.defaultPrevented).toBe(true);
+  expect(isDown(host, "KeyH")).toBe(true);
+  expect(box(host).value).toBe("h");
+  expect(onValueChange).toHaveBeenLastCalledWith("h");
+  expect(made).toBe(1);
+  expect(played).toBe(1);
+  // Sliding off lets it up, and coming up types nothing more.
+  await fire(key(host, "KeyH").querySelector("path")!, new PointerEvent("pointerout", { bubbles: true, pointerId: 9, relatedTarget: host }));
+  expect(isDown(host, "KeyH")).toBe(false);
+  await fire(key(host, "KeyH"), new PointerEvent("pointerup", { bubbles: true, pointerId: 9 }));
+  expect(box(host).value).toBe("h");
+  expect(played).toBe(2);
+  await clickAll(host, ["KeyI", "Digit2", "Slash", "Space", "Quote"]);
+  expect(box(host).value).toBe("hi2/ '");
+  // A mouse leaves the caret in the box.
+  expect(document.activeElement).toBe(box(host));
+  await unmount();
+});
+
+test("a clicked shift stays down for the next key only, and a shift held on the real keyboard shifts a click too", async () => {
+  const { host, unmount } = await mount(<Keyboard typing />);
+  await click(host, "ShiftLeft");
+  expect(isDown(host, "ShiftLeft")).toBe(true);
+  await clickAll(host, ["KeyH", "KeyI"]);
+  expect(isDown(host, "ShiftLeft")).toBe(false);
+  await click(host, "ShiftRight");
+  await click(host, "Digit1");
+  expect(box(host).value).toBe("Hi!");
+  // A second click lets it up unused.
+  await click(host, "ShiftLeft");
+  await click(host, "ShiftLeft");
+  expect(isDown(host, "ShiftLeft")).toBe(false);
+  await click(host, "Digit1");
+  // Control and the other modifiers keep it down.
+  await click(host, "ShiftLeft");
+  await click(host, "ControlLeft");
+  expect(isDown(host, "ShiftLeft")).toBe(true);
+  await click(host, "Equal");
+  await click(host, "KeyA", { shiftKey: true });
+  expect(box(host).value).toBe("Hi!1+A");
+  // A key typed on the real keyboard lets a clicked shift up.
+  await click(host, "ShiftLeft");
+  await press("keydown", "KeyB", { key: "b" });
+  await press("keyup", "KeyB", { key: "b" });
+  expect(isDown(host, "ShiftLeft")).toBe(false);
+  await unmount();
+});
+
+test("a clicked caps lock turns its light on and off, and shifts the letters only, the other way while shift is down", async () => {
+  const { host, unmount } = await mount(<Keyboard typing />);
+  await click(host, "CapsLock");
+  expect(light(host)).toBe(true);
+  await clickAll(host, ["KeyO", "KeyK", "Digit1"]);
+  await click(host, "KeyA", { shiftKey: true });
+  await click(host, "CapsLock");
+  expect(light(host)).toBe(false);
+  await click(host, "KeyO");
+  expect(box(host).value).toBe("OK1ao");
+  await unmount();
+});
+
+test("clicked delete, return, the arrows and the keys that type nothing act at the caret", async () => {
+  const { host, unmount } = await mount(<Keyboard typing defaultValue="abcd" />);
+  // Without focus on the box, as the real keyboard does, a click types at the end.
+  await click(host, "Backspace");
+  expect(box(host).value).toBe("abc");
+  box(host).setSelectionRange(1, 1);
+  await click(host, "Enter");
+  expect(box(host).value).toBe("a\nbc");
+  expect([box(host).selectionStart, box(host).selectionEnd]).toEqual([2, 2]);
+  await click(host, "ArrowRight");
+  await click(host, "Backspace");
+  expect(box(host).value).toBe("a\nc");
+  await click(host, "ArrowLeft");
+  await click(host, "KeyX");
+  expect(box(host).value).toBe("ax\nc");
+  box(host).setSelectionRange(0, 3);
+  await click(host, "Backspace");
+  expect(box(host).value).toBe("c");
+  await clickAll(host, ["Tab", "Escape", "F5", "MetaLeft", "AltLeft", "Fn", "ArrowUp"]);
+  expect(box(host).value).toBe("c");
+  await unmount();
+});
+
+test("a click deletes a character outside the basic plane whole", async () => {
+  const { host, unmount } = await mount(<Keyboard typing defaultValue={"a\u{1F600}"} />);
+  await click(host, "Backspace");
+  expect(box(host).value).toBe("a");
+  await unmount();
+});
+
+test("clicked arrows step over a character outside the basic plane whole", async () => {
+  const { host, unmount } = await mount(<Keyboard typing defaultValue={"a\u{1F600}b"} />);
+  box(host).focus();
+  box(host).setSelectionRange(3, 3);
+  await click(host, "ArrowLeft");
+  expect(box(host).selectionStart).toBe(1);
+  await click(host, "ArrowRight");
+  expect(box(host).selectionStart).toBe(3);
+  await click(host, "ArrowLeft");
+  await click(host, "KeyX");
+  expect(box(host).value).toBe("ax\u{1F600}b");
+  await unmount();
+});
+
+/** A page that keeps the text and takes no more than five characters. */
+function Limited() {
+  const [value, setValue] = useState("abcde");
+  return <Keyboard typing value={value} onValueChange={(next) => next.length <= 5 && setValue(next)} />;
+}
+
+test("a click the page refuses leaves no caret behind to move a later change", async () => {
+  const { host, unmount } = await mount(<Limited />);
+  await click(host, "KeyX");
+  expect(box(host).value).toBe("abcde");
+  // A later edit in the box, which the page takes, keeps its own caret.
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set?.call(box(host), "acde");
+    box(host).setSelectionRange(1, 1);
+    box(host).dispatchEvent(new Event("input", { bubbles: true }));
+    box(host).dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+  });
+  expect(box(host).value).toBe("acde");
+  expect(box(host).selectionStart).toBe(1);
+  await unmount();
+});
+
+test("a click on a controlled box tells the page and leaves the text to its prop", async () => {
+  const onValueChange = mock((_: string) => {});
+  const { host, unmount } = await mount(<Keyboard typing value="fixed" onValueChange={onValueChange} />);
+  await click(host, "KeyX");
+  expect(onValueChange).toHaveBeenLastCalledWith("fixedx");
+  expect(box(host).value).toBe("fixed");
+  await click(host, "Backspace");
+  expect(onValueChange).toHaveBeenLastCalledWith("fixe");
+  await unmount();
+});
+
+test("a tap types without focusing the box, so the phone's own keyboard stays closed, and focus elsewhere stays there", async () => {
+  const { host, unmount } = await mount(<Keyboard typing />);
+  await click(host, "KeyQ", { touch: true });
+  expect(box(host).value).toBe("q");
+  expect(document.activeElement).toBe(document.body);
+  const other = document.createElement("input");
+  document.body.append(other);
+  other.focus();
+  await click(host, "KeyW", { touch: true });
+  expect(box(host).value).toBe("qw");
+  expect(document.activeElement).toBe(other);
+  other.remove();
+  await unmount();
+});
+
+test("a finger or pen presses a key at once and types it as it lifts, but not when the press was cancelled, moved or left the key", async () => {
+  const { host, unmount } = await mount(<Keyboard typing />);
+  const touch = (type: string, id: string, x = 0, pointerType = "touch") =>
+    fire(key(host, id), new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 5, pointerType, clientX: x, clientY: 0 }));
+  await touch("pointerdown", "KeyA");
+  expect(isDown(host, "KeyA")).toBe(true);
+  expect(box(host).value).toBe("");
+  await touch("pointermove", "KeyA", 2);
+  await touch("pointerup", "KeyA", 2);
+  expect(isDown(host, "KeyA")).toBe(false);
+  expect(box(host).value).toBe("a");
+  // The browser took the touch to scroll the page.
+  await touch("pointerdown", "KeyB");
+  await touch("pointercancel", "KeyB");
+  expect(isDown(host, "KeyB")).toBe(false);
+  // A finger that moves is scrolling or sliding off.
+  await touch("pointerdown", "KeyC");
+  await touch("pointermove", "KeyC", 30);
+  expect(isDown(host, "KeyC")).toBe(true);
+  await touch("pointerup", "KeyC", 30);
+  // A finger that left the key, then lifts on it again.
+  await touch("pointerdown", "KeyD");
+  await fire(key(host, "KeyD").querySelector("path")!, new PointerEvent("pointerout", { bubbles: true, pointerId: 5, relatedTarget: host }));
+  await touch("pointerup", "KeyD");
+  expect(box(host).value).toBe("a");
+  await touch("pointerdown", "KeyE", 0, "pen");
+  expect(box(host).value).toBe("a");
+  await touch("pointerup", "KeyE", 0, "pen");
+  expect(box(host).value).toBe("ae");
+  expect(document.activeElement).toBe(document.body);
+  await unmount();
+});
+
+test("a click stops the demo for good, and without the text box it only presses the key", async () => {
+  const { host, unmount } = await mount(<Keyboard demo="hi" />);
+  await frames.advance(1000);
+  await click(host, "KeyZ");
+  await frames.advance(6000);
+  expect(host.querySelectorAll("[data-down]")).toHaveLength(0);
+  expect(host.querySelector("textarea")).toBeNull();
+  expect(played).toBe(2);
+  await unmount();
 });

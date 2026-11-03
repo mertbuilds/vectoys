@@ -1,4 +1,4 @@
-import { camera, draw, footprint, multiply, place, plate, poses, rotateX, slab, type Flat, type Part, type Pose, type ScreenRect } from "@vinena/vectoys";
+import { camera, draw, footprint, multiply, place, plate, poses, rotate, rotateX, rotateY, slab, type Flat, type Part, type Pose, type ScreenRect } from "@vinena/vectoys";
 
 // A C6 envelope, 162 by 114 mm, seen from its back: the flap folds down over
 // a pocket made of two side flaps and a bottom flap, and an A6 card, 148 by
@@ -89,26 +89,33 @@ export function shown(rise: number): string {
   return `polygon(0% 0%, 100% 0%, ${edge.join(", ")})`;
 }
 
+/** The plain front as the eye sees it once the envelope turns its back away, for an opener there too. */
+export const FACE: ScreenRect = { x: left, y: top, width: WIDTH, height: HEIGHT, z: 0.02 };
+
 /**
  * The envelope's sheets. They all but lie in one plane, so they draw by
- * `order` rather than depth: the back, the flap while it is open past
- * upright, the card, the pocket, and the flap while it is shut over them.
+ * `order` rather than depth. Seen from the back: the back, the flap while
+ * it is open past upright, the card, the pocket, and the flap while it is
+ * shut over them. Seen from the front the order runs the other way, so the
+ * plain sheet covers the rest, and the flap stays behind the card until it
+ * lies flat on the far side of it.
  */
-function parts(pose: Pose, flap: number, rise: number): Part[] {
-  const sheet = (name: string, outline: Flat[], z: number, order: number) =>
-    plate({ name, box: [left, top, right, bottom], outline, lift: z, role: "pocket", order, pose });
+function parts(pose: Pose, flap: number, rise: number, fromBack: boolean): Part[] {
+  const order = (back: number) => (fromBack ? back : 6 - back);
+  const sheet = (name: string, outline: Flat[], z: number, back: number) =>
+    plate({ name, box: [left, top, right, bottom], outline, lift: z, role: "pocket", order: order(back), pose });
   // The fold sits on the back while the flap is open and on the pocket while it is shut.
   const hinge = BACK_Z + PAPER + (SHUT_Z - BACK_Z - PAPER) * ((1 + Math.cos((flap * Math.PI) / 180)) / 2);
   const flapPose: Pose = { position: place(pose, [0, top, hinge]), rotation: multiply(pose.rotation, rotateX(flap)) };
   const cardTop = top + CARD_DOWN - rise;
   return [
-    slab({ name: "back", box: [left, top, right, bottom], radii: [mm(1), mm(1)], thickness: PAPER, order: 0, pose: shift(pose, BACK_Z + PAPER) }),
+    slab({ name: "back", box: [left, top, right, bottom], radii: [mm(1), mm(1)], thickness: PAPER, order: order(0), pose: shift(pose, BACK_Z + PAPER) }),
     slab({
       name: "flap",
       box: [left, 0, right, FLAP],
       outline: FLAP_SHAPE,
       thickness: PAPER,
-      order: flap > 90 ? 1 : 6,
+      order: fromBack ? (flap > 90 ? 1 : 6) : flap < 180 ? 0 : 5,
       pose: flapPose,
     }),
     slab({
@@ -116,7 +123,7 @@ function parts(pose: Pose, flap: number, rise: number): Part[] {
       box: [-CARD_WIDTH / 2, 0, CARD_WIDTH / 2, CARD_HEIGHT],
       radii: [mm(1.5), mm(1.5)],
       thickness: PAPER,
-      order: 2,
+      order: order(2),
       pose: shift(pose, CARD_Z + PAPER, cardTop),
     }),
     sheet("pocket-left", SIDE_LEFT, POCKET_Z, 3),
@@ -137,11 +144,26 @@ const UPRIGHT: Pose = { position: [0, 0, 0], rotation: rotateX(-90) };
 /** Seen from in front, a little above and a little to the left. */
 export const EYE = { yaw: 12, pitch: -8 } as const;
 
-/** The envelope as the eye sees it, `open` from 0 to 1: the parts drawn, the card's pose, the clip that hides what is still inside, and the shadow. */
-export function seen(open = 0) {
-  const eye = camera({ width: 100, height: 120, perspective: 300, anchorY: 80, ...EYE });
+/**
+ * The box the envelope is drawn in, with room for it to turn all the way
+ * round: turned, its near corners and its shadow on the ground reach well
+ * below where they rest. The eye looks 20 above where the envelope stands.
+ */
+const FRAME = { width: 115, height: 138, anchorY: 74, originY: 54 } as const;
+
+/** How far a drag has turned the eye from `EYE`, in degrees. */
+export type Turn = { yaw: number; pitch: number };
+
+/**
+ * The envelope as the eye sees it, `open` from 0 to 1 and the eye turned
+ * `turn` from `EYE`: the parts drawn, the card's pose, the clip that hides
+ * what is still inside, the shadow, and whether its back faces the eye.
+ */
+export function seen(open = 0, turn: Turn = { yaw: 0, pitch: 0 }) {
+  const eye = camera({ ...FRAME, perspective: 300, yaw: EYE.yaw + turn.yaw, pitch: EYE.pitch + turn.pitch });
   const { flap, rise } = stages(open);
-  const scene = parts(UPRIGHT, flap, rise);
+  const fromBack = eye.facesEye(UPRIGHT.position, rotate(UPRIGHT.rotation, [0, 0, 1]));
+  const scene = parts(UPRIGHT, flap, rise, fromBack);
   // The shadow is the envelope's own, not the flap's while it stands out toward the eye.
   const body = scene.filter((part) => part.name !== "flap");
   const ground = (spread: number, ahead: number) => footprint(body, eye, { gap: mm(14), spread, ahead });
@@ -160,6 +182,9 @@ export function seen(open = 0) {
     rise,
     card: pose("card"),
     back: pose("back"),
+    // The back sheet's other face, turned round to face out of the front.
+    front: { position: place(UPRIGHT, [0, 0, BACK_Z]), rotation: multiply(UPRIGHT.rotation, rotateY(180)) } satisfies Pose,
+    fromBack,
     clip: shown(rise),
     shadow: contact.facing ? { contact: contact.d, ground: far.d } : null,
   };
