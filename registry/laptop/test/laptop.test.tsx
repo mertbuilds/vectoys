@@ -286,8 +286,8 @@ test("without a look, the markup is what it was before the realistic look", () =
   ];
   const [now, then] = [markup({ Laptop, DESK, PHONE, FRONT, KICKFLIP }), markup(before)];
   expect(now).toHaveLength(then.length);
-  // Each laptop now sits in a turntable, round the same drawing.
-  now.forEach((html, index) => expect([index, html.includes(then[index] ?? "-")]).toEqual([index, true]));
+  // Each laptop now sits in a turntable, round the same drawing, a free one's parts in a group a page's --vectoys-tint filters.
+  now.forEach((html, index) => expect([index, html.replace('<g style="filter:var(--vectoys-tint)">', "<g>").includes(then[index] ?? "-")]).toEqual([index, true]));
   expect(renderToString(<Laptop eye={DESK} look="simple" />)).toBe(renderToString(<Laptop eye={DESK} />));
 });
 
@@ -313,6 +313,12 @@ test.each([DESK, PHONE])("a page's --vectoys-finish never reaches the realistic 
   expect(renderToString(<Laptop eye={eye} look="realistic" free flat={1} />)).toContain("stop-color:color-mix(in srgb, #f0f1f3 99%, black)");
   expect(renderToString(<Laptop eye={eye} free flat={1} />)).toContain("stop-color:color-mix(in srgb, var(--vectoys-finish, #f0f1f3) 99%, black)");
   expect(renderToString(<Laptop eye={FRONT} />)).toContain("var(--vectoys-finish, #f0f1f3)");
+});
+
+test("a page's --vectoys-tint filters a free laptop's parts, not its shadow", () => {
+  const html = renderToString(<Laptop eye={DESK} look="realistic" free flat={1} />);
+  expect(html.match(/filter:var\(--vectoys-tint\)/g)).toHaveLength(1);
+  expect(html.indexOf('style="filter:var(--vectoys-tint)"')).toBeGreaterThan(html.indexOf('-far)"'));
 });
 
 test("straight on, the realistic look is FRONT's product shot", () => {

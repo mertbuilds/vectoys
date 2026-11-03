@@ -1,6 +1,6 @@
 import { Faces, Stage, Turntable, useFrames, useReducedMotion, useSpring, type Look, type StyleWithVariables, type TurnOptions } from "@vinena/vectoys-react";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
-import { BOARD, EYE, KEYS, ORDER, TRAVEL, keyFor, seen, type Key as KeySpec } from "./geometry";
+import { EYE, KEYS, LIMITS, TRAVEL, keyFor, sceneAt, seen, type Key as KeySpec, type Scene } from "./geometry";
 import { clicks, type Clicks } from "./sound";
 
 // The page's colors, as CSS variables. Each falls back to a tone for light
@@ -65,7 +65,8 @@ const TOGGLE: CSSProperties = {
   cursor: "pointer",
   touchAction: "manipulation",
 };
-const ROW: CSSProperties = { display: "flex", alignItems: "center", gap: 8 };
+// Over the board, which spills out of its box as it turns.
+const ROW: CSSProperties = { position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: 8 };
 const CONTROLS: CSSProperties = { ...ROW, justifyContent: "flex-end", marginTop: 8 };
 // Room at the end of the text row for the turntable's full screen button, 32 pixels wide and 8 from the edge, so it never covers Clear.
 const ROOM: CSSProperties = { paddingRight: 40 };
@@ -146,13 +147,13 @@ function script(word: string) {
   return { steps, length: at + 2200 };
 }
 
-type KeyProps = { spec: KeySpec; down: boolean; lit: boolean; press: (key: string, pointer: number, on: boolean) => void; drag: boolean };
+type KeyProps = { spec: KeySpec; scene: Scene; down: boolean; lit: boolean; press: (key: string, pointer: number, on: boolean) => void; drag: boolean };
 
-/** One key: its cap springs down while it is held, its legends riding on its top. With `drag`, a pointer that moves lets it up. */
-const Key = memo(function Key({ spec, down, lit, press, drag }: KeyProps) {
+/** One key, as the eye of `scene` sees it: its cap springs down while it is held, its legends riding on its top. With `drag`, a pointer that moves lets it up. */
+const Key = memo(function Key({ spec, scene, down, lit, press, drag }: KeyProps) {
   // The cap bottoms out, so the spring's overshoot never shows past it.
   const travel = Math.min(useSpring(down ? TRAVEL : 0, SPRING), TRAVEL);
-  const view = useMemo(() => seen(spec, travel), [spec, travel]);
+  const view = useMemo(() => seen(spec, travel, scene), [spec, travel, scene]);
   const from = useRef<{ x: number; y: number } | null>(null);
   const end = (event: PointerEvent) => {
     from.current = null;
@@ -234,23 +235,23 @@ export type KeyboardProps = {
  * another control on the page leave it alone. Each press clicks, made with WebAudio after the first press,
  * and a button turns that off. Under reduced motion the keys change at once.
  * With `typing`, a text box takes what you type (with `typing="fullscreen"`,
- * only while full screen). A drag, from anywhere on it, tilts it, and a
- * button in its corner fills the screen with it (`fullscreen`, true by
- * default).
+ * only while full screen). A drag, from anywhere on it, moves the eye round
+ * it, always from above, and a button in its corner fills the screen with it
+ * (`fullscreen`, true by default).
  */
 export function Keyboard({ label = "Keyboard", draggable, fullscreen, limits, release, className, style, ...props }: KeyboardProps) {
   return (
     <Turntable
-      mode="tilt"
+      mode="camera"
       label={label}
       className={className ? `${TURN} ${className}` : TURN}
       {...(style && { style })}
       {...(draggable !== undefined && { draggable })}
       {...(fullscreen !== undefined && { fullscreen })}
-      {...(limits && { limits })}
+      limits={{ ...LIMITS, ...limits }}
       {...(release && { release })}
     >
-      {({ full }) => <Board {...props} label={label} full={full} drag={draggable !== false} room={fullscreen !== false} />}
+      {({ full, yaw, pitch }) => <Board {...props} label={label} full={full} yaw={yaw} pitch={pitch} drag={draggable !== false} room={fullscreen !== false} />}
     </Turntable>
   );
 }
@@ -269,9 +270,11 @@ function Board({
   defaultValue = "",
   onValueChange,
   full,
+  yaw,
+  pitch,
   drag,
   room,
-}: Omit<KeyboardProps, keyof TurnOptions | "className" | "style"> & { full: boolean; drag: boolean; room: boolean }) {
+}: Omit<KeyboardProps, keyof TurnOptions | "className" | "style"> & { full: boolean; yaw: number; pitch: number; drag: boolean; room: boolean }) {
   const id = `keyboard-${useId().replace(/[^\w-]/g, "")}`;
   const reduced = useReducedMotion();
   const frames = useFrames();
@@ -483,7 +486,8 @@ function Board({
     box.current?.focus();
   };
 
-  // The shadow and the case never change, so they render once.
+  // Every key and the case redraw as the eye moves, and only the key that moves as one is pressed.
+  const scene = useMemo(() => sceneAt({ yaw, pitch }), [yaw, pitch]);
   const board = useMemo(
     () => (
       <>
@@ -495,15 +499,15 @@ function Board({
             <feGaussianBlur stdDeviation="2.4 1.4" />
           </filter>
         </defs>
-        <path d={BOARD.shadow.ground} filter={`url(#${id}-far)`} style={{ fill: SHADOW }} />
-        <path d={BOARD.shadow.contact} filter={`url(#${id}-near)`} style={{ fill: SHADOW }} />
-        <Faces faces={BOARD.drawn.faces} hulls={BOARD.drawn.hulls} styles={CASE_STYLES} shading />
-        {BOARD.drawn.hulls.map((hull) => (
+        <path d={scene.board.shadow.ground} filter={`url(#${id}-far)`} style={{ fill: SHADOW }} />
+        <path d={scene.board.shadow.contact} filter={`url(#${id}-near)`} style={{ fill: SHADOW }} />
+        <Faces faces={scene.board.drawn.faces} hulls={scene.board.drawn.hulls} styles={CASE_STYLES} shading />
+        {scene.board.drawn.hulls.map((hull) => (
           <path key={hull.part} d={hull.d} {...OUTLINE} />
         ))}
       </>
     ),
-    [id],
+    [id, scene],
   );
 
   const look: StyleWithVariables = { ...ROOT, ...(finish && { "--vectoys-finish": finish }), ...(full && FULL) };
@@ -541,8 +545,8 @@ function Board({
         <Stage camera={EYE} role="img" label="A full-size keyboard with a US layout. Its keys go down as you type." style={{ touchAction: "manipulation" }}>
           {board}
           <g style={{ cursor: "pointer" }}>
-            {ORDER.map((key) => (
-              <Key key={key.id} spec={key} down={down.has(key.id)} lit={key.light ? caps : false} press={pointer} drag={drag} />
+            {scene.order.map((key) => (
+              <Key key={key.id} spec={key} scene={scene} down={down.has(key.id)} lit={key.light ? caps : false} press={pointer} drag={drag} />
             ))}
           </g>
         </Stage>

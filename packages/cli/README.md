@@ -21,7 +21,7 @@ vectoys list
 
 ```sh
 npx @vinena/vectoys-cli list                  # show every item
-npx @vinena/vectoys-cli add laptop phone      # copy items in and install @vinena/vectoys and @vinena/vectoys-react
+npx @vinena/vectoys-cli add laptop phone      # copy items in, and the items they use, and install @vinena/vectoys and @vinena/vectoys-react
 npx @vinena/vectoys-cli create spinning-top   # start a new item
 npx @vinena/vectoys-cli check spinning-top    # check it (needs bun)
 npx @vinena/vectoys-cli preview spinning-top  # render it to preview.html (needs bun)

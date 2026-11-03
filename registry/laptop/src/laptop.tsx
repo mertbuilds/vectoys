@@ -149,7 +149,7 @@ type LaptopProps = TurnOptions & {
    * look, to 1, FRONT's straight-on shot: there, open and with every angle
    * 0, it draws as `<Laptop eye={FRONT}>` does with FRONT's scene across the
    * eye's own, from its top. Between, the camera, the shapes and the tones
-   * ease from one to the other in any pose.
+   * ease from one to the other in any pose. At 1 a drag up or down rolls it.
    */
   flat?: number;
   /** A move across the drawing, in shares of the laptop's width, `WIDTH`; positive is to the right. */
@@ -171,7 +171,7 @@ type LaptopProps = TurnOptions & {
   eye?: View;
   /**
    * `simple` by default, in the page's tones. `realistic` draws the machine
-   * as it is, silver on any page, with its keys, grilles, feet and underside.
+   * as it is, silver or as --vectoys-tint filters it, with its keys, grilles, feet and underside.
    * It turns and moves as `free` does, and changing it lets go of the
    * handle's pose. `FRONT` draws the same in both.
    */
@@ -193,7 +193,7 @@ type LaptopProps = TurnOptions & {
 
 /**
  * A 14 inch laptop seen from the eye you pass (DESK, PHONE or FRONT): one SVG
- * drawn from the laptop's projected outline, and the display's glass laid onto the lid with
+ * of its projected outline, and the display's glass laid onto the lid with
  * live content on it, hidden while the lid faces away. A drag or the arrow
  * keys turn it, but for FRONT, and a button shows it full screen.
  */
@@ -202,15 +202,16 @@ export const Laptop = memo(function Laptop({ draggable, fullscreen = true, limit
   const uid = useId();
   const inner = useRef<LaptopHandle>(null);
   const turned = useRef({ yaw: 0, pitch: 0 });
-  // A drag up looks from lower, so it takes from the eye's height.
+  // A drag up looks from lower, so it takes from the eye's height, or at flat 1 adds to the roll.
   useImperativeHandle(ref, () => ({
     set: (next) => {
       const { yaw, pitch } = turned.current;
-      inner.current?.set({ ...next, ...(next.yaw !== undefined && { yaw: next.yaw + yaw }), ...(next.pitch !== undefined && { pitch: next.pitch - pitch }) });
+      const flat = props.flat === 1;
+      inner.current?.set({ ...next, ...(next.yaw !== undefined && { yaw: next.yaw + yaw }), ...(!flat && next.pitch !== undefined && { pitch: next.pitch - pitch }), ...(flat && next.roll !== undefined && { roll: next.roll + pitch }) });
     },
   }));
   const front = "art" in eye;
-  // Held to the ranges of a laptop that is not free, so a drag stops where its pose does.
+  // Held to a laptop's ranges unless free, so a drag stops where its pose does.
   const rest = { lid: 0, yaw, pitch: pitch ?? (front ? 15 : eye.pitch) };
   const at = free ? rest : held(rest);
   const range: Required<TurnLimits> = free ? { yaw: [-180, 180], pitch: [-35, 35] } : { yaw: [-YAW - at.yaw, YAW - at.yaw], pitch: [at.pitch - PITCH[1], at.pitch - PITCH[0]] };
@@ -224,7 +225,7 @@ export const Laptop = memo(function Laptop({ draggable, fullscreen = true, limit
             uid={uid}
             {...(ref && { ref: inner })}
             {...(turn.yaw !== 0 && { yaw: at.yaw + turn.yaw })}
-            {...(turn.pitch !== 0 && { pitch: at.pitch - turn.pitch })}
+            {...(turn.pitch !== 0 && (props.flat === 1 ? { roll: (props.roll ?? 0) + turn.pitch } : { pitch: at.pitch - turn.pitch }))}
           />
         </>
       )}
@@ -701,15 +702,14 @@ const REAL = {
   far: "rgba(0, 0, 0, 0.2)",
 };
 
-// The bezel's glass catching the light from above, down the lid from its top edge, gone at flat 1 as FRONT has none.
+// The bezel's glass catching the light from above, down the lid from its top, none at flat 1 as on FRONT.
 const [BRIGHT, DIM, AT] = [0.13, 0.04, 0.25];
 const PANE: Stop[] = [
   [0, "white", BRIGHT],
   [AT, "white", DIM],
   [0.6, "white", 0],
 ];
-// The pane's light at the notch's middle height, in its first stretch. Over the notch it changes by under 3 levels,
-// and a gradient there is drawn on the wrong scale by some browsers under the glass's 3D transform, so the notch takes it whole.
+// The pane's light at the notch's middle height: some browsers scale a gradient there wrong in 3D.
 const NOTCH_LIGHT = fixed(lerp(BRIGHT, DIM, (FRONT.glass.y + (FRONT.notch.height * WIDTH) / 200) / DEPTH / AT));
 
 /** The glass's top corners and the notch, from the eye's own at `flat` 0 to FRONT's at 1. */
@@ -817,7 +817,7 @@ function Free({
 }) {
   const id = `laptop-${eye.id}-${uid.replace(/[^\w-]/g, "")}`;
   const key = FIELDS.map((field) => pose[field]).join();
-  // `key` is the pose, field by field, so a new pose object with the same fields keeps the frame.
+  // `key` is the pose's fields, so a new pose object with the same fields keeps the frame.
   const frame = useMemo(() => eye.trick(pose, turning, real), [eye, turning, real, key]);
   const values = looks(frame, pose, real);
   const nodes = useNodes();
@@ -826,8 +826,7 @@ function Free({
   const given = useRef(pose);
 
   // After every render the frame is drawn whole, the handle's if it still
-  // holds, so nothing a render wrote over is left behind. Turning `free` on
-  // or off lets go of the handle's pose, which was held to the other ranges.
+  // holds. Turning `free` on or off lets go of the handle's pose.
   useLayoutEffect(() => {
     given.current = pose;
     const hold = set.current;
@@ -1112,7 +1111,7 @@ function Free({
         <path {...bind("shadow.far", real ? { fill: REAL.far } : shade(1))} filter={url("far")} />
         <path {...bind("shadow.near", real ? { fill: REAL.near } : shade(1))} filter={url("near")} />
       </g>
-      <g>
+      <g style={{ filter: "var(--vectoys-tint)" }}>
         {frame.order.map((part) => (
           <g key={part} ref={nodes.ref(`part.${part}`)}>
             {part === "lid" ? drawn.lid : part === "base" ? drawn.base : drawn.feet}

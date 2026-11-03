@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, relative, resolve, sep } from "node:path";
+import { dirname, posix, relative, resolve, sep } from "node:path";
+import { ITEM_NAME, usesLine } from "@vectoys/registry-build";
 import { CONFIG_FILE, DEFAULT_REGISTRY, defaults, readConfig, writeConfig, type Config } from "./config";
 import { fetchJson } from "./fetch";
 import { place, type ItemFile } from "./files";
@@ -21,10 +22,13 @@ export type Context = {
   log: (line: string) => void;
 };
 
-/** What an item may be named: one folder name, never `.` or `..`. */
-export const ITEM_NAME = /^(?!\.{1,2}$)[\w.-]+$/;
+export { ITEM_NAME };
 
-type Item = { name: string; title?: string; dependencies?: string[]; files: ItemFile[]; docs?: string };
+/** How deep `add` follows items that depend on items, so a registry cannot send it on forever. */
+export const MAX_DEPTH = 8;
+
+type Item = { name: string; title?: string; dependencies?: string[]; registryDependencies?: string[]; files: ItemFile[]; docs?: string };
+type Fetched = { url: string; item: Item };
 type Index = { items: { name: string; title?: string; description?: string; license?: string }[] };
 
 export function init(context: Context): Config {
@@ -44,28 +48,28 @@ export async function add(context: Context, specs: string[]) {
   if (specs.length === 0) throw new Error('Name an item to add, as "vectoys add phone". Run "vectoys list" to see them.');
   const found = readConfig(context.cwd);
   const config = found ?? defaults(context.cwd, context.registryFlag ?? DEFAULT_REGISTRY);
-  // Every item is fetched and checked before anything is written, so one bad
-  // name leaves the project as it was.
-  const items = await Promise.all(
-    specs.map(async (spec) => {
-      const url = itemUrl(spec, config, context.registry);
-      return { url, item: check(await fetchJson<unknown>(url), url) };
-    }),
-  );
+  // Every item and every item it depends on is fetched and checked before
+  // anything is written, so one bad name leaves the project as it was.
+  const urlOf = (spec: string) => itemUrl(spec, config, context.registry);
+  const items = await withDependencies(specs.map(urlOf), urlOf);
   const root = resolve(context.cwd, config.dir);
-  const extension = importExtension(context.cwd);
-  const writes = items.flatMap(({ url, item }) => {
-    const folder = resolve(root, item.name);
-    return withExtensions(place(item.files), extension).map((file) => {
-      const path = resolve(folder, file.to);
-      if (!folder.startsWith(root + sep) || !path.startsWith(folder + sep)) throw new Error(`${url} has a file that would land outside ${config.dir}.`);
-      return { path, content: file.content };
-    });
+  // The items' files together, each under its item's folder, so an import of
+  // another item, `../laptop/laptop`, gets its extension as one of its own does.
+  const placed = items.flatMap(({ url, item }) => place(item.files).map((file) => ({ url, folder: resolve(root, item.name), file: { ...file, to: posix.join(item.name, file.to) } })));
+  const named = withExtensions(placed.map(({ file }) => file), importExtension(context.cwd));
+  const writes = placed.map(({ url, folder }, at) => {
+    const file = named[at];
+    if (!file) throw new Error(`${url} has a file that lost its name.`);
+    const path = resolve(root, file.to);
+    if (!folder.startsWith(root + sep) || !path.startsWith(folder + sep)) throw new Error(`${url} has a file that would land outside ${config.dir}.`);
+    return { path, content: file.content };
   });
 
   if (!found) init(context);
   for (const { path, content } of writes) await write(context, path, content);
-  for (const { item } of items) if (item.docs) context.log(item.docs);
+  // Each line once, and none that asks to add an item this add just wrote.
+  const added = new Set(items.map(({ item }) => usesLine(item.name)));
+  for (const line of new Set(items.flatMap(({ item }) => item.docs?.split("\n") ?? []))) if (!added.has(line)) context.log(line);
   installMissing(context, [...new Set(items.flatMap(({ item }) => item.dependencies ?? []))]);
 }
 
@@ -86,6 +90,38 @@ export async function list(context: Context, scope: string | undefined) {
   }
 }
 
+/**
+ * The items at `urls` and the items they list in registryDependencies, by
+ * `urlOf` for a plain name, fetched and checked, each once: the ones
+ * depended on before the ones that use them.
+ */
+export async function withDependencies(urls: string[], urlOf: (spec: string) => string): Promise<Fetched[]> {
+  const fetched = new Map<string, Promise<Item>>();
+  const get = (url: string) => {
+    const found = fetched.get(url) ?? fetchJson<unknown>(url).then((value) => check(value, url));
+    fetched.set(url, found);
+    return found;
+  };
+  // The ones asked for are fetched together; the rest as the walk meets them.
+  await Promise.all(urls.map(get));
+  const ordered: Fetched[] = [];
+  const visit = async (url: string, path: string[]) => {
+    if (path.includes(url)) throw new Error(`${url} depends on itself: ${[...path.slice(path.indexOf(url)), url].join(" -> ")}`);
+    if (path.length >= MAX_DEPTH) throw new Error(`${path[0]} depends on items more than ${MAX_DEPTH} deep.`);
+    if (ordered.some((each) => each.url === url)) return;
+    const item = await get(url);
+    for (const dep of item.registryDependencies ?? []) await visit(/^https?:\/\//.test(dep) ? dep : urlOf(dep), [...path, url]);
+    if (!ordered.some((each) => each.url === url)) ordered.push({ url, item });
+  };
+  for (const url of urls) await visit(url, []);
+  // Each item lands in a folder named after it, so two by one name would write over each other.
+  for (const [at, { url, item }] of ordered.entries()) {
+    const other = ordered.slice(0, at).find((each) => each.item.name === item.name);
+    if (other) throw new Error(`${url} and ${other.url} are both named "${item.name}".`);
+  }
+  return ordered;
+}
+
 function check(value: unknown, url: string): Item {
   const item = value as Partial<Item>;
   const fine =
@@ -97,7 +133,23 @@ function check(value: unknown, url: string): Item {
   if (item.dependencies !== undefined && !(Array.isArray(item.dependencies) && item.dependencies.every(isPackageSpec))) {
     throw new Error(`${url} lists dependencies that are not plain npm package names.`);
   }
+  const registryDependencies = item.registryDependencies;
+  if (registryDependencies !== undefined && !(Array.isArray(registryDependencies) && registryDependencies.every(isItemRef))) {
+    throw new Error(`${url} lists registryDependencies that are not item names or http(s) URLs.`);
+  }
   return item as Item;
+}
+
+/** Whether a registryDependencies entry is a plain item name or an http or https URL. */
+function isItemRef(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  if (ITEM_NAME.test(value)) return true;
+  if (!/^https?:\/\//.test(value)) return false;
+  try {
+    return Boolean(new URL(value));
+  } catch {
+    return false;
+  }
 }
 
 async function write(context: Context, path: string, content: string) {

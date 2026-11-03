@@ -174,8 +174,8 @@ function useClicks() {
   return useCallback(() => (audio.current ??= clicks()), []);
 }
 
-/** A row's sound, shared by its keys so they play through one audio context, and whether a drag on a key turns the row. */
-const Shared = createContext<{ audible: boolean; start: () => Clicks | null; grab: boolean } | null>(null);
+/** A row's sound, shared by its keys so they play through one audio context, whether a drag on a key turns the row, and the row's turn. */
+const Shared = createContext<{ audible: boolean; start: () => Clicks | null; grab: boolean; turn: { yaw: number; pitch: number } } | null>(null);
 
 const PRESS_KEYS = new Set([" ", "Enter"]);
 // A pointer that moves this far while held is turning the key, not pressing it.
@@ -344,8 +344,8 @@ export const Keycap = memo(function Keycap({
     );
   };
 
-  // In a row the row turns, so the key draws from where it rests.
-  if (shared) return drawn({ yaw: 0, pitch: 0 });
+  // In a row the row turns, and each key draws with the eye moved round it by the row's turn.
+  if (shared) return drawn(shared.turn);
   const title = typeof children === "string" || typeof children === "number" ? `${children} key` : "key";
   return (
     <Turntable mode="camera" label={title} draggable={draggable} limits={{ ...LIMITS, ...limits }} {...(fullscreen !== undefined && { fullscreen })} {...(release && { release })}>
@@ -380,14 +380,13 @@ export type KeycapRowProps = {
 /**
  * A row of keys side by side, such as a word spelled out, each its own
  * button. Its keys share one audio context and one sound switch. A drag on
- * the row, its keys included, tilts it as one, and a button shows it full
- * screen.
+ * the row, its keys included, moves the eye round every key at once, and a
+ * button shows it full screen.
  */
-export function KeycapRow({ keys, onPress, label, finish, sound, defaultSound, onSoundChange, soundToggle = false, ...turning }: KeycapRowProps) {
+export function KeycapRow({ keys, onPress, label, finish, sound, defaultSound, onSoundChange, soundToggle = false, limits, ...turning }: KeycapRowProps) {
   const { audible, toggle } = useSound(sound, defaultSound, onSoundChange);
   const start = useClicks();
   const grab = turning.draggable !== false;
-  const shared = useMemo(() => ({ audible, start, grab }), [audible, start, grab]);
   const row = (
     <div role="group" aria-label={label} style={{ display: "flex" }}>
       {keys.map((key, index) => (
@@ -399,19 +398,26 @@ export function KeycapRow({ keys, onPress, label, finish, sound, defaultSound, o
       ))}
     </div>
   );
-  // Tilted as one, since each key draws with an eye of its own.
   return (
-    <Shared.Provider value={shared}>
-      <Turntable mode="tilt" label={label ?? "keys"} {...turning}>
-        {soundToggle ? (
-          <div style={COLUMN}>
-            {row}
-            <SoundSwitch on={audible} toggle={toggle} />
-          </div>
-        ) : (
-          row
-        )}
-      </Turntable>
-    </Shared.Provider>
+    <Turntable mode="camera" label={label ?? "keys"} limits={{ ...LIMITS, ...limits }} {...turning}>
+      {({ yaw, pitch }) => (
+        <Row audible={audible} start={start} grab={grab} yaw={yaw} pitch={pitch}>
+          {soundToggle ? (
+            <div style={COLUMN}>
+              {row}
+              <SoundSwitch on={audible} toggle={toggle} />
+            </div>
+          ) : (
+            row
+          )}
+        </Row>
+      )}
+    </Turntable>
   );
+}
+
+/** Hands the row's sound and turn to its keys. */
+function Row({ audible, start, grab, yaw, pitch, children }: { audible: boolean; start: () => Clicks | null; grab: boolean; yaw: number; pitch: number; children: ReactNode }) {
+  const shared = useMemo(() => ({ audible, start, grab, turn: { yaw, pitch } }), [audible, start, grab, yaw, pitch]);
+  return <Shared.Provider value={shared}>{children}</Shared.Provider>;
 }

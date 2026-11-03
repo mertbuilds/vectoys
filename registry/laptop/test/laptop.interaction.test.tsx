@@ -359,6 +359,34 @@ test("a drag on the display turns the laptop, held to its ranges, and the handle
   }
 });
 
+test("at flat 1, where the eye is level, a drag down rolls the laptop to look down on it, as the roll prop draws it", async () => {
+  const frames = fakeFrames();
+  try {
+    const handle = createRef<LaptopHandle>();
+    const { host } = await mount(<Laptop eye={DESK} look="realistic" free flat={1} pitch={0} limits={{ pitch: [-20, 0] }} ref={handle} />);
+    const before = markup(host);
+    const body = host.querySelector(".vectoys-turntable")!;
+    await act(async () => void body.dispatchEvent(pointer("pointerdown", 0, 0)));
+    await act(async () => void body.dispatchEvent(pointer("pointermove", 0, 4000)));
+    await act(async () => void body.dispatchEvent(pointer("pointerup", 0, 4000)));
+    // Past the limit the drag stretches; let go, it springs back to the limit.
+    await frames.advance(3000);
+    const dragged = markup(host);
+    expect(dragged).not.toBe(before);
+    // Held at the limit, the drag's turn is the roll's -20.
+    const rolled = await mount(<Laptop eye={DESK} look="realistic" free flat={1} pitch={0} roll={-20} />);
+    const ids = (html: string) => html.replace(/laptop-desk-\w+?-/g, "laptop-desk-X-");
+    expect(ids(dragged)).toBe(ids(markup(rolled.host)));
+    // The drag went to the roll, so the handle leaves the pitch alone and adds the drag to the roll it sets.
+    await act(async () => handle.current?.set({ pitch: 0 }));
+    expect(ids(markup(host))).toBe(ids(dragged));
+    await act(async () => handle.current?.set({ roll: 0 }));
+    expect(ids(markup(host))).toBe(ids(dragged));
+  } finally {
+    frames.restore();
+  }
+});
+
 test("FRONT does not turn unless asked, and the switches take away the tab stop and the button", async () => {
   const front = await mount(<Laptop eye={FRONT} />);
   expect(front.host.querySelector(".vectoys-turntable")?.hasAttribute("tabindex")).toBe(false);

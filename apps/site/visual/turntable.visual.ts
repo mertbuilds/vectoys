@@ -107,7 +107,9 @@ for (const name of ["phone", "card", "envelope", "keyboard"]) {
     await leave(page);
     // A drag that ends on the card's own button turns it and does not flip it.
     if (pressed !== null) await expect(table.locator("[data-vectoys-grab]")).toHaveAttribute("aria-pressed", pressed);
-    if (name === "envelope" || name === "keyboard") expect(await bodyTransform(table)).not.toBe(restTransform);
+    // The keyboard turns its camera, so only the envelope's box turns.
+    if (name === "envelope") expect(await bodyTransform(table)).not.toBe(restTransform);
+    if (name === "keyboard") expect(await bodyTransform(table)).toBe("");
     expect((await preview.screenshot()).equals(rest)).toBe(false);
     await expect(preview).toHaveScreenshot(`${name}-turned.png`);
 
@@ -132,10 +134,12 @@ test("the arrow keys turn the focused envelope, as far as its limits", async ({ 
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowRight");
   await page.keyboard.press("ArrowUp");
-  expect(await bodyTransform(table)).toBe("perspective(1000px) rotateX(6deg) rotateY(20deg)");
+  // It looks from three times its unturned width away.
+  const depth = await table.locator("> .vectoys-turntable-body").evaluate((body) => (body as HTMLElement).offsetWidth * 3);
+  expect(await bodyTransform(table)).toBe(`perspective(${depth}px) rotateX(6deg) rotateY(20deg)`);
   // Each limit holds: the envelope turns at most 28 degrees each way.
   await page.keyboard.press("Shift+ArrowRight");
-  expect(await bodyTransform(table)).toBe("perspective(1000px) rotateX(6deg) rotateY(28deg)");
+  expect(await bodyTransform(table)).toBe(`perspective(${depth}px) rotateX(6deg) rotateY(28deg)`);
 });
 
 test("the arrow keys turn the focused phone", async ({ page }) => {

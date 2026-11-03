@@ -110,3 +110,12 @@ test("a config reached through two parents counts in each, and a cycle ends", ()
   });
   expect(importExtension(cycle)).toBe("js");
 });
+
+test("an import of another item's file gets its extension when that item's files come along", () => {
+  const files = [
+    { from: "a", to: "laptop/laptop.tsx", content: "export {};\n" },
+    { from: "b", to: "laptop-front/laptop-front.tsx", content: 'import { Laptop } from "../laptop/laptop";\nimport { Gone } from "../gone/gone";\n' },
+  ];
+  expect(withExtensions(files, "js")[1]!.content).toBe('import { Laptop } from "../laptop/laptop.js";\nimport { Gone } from "../gone/gone";\n');
+  expect(withExtensions(files, "ts")[1]!.content).toStartWith('import { Laptop } from "../laptop/laptop.tsx";');
+});

@@ -139,6 +139,65 @@ test("an item with dependencies that are not package names is turned away", asyn
   }
 });
 
+test("an item that uses another adds it first, and imports it where it landed", async () => {
+  const dir = join(work, "uses");
+  mkdirSync(dir);
+  const { stdout, stderr, code } = await runIn(dir, "add", "laptop-front", "--no-install");
+  expect(stderr).toBe("");
+  expect(code).toBe(0);
+  const wrote = stdout.split("\n").filter((line) => line.startsWith("Wrote    "));
+  expect(wrote).toEqual(["Wrote    components/vectoys/laptop/geometry.ts", "Wrote    components/vectoys/laptop/laptop.tsx", "Wrote    components/vectoys/laptop-front/laptop-front.tsx"]);
+  expect(readFileSync(join(dir, "components/vectoys/laptop-front/laptop-front.tsx"), "utf8")).toContain('from "../laptop/laptop";');
+  expect(stdout).toContain(`Install what the items need with: npm install @vinena/vectoys@^${engine} @vinena/vectoys-react@^${react}`);
+  // The docs show each line once, and not the one that asks to add the laptop this add just wrote.
+  expect(stdout.split("\n").filter((line) => line.startsWith("This toy needs"))).toHaveLength(1);
+  expect(stdout).not.toContain("This toy uses the laptop toy.");
+  // Named again, and by its own name too, the laptop is fetched and written once.
+  const again = await runIn(dir, "add", "laptop", "laptop-front", `${registry}/laptop.json`, "--no-install");
+  expect(again.code).toBe(0);
+  expect(again.stdout.split("\n").filter((line) => line.endsWith("laptop/laptop.tsx"))).toEqual(["Same     components/vectoys/laptop/laptop.tsx"]);
+});
+
+test("items that depend on each other in a cycle, or on one that is missing, stop the add before any file is written", async () => {
+  const files = (name: string) => [{ path: `x/${name}.tsx`, content: "export {};\n" }];
+  writeFileSync(join(out, "cycle-a.json"), JSON.stringify({ name: "cycle-a", files: files("a"), registryDependencies: ["cycle-b"] }));
+  writeFileSync(join(out, "cycle-b.json"), JSON.stringify({ name: "cycle-b", files: files("b"), registryDependencies: [`${registry}/cycle-a.json`] }));
+  writeFileSync(join(out, "needs-gone.json"), JSON.stringify({ name: "needs-gone", files: files("n"), registryDependencies: ["phone", "gone"] }));
+  writeFileSync(join(out, "needs-file.json"), JSON.stringify({ name: "needs-file", files: files("f"), registryDependencies: ["file:///etc/passwd"] }));
+  const dir = join(work, "cycle");
+  mkdirSync(dir);
+  const cycle = await runIn(dir, "add", "cycle-a", "--no-install");
+  expect(cycle.code).toBe(1);
+  expect(cycle.stderr).toContain(`${registry}/cycle-a.json depends on itself: ${registry}/cycle-a.json -> ${registry}/cycle-b.json -> ${registry}/cycle-a.json`);
+  const gone = await runIn(dir, "add", "needs-gone", "--no-install");
+  expect(gone.code).toBe(1);
+  expect(gone.stderr).toContain("gone.json answered 404");
+  const file = await runIn(dir, "add", "needs-file", "--no-install");
+  expect(file.code).toBe(1);
+  expect(file.stderr).toContain("lists registryDependencies that are not item names or http(s) URLs");
+  expect(existsSync(join(dir, "components"))).toBe(false);
+  expect(existsSync(join(dir, "vectoys.json"))).toBe(false);
+});
+
+test("a chain of items more than 8 deep, or two URLs with items by one name, stop the add before any file is written", async () => {
+  const files = (name: string) => [{ path: `x/${name}.tsx`, content: "export {};\n" }];
+  for (let at = 1; at <= 9; at++) {
+    writeFileSync(join(out, `deep-${at}.json`), JSON.stringify({ name: `deep-${at}`, files: files(`d${at}`), registryDependencies: at < 9 ? [`deep-${at + 1}`] : [] }));
+  }
+  writeFileSync(join(out, "dup-a.json"), JSON.stringify({ name: "dup", files: files("a") }));
+  writeFileSync(join(out, "dup-b.json"), JSON.stringify({ name: "dup", files: files("b") }));
+  const dir = join(work, "deep");
+  mkdirSync(dir);
+  const deep = await runIn(dir, "add", "deep-1", "--no-install");
+  expect(deep.code).toBe(1);
+  expect(deep.stderr).toContain(`${registry}/deep-1.json depends on items more than 8 deep.`);
+  const dup = await runIn(dir, "add", `${registry}/dup-a.json`, `${registry}/dup-b.json`, "--no-install");
+  expect(dup.code).toBe(1);
+  expect(dup.stderr).toContain(`${registry}/dup-b.json and ${registry}/dup-a.json are both named "dup".`);
+  expect(existsSync(join(dir, "components"))).toBe(false);
+  expect(existsSync(join(dir, "vectoys.json"))).toBe(false);
+});
+
 // Each item in use on a page, so the typecheck below covers every one.
 const USES: Record<string, { imports: string[]; jsx: string }> = {
   browser: { imports: ['import { Browser } from "./components/vectoys/browser/browser";'], jsx: '<Browser url="example.com" depth={20} offset={[4, 2]}><p>a</p></Browser>' },
@@ -243,6 +302,7 @@ test("under NodeNext the copied imports get .js and typecheck", async () => {
   expect(stderr).toBe("");
   expect(code).toBe(0);
   expect(readFileSync(join(node, "src/components/vectoys/laptop/laptop.tsx"), "utf8")).toContain('from "./geometry.js"');
+  expect(readFileSync(join(node, "src/components/vectoys/laptop-front/laptop-front.tsx"), "utf8")).toContain('from "../laptop/laptop.js"');
   page(node, ".js");
   typecheck(node);
 }, 60_000);

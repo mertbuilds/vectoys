@@ -656,3 +656,24 @@ test("the overlay moves focus to its exit button when it opens", async () => {
   await fire(document.body, new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
   expect(document.activeElement).toBe(root);
 });
+
+test("a tilt looks from three times the toy's unturned width away, and from 1000 pixels before it is measured", async () => {
+  const frames = fakeFrames();
+  cleanup.push(frames.restore);
+  const { host } = await place(<Turntable mode="tilt">{toy}</Turntable>);
+  const root = rootOf(host);
+  const body = host.querySelector<HTMLElement>(".vectoys-turntable-body")!;
+  expect(body.style.transform).toContain("perspective(1000px)");
+  let width = 600;
+  Object.defineProperties(body, { offsetWidth: { get: () => width }, offsetHeight: { value: 300 } });
+  await dragOn(root, 40);
+  expect(body.style.transform).toContain("perspective(1800px)");
+  await fire(root, pointer("pointerup", 40));
+  // Full screen widens it, and a tilt that stays turned looks from the new width.
+  width = 900;
+  Object.assign(root, { requestFullscreen: () => Promise.reject(new TypeError("Permissions check failed")) });
+  await fire(host.querySelector(".vectoys-turntable-full")!, new MouseEvent("click", { bubbles: true }));
+  await act(async () => new Promise((done) => setTimeout(done, 0)));
+  expect(root.dataset.full).toBe("overlay");
+  expect(body.style.transform).toContain("perspective(2700px)");
+});

@@ -1,4 +1,4 @@
-import { IDENTITY, camera, draw, fixed, footprint, slab, type Part, type Solid } from "@vinena/vectoys";
+import { IDENTITY, camera, draw, fixed, footprint, slab, type Camera, type Part, type Solid } from "@vinena/vectoys";
 
 // A full-size keyboard with a US layout: low, flat caps with small round
 // corners on a thin case. Sizes are in key units, 1 being the 19.05 mm pitch
@@ -133,8 +133,18 @@ export const keyFor = (code: string): string | undefined => {
   return IDS.has(id) ? id : undefined;
 };
 
+const SIGHT = { width: 100, height: 38, perspective: 320, pitch: -50, anchorY: 16, originY: 17 } as const;
+
 /** Seen from in front and well above, square on, as a keyboard on a desk is. */
-export const EYE = camera({ width: 100, height: 38, perspective: 320, pitch: -50, anchorY: 16, originY: 17 });
+export const EYE = camera(SIGHT);
+
+/**
+ * How far the eye may move round the board, in degrees from rest: always from
+ * above, never edge on or from under the deck. Turned, the board spills a
+ * little out of its box, over the room round it; a box that held every pose
+ * would be twice as tall at rest.
+ */
+export const LIMITS = { yaw: [-30, 30], pitch: [-15, 20] } as const;
 
 const at = (z: number) => ({ position: [0, 0, z] as const, rotation: IDENTITY });
 
@@ -167,51 +177,70 @@ const CASE: Part = slab({
   pose: at(0),
 });
 
-const ground = (spread: number, ahead: number) => footprint([CASE], EYE, { spread, ahead }).d;
-
-/** The case and its shadow, which never move, drawn once. */
-export const BOARD = { drawn: draw([CASE], EYE), shadow: { contact: ground(u(0.05), 0), ground: ground(u(0.35), u(0.3)) } };
-
-/** The keys from the farthest to the nearest, the order they draw in, so a near cap covers the sides of the one behind it. */
-export const ORDER: readonly Key[] = (() => {
-  const far = (key: Key) => {
-    const [x, y] = middle(key);
-    const [vx, vy, vz] = EYE.toView([x, y, u(CAP_HEIGHT)]);
-    return (vx - EYE.originX) ** 2 + (vy - EYE.originY) ** 2 + (vz - EYE.perspective) ** 2;
-  };
-  return [...KEYS].sort((a, b) => far(b) - far(a));
-})();
-
 /**
  * The flat transform that lays a key's legends on its top, in hundredths of
  * a key unit from its middle. Across one cap the perspective barely changes,
  * so the slope at the middle is enough.
  */
-function onTop(key: Key, height: number) {
+function onTop(eye: Camera, key: Key, height: number) {
   const [x, y] = middle(key);
   const point = (dx: number, dy: number): Solid => [x + dx, y + dy, height];
-  const [ox, oy] = EYE.project(point(0, 0));
-  const [ax, ay] = EYE.project(point(U, 0));
-  const [bx, by] = EYE.project(point(0, U));
+  const [ox, oy] = eye.project(point(0, 0));
+  const [ax, ay] = eye.project(point(U, 0));
+  const [bx, by] = eye.project(point(0, U));
   const n = (value: number) => fixed(value / 100);
   return `matrix(${n(ax - ox)} ${n(ay - oy)} ${n(bx - ox)} ${n(by - oy)} ${fixed(ox)} ${fixed(oy)})`;
 }
 
-/** A key as the eye sees it `travel` key units down: its cap's faces and the transform of its legends. */
-function view(key: Key, travel: number) {
-  return { drawn: draw([cap(key, travel)], EYE), legends: onTop(key, u(CAP_HEIGHT - travel)) };
+/** A key as `eye` sees it `travel` key units down: its cap's faces and the transform of its legends. */
+function view(eye: Camera, key: Key, travel: number) {
+  return { drawn: draw([cap(key, travel)], eye), legends: onTop(eye, key, u(CAP_HEIGHT - travel)) };
 }
 
 export type KeyView = ReturnType<typeof view>;
 
-// Every key at rest and fully down, drawn once each; the frames between are drawn as they come.
-const kept = new Map<string, KeyView>();
+/**
+ * The board as one eye sees it: the case and its shadow, the keys from the
+ * farthest to the nearest, the order they draw in so a near cap covers the
+ * sides of the one behind it, and every key at rest and fully down, drawn
+ * once each as they are asked for.
+ */
+function scene(eye: Camera) {
+  const ground = (spread: number, ahead: number) => footprint([CASE], eye, { spread, ahead }).d;
+  const far = (key: Key) => {
+    const [x, y] = middle(key);
+    const [vx, vy, vz] = eye.toView([x, y, u(CAP_HEIGHT)]);
+    return (vx - eye.originX) ** 2 + (vy - eye.originY) ** 2 + (vz - eye.perspective) ** 2;
+  };
+  return {
+    eye,
+    board: { drawn: draw([CASE], eye), shadow: { contact: ground(u(0.05), 0), ground: ground(u(0.35), u(0.3)) } },
+    order: [...KEYS].sort((a, b) => far(b) - far(a)) as readonly Key[],
+    kept: new Map<string, KeyView>(),
+  };
+}
 
-/** A key's cap and legends with it `travel` key units down. */
-export function seen(key: Key, travel = 0): KeyView {
-  if (travel !== 0 && travel !== TRAVEL) return view(key, travel);
+export type Scene = ReturnType<typeof scene>;
+
+const REST = scene(EYE);
+
+/** The case and its shadow from the eye at rest. */
+export const BOARD = REST.board;
+
+/** The keys from the farthest to the nearest from the eye at rest. */
+export const ORDER: readonly Key[] = REST.order;
+
+/** The board with the eye moved `turn` degrees round it, in the same box as at rest, so the drawing never jumps as it turns. */
+export function sceneAt({ yaw, pitch }: { yaw: number; pitch: number }): Scene {
+  if (yaw === 0 && pitch === 0) return REST;
+  return scene(camera({ ...SIGHT, yaw, pitch: SIGHT.pitch + pitch }));
+}
+
+/** A key's cap and legends with it `travel` key units down, from the eye of `from`, at rest by default. */
+export function seen(key: Key, travel = 0, from: Scene = REST): KeyView {
+  if (travel !== 0 && travel !== TRAVEL) return view(from.eye, key, travel);
   const name = `${key.id} ${travel}`;
-  const found = kept.get(name) ?? view(key, travel);
-  kept.set(name, found);
+  const found = from.kept.get(name) ?? view(from.eye, key, travel);
+  from.kept.set(name, found);
   return found;
 }

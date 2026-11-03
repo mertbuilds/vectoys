@@ -652,16 +652,19 @@ test("the full screen button fills the screen with the turntable, follows full s
 
 const pointer = (type: string, x: number) => new PointerEvent(type, { clientX: x, clientY: 0, pointerId: 7, pointerType: "mouse", button: 0, buttons: 1, bubbles: true });
 
-test("a drag from a key tilts the keyboard and lets the key up, and a press with no drag holds it", async () => {
+test("a drag from a key turns the eye round the keyboard and lets the key up, and a press with no drag holds it", async () => {
   const { host, unmount } = await mount(<Keyboard />);
   const body = host.querySelector<HTMLElement>(".vectoys-turntable-body")!;
+  const faces = () => key(host, "KeyJ").querySelector("path")?.getAttribute("d");
+  const before = faces();
   await fire(key(host, "KeyJ"), pointer("pointerdown", 0));
   expect(isDown(host, "KeyJ")).toBe(true);
   await fire(key(host, "KeyJ"), pointer("pointermove", 2));
   expect(isDown(host, "KeyJ")).toBe(true);
   await fire(key(host, "KeyJ"), pointer("pointermove", 60));
   expect(isDown(host, "KeyJ")).toBe(false);
-  expect(body.style.transform).not.toContain("rotateY(0deg)");
+  expect(faces()).not.toBe(before);
+  expect(body.style.transform).toBe("");
   await fire(key(host, "KeyJ"), pointer("pointerup", 60));
   await fire(key(host, "KeyK"), pointer("pointerdown", 0));
   expect(isDown(host, "KeyK")).toBe(true);
