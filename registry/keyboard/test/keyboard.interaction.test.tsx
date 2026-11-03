@@ -658,6 +658,19 @@ test("the full screen button fills the screen with the turntable, follows full s
     expect(dropped.host.querySelector("textarea")).toBeNull();
     expect(dropped.host.querySelector('[role="group"]')?.getAttribute("style")).not.toContain("position: relative");
     await dropped.unmount();
+
+    // A shift clicked in full screen lets go on the way out and does not shift the next key clicked.
+    const latch = await mount(<Keyboard typing="fullscreen" />);
+    await act(async () => buttonNamed(latch.host, "Full screen Keyboard")!.click());
+    await click(latch.host, "ShiftLeft");
+    expect(isDown(latch.host, "ShiftLeft")).toBe(true);
+    await act(async () => buttonNamed(latch.host, "Exit full screen")!.click());
+    expect(isDown(latch.host, "ShiftLeft")).toBe(false);
+    await act(async () => buttonNamed(latch.host, "Full screen Keyboard")!.click());
+    expect(isDown(latch.host, "ShiftLeft")).toBe(false);
+    await click(latch.host, "KeyH");
+    expect(box(latch.host).value).toBe("h");
+    await latch.unmount();
   } finally {
     Reflect.deleteProperty(HTMLElement.prototype, "requestFullscreen");
     Reflect.deleteProperty(document, "exitFullscreen");

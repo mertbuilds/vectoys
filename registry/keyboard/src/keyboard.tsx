@@ -430,6 +430,11 @@ function Board({
     if (pending?.text === text) box.current?.setSelectionRange(pending.caret, pending.caret);
   }, [text]);
 
+  // A shift clicked down lets go when typing stops, so it does not shift the next time.
+  useEffect(() => {
+    if (!writing) letGo((source) => source === BY_LATCH);
+  }, [writing, letGo]);
+
   useEffect(() => {
     const element = root.current;
     if (!element || typeof IntersectionObserver === "undefined") return;
